@@ -1,0 +1,40 @@
+int max(int a,int b){
+    return a>b?a:b;
+}
+int min(int a,int b){
+    return a<b?a:b;
+}
+
+int* com(struct TreeNode* root);
+int maxSum;//存储二叉搜索子树的最大键值和
+int maxSumBST(struct TreeNode* root){
+    maxSum=0; 
+    //初始化
+    com(root);
+    return maxSum;
+}
+int* com(struct TreeNode* root){
+    if(root==NULL){
+        int*res=(int*)calloc(4,sizeof(int));//这里要用calloc或者malloc,用int[4]会报错
+        res[0]=1;       // 1代表这个节点是搜索数
+        res[1]=INT_MAX; 
+        res[2]=INT_MIN;
+        res[3]=0;
+        return res;
+    }
+    int* left=com(root->left);
+    int* right=com(root->right);
+    int* res=(int*)calloc(4,sizeof(int));
+    if(left[0]==1 && right[0]==1 &&
+    root->val > left[2] && root->val < right[1]){ //判断是否为搜索树
+        res[0]=1;
+        res[1]=min(root->val,left[1]); //这里存储搜索树的最小值
+        res[2]=max(root->val,right[2]); //这里存储搜索树的最大值、、存储最大最小值是为了后面判断是否为搜索树
+        res[3]=left[3]+right[3]+root->val;//这里存储这个节点的键值和
+        maxSum=max(maxSum,res[3]);  //更新最大和
+    }
+    else{
+        res[0]=0;   //如果不是搜索树就不用理了
+    }
+    return res;
+}
