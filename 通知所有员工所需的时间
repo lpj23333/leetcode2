@@ -1,0 +1,71 @@
+#define MAX_NUM 1000
+typedef struct{
+    int id;
+    int count;
+    int num[MAX_NUM];
+    UT_hash_handle hh;
+} Node; 
+
+Node *g_list;
+
+int dfs(int id, int* informTime, int informTimeSize)
+{
+    Node *nod = NULL; 
+    HASH_FIND(hh, g_list, &id, sizeof(int), nod);
+    // printf("%d\n",id);
+    if (nod == NULL) {
+        return 0;
+    }
+    if (nod->count == 0) {
+        return 0;
+    }
+    
+    int time = informTime[id];
+    int tempTime = 0;
+    for (int i =0; i< nod->count;++i)
+    {   
+        int temp = dfs(nod->num[i], informTime, informTimeSize);
+        tempTime = tempTime > temp? tempTime:temp;
+    }
+    return time + tempTime;
+}
+
+int numOfMinutes(int n, int headID, int* manager, int managerSize, int* informTime, int informTimeSize){
+    int res = 0;
+    // g_list = (Node *)malloc(sizeof(Node));
+
+    Node *node = (Node *)malloc(sizeof(Node));
+    Node *nod = NULL;
+    memset(node, 0 ,sizeof(Node));
+    node->id = headID;
+    node->count = 0;
+    HASH_ADD(hh, g_list, id, sizeof(int), node);
+
+    for (int i = 0; i < n; ++i) {
+        int temId = manager[i];
+        if (temId != -1) {
+            HASH_FIND(hh, g_list, &temId, sizeof(int), nod);
+            if (nod == NULL) {
+                nod = (Node *)malloc(sizeof(Node));
+                nod->id = temId;
+                nod->count = 1;
+                nod->num[0] = i;
+                HASH_ADD(hh, g_list, id, sizeof(int), nod);
+            } else {
+                nod->num[nod->count++] = i;
+            }
+        }
+        nod = NULL;
+    }
+    res = dfs(headID, informTime, informTimeSize);
+    nod = NULL;
+    Node *tmp = NULL;
+    HASH_ITER(hh,g_list,nod, tmp) {
+        HASH_DEL(g_list, nod);
+        if (nod != NULL) {
+            free(nod);
+        }
+    }
+    g_list = NULL;
+    return res;
+}
