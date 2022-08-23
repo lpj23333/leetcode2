@@ -1,0 +1,27 @@
+char* sortString(char* s) {
+    int num[26];
+    memset(num, 0, sizeof(num));
+    int n = strlen(s);
+    for (int i = 0; i < n; i++) {
+        num[s[i] - 'a']++;
+    }
+
+    char* ret = malloc(sizeof(char) * (n + 1));
+    int retSize = 0;
+    while (retSize < n) {
+        for (int i = 0; i < 26; i++) {
+            if (num[i]) {
+                ret[retSize++] = i + 'a';
+                num[i]--;
+            }
+        }
+        for (int i = 25; i >= 0; i--) {
+            if (num[i]) {
+                ret[retSize++] = i + 'a';
+                num[i]--;
+            }
+        }
+    }
+    ret[retSize] = 0;
+    return ret;
+}
