@@ -1,0 +1,32 @@
+#define maxn 110
+const int next[4][2]={ {0,1},{0,-1},{1,0},{-1,0}  };
+int dis[maxn][maxn];
+struct node {
+    int step;
+    int x,y;
+};
+int minCost(int** grid, int gridSize, int* gridColSize){
+    int n=gridSize,m=gridColSize[0];
+    struct node Que[maxn*maxn*maxn]; memset(dis,127,sizeof(dis)); dis[0][0]=0;
+    int left=0,right=-1;  Que[++right].step=0; Que[right].x=0; Que[right].y=0;
+    int i,j;
+    while(left<=right){
+        int nowX=Que[left].x,nowY=Que[left].y;
+        int nowDis=Que[left].step;
+        for(i=0;i<4;i++){
+            int nx=nowX+next[i][0];
+            int ny=nowY+next[i][1];
+            int nextDis=nowDis+(grid[nowX][nowY]!=i+1);
+
+            if(nx>=0&&nx<n&&ny>=0&&ny<m&&nextDis<dis[nx][ny]){
+                dis[nx][ny]=nextDis;
+                Que[++right].step=nextDis;
+                Que[right].x=nx;
+                Que[right].y=ny;
+            }
+
+        }
+        left++;
+    }
+    return dis[n-1][m-1];
+}
