@@ -1,0 +1,27 @@
+int k;
+int cmp(int *a,int *b){
+    return *a-*b;
+}
+void dfs(struct TreeNode* root,int *temp){
+    if(!root) return ;
+    temp[k++]=root->val;
+    if(root->left!=NULL) dfs(root->left,temp);
+    if(root->right!=NULL) dfs(root->right,temp);
+}
+struct TreeNode* createtree(int *temp,int start,int end){
+    if(start>end) return ;
+    int mid=(start+end)/2;
+    struct TreeNode* root=malloc(sizeof(struct TreeNode));
+    root->val=temp[mid];
+    root->left=createtree(temp,start,mid-1);
+    root->right=createtree(temp,mid+1,end);
+    return root;
+}
+struct TreeNode* balanceBST(struct TreeNode* root){
+    int temp[10001],i;
+    k=0;
+    dfs(root,temp);
+    qsort(temp,k,sizeof(int),cmp);
+   // for(i=0;i<k;i++) printf("%d ",temp[i]);
+    return createtree(temp,0,k-1);
+}
