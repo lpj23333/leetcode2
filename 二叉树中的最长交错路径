@@ -1,0 +1,24 @@
+int find_difdir(struct TreeNode* root,int dir,int deep){
+    int a,b;
+    if(dir){
+        if(root->left)  a = find_difdir(root->left,1,1);
+        else a = 0;
+        if(root->right) b = find_difdir(root->right,0,deep+1);
+        else b = deep;
+        return (a>b?a:b);
+    }
+    else{
+        if(root->left)  a = find_difdir(root->left,1,deep+1);
+        else a = deep;
+        if(root->right) b = find_difdir(root->right,0,1);
+        else b = 0;
+        return (a>b?a:b);
+    }
+}
+
+int longestZigZag(struct TreeNode* root){
+    if(root == NULL) return 0;
+    int a = find_difdir(root,1,0);
+    int b = find_difdir(root,0,0);
+    return (a>b?a:b);
+}
