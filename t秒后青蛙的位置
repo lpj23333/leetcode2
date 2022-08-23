@@ -1,0 +1,164 @@
+#define OK 1
+#define ERROR -1
+#define OVERFLOW -2
+
+#define not !
+
+typedef int Status;
+
+// ---------- 链式队列的存储结构与实现 ---------
+typedef int QElemType;
+
+typedef struct QNode {
+  QElemType data;     // 队列结点的数据域
+  struct QNode *next; // 队列结点的指针域
+} QNode, *QueuePtr;
+
+typedef struct {
+  QueuePtr front; // 队头指针 (指向头结点而非首元结点)
+  QueuePtr rear;  // 队尾指针
+  int length;     // 队列中的元素个数
+} LinkQueue;
+
+Status InitQueue(LinkQueue* Q) {
+  Q->front = (QNode*) malloc(sizeof(QNode));
+  if (!Q->front) {
+    puts("ERROR: failed to allocate the memory!");
+    return ERROR;
+  }
+  Q->rear = Q->front;
+  Q->length = 0;
+  return OK;
+}
+
+bool QueueEmpty(LinkQueue* Q) {
+  return Q->front == Q->rear;
+}
+
+size_t QueueLength(LinkQueue* Q) {
+  return Q->length;
+}
+
+Status EnQueue(LinkQueue* Q, QElemType e) {
+  QueuePtr s = (QNode*) malloc(sizeof(QNode));
+  s->data = e;
+  s->next = NULL;
+
+  Q->rear->next = s;
+  Q->rear = s;
+  ++Q->length;
+  return OK;
+}
+
+Status DeQueue(LinkQueue* Q, QElemType* ret) {
+  if (QueueEmpty(Q)) {
+    puts("ERROR: The queue is empty!");
+    return ERROR;
+  }
+
+  QueuePtr p = Q->front->next;
+  *ret = p->data;
+  Q->front->next = p->next;
+  if (Q->rear == p) Q->rear = Q->front;
+  --Q->length;
+  free(p);
+  return OK;
+}
+
+QElemType GetFront(LinkQueue* Q) {
+  if (QueueEmpty(Q)) return -0x3f3f3f3f;
+  return Q->front->next->data;
+}
+
+Status DestroyQueue(LinkQueue* Q) {
+  QueuePtr p = Q->front, next;
+  while (p) {
+    next = p->next;
+    free(p);
+    p = next;
+  }
+  Q->front = Q->rear = NULL;
+  return OK;
+}
+
+// --------- End of the LinkQueue --------
+
+// 函数原型（function prototype）
+Status make2DArray(int *** a, int numberOfRows, int numberOfColumns);
+Status delete2DArray(int *** a, int numberOfRows);
+
+double frogPosition(int n, int** edges, int edgesSize, int* edgesColSize, int t, int target){
+
+  int i, cur, children;
+  int ** graph;
+  int graphColSize[n + 1];
+  int seen[n + 1];
+  double p[n + 1];
+  p[1] = 1.0;
+  
+  make2DArray(&graph, n + 1, n);
+  memset(graphColSize, 0x0000, sizeof graphColSize);
+  memset(seen, 0x0000, sizeof seen);
+  seen[1] = 1;
+  
+  // build the undirected graph
+  for (i = 0; i < edgesSize; ++i) {
+    const int u = *(*(edges + i));
+    const int v = *(*(edges + i) + 1);
+    graph[u][graphColSize[u]++] = v; 
+    graph[v][graphColSize[v]++] = u; // v是u的对称边
+  }
+
+  LinkQueue q;
+  InitQueue(&q);
+  EnQueue(&q, 1);
+
+  while (t--) {
+    size_t s = QueueLength(&q);
+    while (s--) {
+      DeQueue(&q, &cur);
+      children = 0;
+      for (i = 0; i < graphColSize[cur]; ++i)
+        children += not seen[graph[cur][i]];
+
+      int child;
+      for (i = 0; i < graphColSize[cur]; ++i) {
+        child = graph[cur][i];  // 设 child 为当前节点的第i个孩子结点
+        if (seen[child]) continue;
+        p[child] = p[cur] / children;
+        EnQueue(&q, child);
+        seen[child] = 1;
+      }
+
+      if (children > 0) p[cur] = 0.0;
+    }
+  }
+
+  DestroyQueue(&q);
+  delete2DArray(&graph, n + 1);
+  return p[target];
+}
+
+Status make2DArray(int *** a, int numberOfRows, int numberOfColumns) {
+  // 为行指针分配内存空间
+  *a = malloc(numberOfRows * sizeof(int*));
+  if (!*a) {
+    puts("OVERFLOW: failed to make2DArray!");
+    exit(OVERFLOW);
+  }
+
+  int i;
+  for (i = 0; i < numberOfRows; ++i) // 为每一行分配内存空间
+    *(*a + i) = malloc(numberOfColumns * sizeof(int));
+
+  return OK;
+}
+
+Status delete2DArray(int *** a, int numberOfRows) {
+  int i;
+  for (i = 0; i < numberOfRows; ++i)
+    free(*(*a + i));
+
+  free(*a);
+  return OK;
+}
