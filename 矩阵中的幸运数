@@ -1,0 +1,50 @@
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+int* luckyNumbers (int** matrix, int matrixSize, int* matrixColSize, int* returnSize)
+{
+    int row;
+    int column;
+    int minValue = INT_MAX;
+    int maxValue;
+    int rowBak;
+    int columnBak;
+    int *returnNums = (int *)malloc(sizeof(int) * 51);
+    *returnSize = 0;
+    for(row = 0; row < matrixSize; row++)
+    {
+        //行最小
+        minValue = INT_MAX;
+        for(column = 0; column < matrixColSize[row]; column++)
+        {
+            if(minValue > matrix[row][column])
+            {
+                minValue = matrix[row][column];
+                columnBak = column;
+            }
+            
+        }
+
+        maxValue  = minValue;
+        //column , minValue
+        //列最大
+        for(rowBak = 0; rowBak < matrixSize; rowBak++)
+        {
+            if(maxValue < matrix[rowBak][columnBak] )
+            {
+                maxValue = INT_MAX;
+                break;
+            }
+        }
+
+        if(maxValue !=  INT_MAX)
+        {
+            //找到符合条件的值
+            returnNums[*returnSize ] = maxValue;
+            *returnSize  = *returnSize  + 1;
+        }
+    }
+
+    return returnNums;
+
+}
