@@ -1,0 +1,24 @@
+#define MAXLEN 100000
+void myreplace(char* text, char* str, char ch)
+{
+    char* pos = NULL;
+    char* curpos = text;
+    char temp[MAXLEN] = {0};
+    while ((pos = strstr(curpos, str)) != NULL) {
+        *pos = ch;
+        strcpy(temp, pos+strlen(str));
+        strcpy(pos+1, temp);
+        curpos = pos +1;
+    }
+}
+
+char * entityParser(char * text)
+{
+    myreplace(text, "&quot;", '"');
+    myreplace(text, "&apos;", '\'');
+    myreplace(text, "&gt;", '>');
+    myreplace(text, "&lt;", '<');
+    myreplace(text, "&frasl;", '/');
+    myreplace(text, "&amp;", '&'); //注意，因为前面的替换字符串都包含‘&’，所以需要把这个放在最后面
+    return text;
+}
