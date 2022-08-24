@@ -1,0 +1,49 @@
+int maxDiff(int num){
+  int max=0,min=0,i,a=num;
+  int temp[10],temp1[10],k=0;
+  while(num!=0){
+      temp[k]=num%10;
+      temp1[k]=num%10;
+      num/=10;
+      k++;
+  }
+  if(k==1) return 8;
+  int x=k-1;
+  while(x>=0&&temp[x]==9) x--;
+  for(i=x-1;i>=0;i--){
+      if(temp[i]==temp[x]) {
+          temp[i]=9;
+      }
+  }
+  temp[x]=9;
+  for(i=k-1;i>=0;i--){
+      max=max*10+temp[i]; 
+  }
+  if(temp1[k-1]!=1){
+      for(i=k-2;i>=0;i--){
+          if(temp1[i]==temp1[k-1]){
+              temp1[i]=1;
+          }
+      }
+      temp1[k-1]=1;
+      for(i=k-1;i>=0;i--){
+      min=min*10+temp1[i]; 
+  }
+  return max-min;
+  }
+  else{
+      int y=k-2;
+      while(y>=0&&temp1[y]<=1) y--;
+      for(i=y-1;i>=0;i--){
+      if(temp1[i]==temp1[y]) {
+          temp1[i]=0;
+      }
+  }
+  if(y<0) return max-a;
+  temp1[y]=0;
+  for(i=k-1;i>=0;i--){
+      min=min*10+temp1[i]; 
+  }
+  return max-min;
+  }
+}
