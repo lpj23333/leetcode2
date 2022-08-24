@@ -1,0 +1,23 @@
+bool* kidsWithCandies(int* candies, int candiesSize, int extraCandies, int* returnSize){
+    if (candies == NULL || candiesSize <= 0) {
+        *returnSize = 0;
+        return NULL;
+    }
+
+    bool *res = (bool *)malloc(candiesSize * sizeof(bool));
+    if (res == NULL) {
+        return NULL;
+    }
+
+    int maxNum = 0;
+    for (int i = 0; i < candiesSize; ++i) {
+        maxNum = maxNum > candies[i] ? maxNum : candies[i];
+    }
+
+    for (int i = 0; i < candiesSize; ++i) {  
+        res[i] = candies[i] + extraCandies >= maxNum ? true : false;
+    }
+
+    *returnSize = candiesSize;
+    return res;
+}
