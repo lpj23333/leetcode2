@@ -1,0 +1,14 @@
+bool kLengthApart(int* nums, int numsSize, int k){
+    int i=0,j=0;
+    for(int a=0;a<numsSize;a++){
+        if(j==1){
+            if(nums[a]==0) i++;
+            else{
+                if(i<k) return false;
+                i=0;
+            }
+        }
+        if(nums[a]==1) j=1;
+    }
+    return true;
+}
