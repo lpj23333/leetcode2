@@ -1,0 +1,30 @@
+int numTeams(int* rating, int ratingSize)
+{
+    int cnt = 0;                                   //统计结果总数
+
+    for(int i=1;i<ratingSize-1 ;i++)              //(i,j,k)中，我们选则j作为参考
+    {
+        int leftsmall = 0;                        //j的左侧比j小的
+        int leftbig = 0;                          //j的左侧比j大的
+        int rightsmall = 0;                       //j的右侧比j小的
+        int rightbig = 0;                         //j的右侧比j大的
+
+        for(int p = 0;p<i;p++)                   //遍历j的左侧
+        {
+            if(rating[p] < rating[i])  leftsmall++;
+            else  leftbig++;
+        }
+
+        for(int q=i+1;q<ratingSize;q++)          //遍历j的右侧
+        {
+            if(rating[q] < rating[i])  rightsmall++;
+            else  rightbig++;
+        }
+
+        // (leftsmall*rightbig + leftbig *rightsmall) = j的可能组合数
+        cnt = cnt + (leftsmall*rightbig + leftbig *rightsmall);   //统计总的的可能组合数
+    }
+
+    return cnt;     //返回结果
+
+}
