@@ -1,0 +1,26 @@
+char * reformat(char * s){
+    int sum_digit = 0;
+    int len = strlen(s);
+    for (int i = 0; i < len; i++) {
+        char c = s[i];
+        if (isdigit(c)) {
+            sum_digit++;
+        }
+    }
+    int sum_alpha = len - sum_digit;
+    if (abs(sum_digit - sum_alpha) > 1) {
+        return "";
+    }
+    bool flag = sum_digit > sum_alpha;
+    for (int i = 0, j = 1; i < len; i += 2) {
+        if ((isdigit(s[i]) != 0) != flag) {
+            while ((isdigit(s[j]) != 0) != flag) {
+                j += 2;
+            }
+            char c = s[i];
+            s[i] = s[j];
+            s[j] = c;
+        }
+    }
+    return s;
+}
