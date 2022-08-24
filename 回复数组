@@ -1,0 +1,19 @@
+#define mod 1000000007
+int numberOfArrays(char * s, int k){
+    int i,j,l=strlen(s);
+    long long dp[l],res=0; memset(dp,0,sizeof(dp));
+    for(i=0;i<l;i++){
+        long long value=0,seed=1;
+        int p=i-9;
+        for(j=i;j>=0&&j>p;j--){
+            value=value+seed*(s[j]-'0');
+            if(value>k)break;
+            if(s[j]!='0'){
+                if(j==0)dp[i]+=1;
+                else dp[i]=(dp[i]+dp[j-1])%mod;
+            }
+            seed*=10;
+        }
+    }
+    return dp[l-1]%mod;
+}
