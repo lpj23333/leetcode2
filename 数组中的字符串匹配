@@ -1,0 +1,14 @@
+char ** stringMatching(char ** words, int wordsSize, int* returnSize){
+    char **ret = (char **)malloc(sizeof(char *) * wordsSize);
+    int pos = 0;
+    for (int i = 0; i < wordsSize; i++) {
+        for (int j = 0; j < wordsSize; j++) {
+            if (i != j && strstr(words[j], words[i])) {
+                ret[pos++] = words[i];
+                break;
+            }
+        }
+    }
+    *returnSize = pos;
+    return ret;
+}
