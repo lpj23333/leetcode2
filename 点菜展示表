@@ -1,0 +1,190 @@
+#define HashSize 131    // 多试试, 看运气啦
+
+// 链表结点定义
+typedef struct {
+    char food[21];   // 开静态数组, 节约时间
+    int value;  // 菜品对应数量
+    struct MyHashNode* next;
+} MyHashNode;
+
+// 链表结构定义
+typedef struct {
+    MyHashNode* HashTable;
+    int TableSize;
+    struct MyHashMap* next;
+} MyHashMap;
+
+
+// 哈希函数声明
+MyHashMap* myHashMapCreate(int size);   // 创建哈希表 
+void myHashMapPut(MyHashMap* obj, char* key, int value);   // 插入键值对, 有则增加value, 无则创建
+int myHashMapGet(MyHashMap* obj, char* key);    // 根据键获取value, 未找到则返回0
+void myHashMapFree(MyHashMap* obj);    // 释放内存空间
+
+// 辅助函数声明
+inline int Hash(char* key);    // 求字符串的哈希函数值
+inline int stoi(char* str);    // 字符串转整型值
+inline char* itos(int num);    // 整型转字符串
+inline char** unique(char** str, int* size);  // 字符串去重
+inline int min(int a, int b);
+
+char *** displayTable(char *** orders, int ordersSize, int* ordersColSize, int* returnSize, int** returnColumnSizes){
+    *returnSize = 1;    // 标题占一行
+
+    *returnColumnSizes = calloc(501, sizeof(int));   // 最坏情况也不会超过500
+    
+    MyHashMap** tb = calloc(501, sizeof(MyHashMap*));   // 餐桌号到哈希表的映射
+
+    bool vis[501] = {0};    // 统计一下不同餐桌号的数量
+    char** foods = calloc(ordersSize, sizeof(char*));  // 出现过的菜品名单, 最多有ordersSize个
+    int foodsSize = 0;
+
+    for(int i = 0; i < ordersSize; ++i){
+        char** order = orders[i];
+        int id = stoi(order[1]);
+    
+        // 统计
+        if(!vis[id]){
+            ++(*returnSize);
+            vis[id] = true;
+            }
+        
+        // 记录菜品(这里没有开辟新空间, 而只是存了一下指针, 排序后可能会改变orders的结构)
+        foods[foodsSize++] = order[2];
+
+        if(tb[id] == NULL){    // 未分配哈希表
+            tb[id] = myHashMapCreate(HashSize); // 这里哈希表的大小是个玄学, 太大了不好, 太小了也不好
+            }
+        
+        myHashMapPut(tb[id], order[2], 1);  
+        }
+    
+    
+    // 排序去重, 返回的指针是动态分配内存的, 但是由于会作为标题的第一行, 故可以不释放空间, foodsSize改为uni_food的数量
+    char** uni_food = unique(foods, &foodsSize);   
+
+    char*** ans = calloc(*returnSize, sizeof(char**));
+    for(int i = 0; i < *returnSize; ++i){
+        ans[i] = calloc(foodsSize + 1, sizeof(char**));
+    }
+
+    // 先把标题处理好
+    (*returnColumnSizes)[0] = foodsSize + 1;
+    char* t = calloc(6, sizeof(char));  // "Table"
+    strcpy(t, "Table");
+    ans[0][0] = t;
+    for(int i = 0; i < foodsSize; ++i) ans[0][i + 1] = uni_food[i];
+
+    for(int i = 0, j = 0; i <= 500; ++i){
+        if(tb[i] == NULL) continue;
+        (*returnColumnSizes)[++j] = foodsSize + 1;
+        ans[j][0] = itos(i);
+        for(int k = 0; k < foodsSize; ++k){
+            int cnt = myHashMapGet(tb[i], uni_food[k]);
+            ans[j][k + 1] = itos(cnt);
+            }
+        }
+
+    // 释放哈希表的空间
+    for(int i = 0; i <= 500; i++) myHashMapFree(tb[i]);
+    free(tb);
+
+    return ans;
+}
+
+// 辅助函数实现
+inline
+int Hash(char* key){
+    int ret = 0;
+    for(int i = 0; key[i] != '\0'; ++i){
+        ret = ret + key[i];
+    }
+    return ret % HashSize;
+}
+
+inline
+int stoi(char* str){
+    int ret = 0;
+    for(int i = 0; str[i] != '\0'; ++i) ret = ret * 10 + (str[i] - '0');
+    return ret;
+}
+
+inline
+char* itos(int num){
+    char* ret = calloc(10, sizeof(char));
+    sprintf(ret, "%d", num);
+    return ret;
+}
+
+int cmp(const void** a, const void** b){
+    return strcmp((char*)(*a), (char*)(*b));
+}
+
+inline
+char** unique(char** str, int* size){
+    qsort(str, *size, sizeof(char*), cmp);
+    char** ret = calloc(*size, sizeof(char*));
+    int retSize = 0;
+    for(int i = 0; i < *size; i++){
+        if(i == 0 || strcmp(str[i], str[i - 1]) != 0){
+            char* s = calloc(strlen(str[i]) + 1, sizeof(char));
+            strcpy(s, str[i]);
+            ret[retSize++] = s;
+            }
+        }
+    *size = retSize;
+    return ret;
+}
+
+inline
+int min(int a, int b){return a < b ? a : b;}
+
+// 哈希函数实现
+MyHashMap* myHashMapCreate(int size){
+    MyHashMap* obj = malloc(sizeof(MyHashMap));
+    obj->TableSize = size;
+    obj->next = NULL;
+    obj->HashTable = calloc(obj->TableSize, sizeof(MyHashNode));
+    return obj;
+} 
+
+void myHashMapPut(MyHashMap* obj, char* key, int value){
+    int pos = Hash(key);
+    MyHashNode* cur = &(obj->HashTable)[pos];
+    while(cur){
+        if(strcmp(cur->food, key) == 0){
+            cur->value += value;
+            return;
+            }
+        cur = cur->next;
+        }
+    
+    // 没找到则重新创建一个节点
+    MyHashNode* node = malloc(sizeof(MyHashNode));
+    strcpy(node->food, key);
+    node->value = value;
+
+    // 头插法
+    MyHashNode* head = &(obj->HashTable)[pos];
+    node->next = head->next;
+    head->next = node;
+}
+
+int myHashMapGet(MyHashMap* obj, char* key){
+    int pos = Hash(key);
+    MyHashNode* cur = &(obj->HashTable)[pos];
+    while(cur){
+        if(strcmp(cur->food, key) == 0){
+            return cur->value;
+            }
+        cur = cur->next;
+        }
+    return 0;
+}
+
+void myHashMapFree(MyHashMap* obj){
+    if(obj != NULL){
+        free(obj->HashTable);
+        free(obj);
+        }
+}
