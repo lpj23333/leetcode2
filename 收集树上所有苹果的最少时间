@@ -1,0 +1,56 @@
+int graph[99999][90] = { 0 };
+int dfs(int* graphColSize, bool* hasApple, int index, int* step, int appleCount, int currCount)
+{
+	if (hasApple[index])
+	{
+		currCount++;
+		appleCount++;
+	}
+	if (graphColSize[index] == 0)
+	{
+		if (currCount == 0)
+		{
+			(*step)--;
+		}
+		return currCount;
+	}
+	for (int i = 0; i < graphColSize[index]; i++)
+	{
+		(*step)++;
+		appleCount += dfs(graphColSize, hasApple, graph[index][i], step, 0, 0);
+	}
+	if (appleCount == 0)
+	{
+		if (index != 0)
+		{
+			(*step)--;
+		}
+	}
+	return appleCount;
+}
+int minTime(int n, int** edges, int edgesSize, int* edgesColSize, bool* hasApple, int hasAppleSize)
+{
+	bool* isChild = (bool*)calloc(n, sizeof(bool));
+	//int** graph = (int**)calloc(n, sizeof(int*));
+	int* graphColSize = (int*)calloc(n, sizeof(int));
+	/*for (int i = 0; i < n; i++)
+	{
+		graph[i] = (int*)calloc(n - 1, sizeof(int));
+	}*/
+	for (int i = 0; i < edgesSize; i++)
+	{
+		if (!isChild[edges[i][1]]) //edges[i][0]做父结点 
+		{
+			graph[edges[i][0]][graphColSize[edges[i][0]]++] = edges[i][1];
+			isChild[edges[i][1]] = true;
+		}
+		else
+		{
+			graph[edges[i][1]][graphColSize[edges[i][1]]++] = edges[i][0];
+			isChild[edges[i][0]] = true;
+		}
+	}
+	int result = 0;
+	dfs(graphColSize, hasApple, 0, &result, 0, 0);
+	return 2 * result;
+}
