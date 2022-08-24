@@ -1,0 +1,65 @@
+int c,r;
+int find(int *dad,int i)//返回集合的父节点，路径压缩
+{
+    return i==dad[i]?i:(dad[i]=find(dad,dad[i]));
+}
+
+void merge(int* dad,int i,int j)//合并i,j所在集合
+{
+    dad[find(dad,i)]=find(dad,j);
+}
+
+int getPlace(int x,int y)//把方阵拉成直线，便于利用并查集
+{
+    return x*c+y;
+}
+
+void checkL(int** grid,int* dad,int x,int y)//看看左边能走不
+{
+    if(y-1>=0&&(grid[x][y-1]==1||grid[x][y-1]==4||grid[x][y-1]==6))
+        merge(dad,getPlace(x,y),getPlace(x,y-1));//能走就放在一个集合里，下面都是一样
+}
+
+void checkU(int** grid,int* dad,int x,int y)//看看上面能走不
+{
+    if(x-1>=0&&(grid[x-1][y]==2||grid[x-1][y]==3||grid[x-1][y]==4))
+        merge(dad,getPlace(x,y),getPlace(x-1,y));
+}
+
+void checkR(int** grid,int* dad,int x,int y)//看看右边能走不
+{
+    if(y+1<c&&(grid[x][y+1]==1||grid[x][y+1]==3||grid[x][y+1]==5))
+        merge(dad,getPlace(x,y),getPlace(x,y+1));
+}
+
+void checkD(int** grid,int* dad,int x,int y)//看看下边能走不
+{
+    if(x+1<r&&(grid[x+1][y]==2||grid[x+1][y]==5||grid[x+1][y]==6))
+        merge(dad,getPlace(x,y),getPlace(x+1,y));
+}
+
+bool hasValidPath(int** grid, int gridSize, int* gridColSize){
+    int dadLen=gridSize*gridColSize[0];
+    int dad[dadLen];
+    for(int i=0;i<dadLen;i++)
+        dad[i]=i;
+    r=gridSize;
+    c=gridColSize[0];
+    for(int i=0;i<r;i++)
+    {
+        for(int j=0;j<c;j++)
+        {
+            switch(grid[i][j])//每遇到一种街道，就查看该种街道的出口方向能不能走
+            {
+                 case 1:checkL(grid,dad,i,j);checkR(grid,dad,i,j);break;
+                 case 2:checkU(grid,dad,i,j);checkD(grid,dad,i,j);break;  
+                 case 3:checkL(grid,dad,i,j);checkD(grid,dad,i,j);break;
+                 case 4:checkR(grid,dad,i,j);checkD(grid,dad,i,j);break;   
+                 case 5:checkL(grid,dad,i,j);checkU(grid,dad,i,j);break;
+                 case 6:checkR(grid,dad,i,j);checkU(grid,dad,i,j);break;
+            }
+        }
+    }
+
+    return find(dad,getPlace(0,0))==find(dad,getPlace(r-1,c-1));//看看起点和终点是不是在同一个集合里
+}
