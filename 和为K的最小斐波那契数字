@@ -1,0 +1,21 @@
+int findMinFibonacciNumbers(int k){
+    int f[100];
+    int pos = 0;
+    f[pos++] = 1;
+    int a = 1, b = 1;
+    while (a + b <= k) {
+        int c = a + b;
+        f[pos++] = c;
+        a = b;
+        b = c;
+    }
+    int ans = 0;
+    for (int i = pos - 1; i >= 0 && k > 0; i--) {
+        int num = f[i];
+        if (k >= num) {
+            k -= num;
+            ans++;
+        }
+    }
+    return ans;
+}
