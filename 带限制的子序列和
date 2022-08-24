@@ -1,0 +1,46 @@
+struct QeueeNode
+{
+    int dat;
+    int index;
+};
+
+int constrainedSubsetSum(int* nums, int numsSize, int k)
+{
+    //动态规划 +  单调队列
+    //动态规划 去确定从哪里开始处理nums
+    //单调队列 维护递减的单调队列，保证区间的值
+    //如果出现正数直接放入队列中
+    //如果出现负数放到单调队列中
+    struct QeueeNode queueDat[numsSize + 5];    //创建一个单调队列--用来存储动态规划dp[i]中的i（下标）
+    int queueFront = 0; 
+    int queueRear  = 0;
+    int sum =0;
+    int dp[numsSize+5]; //创建动态规划数组
+
+    queueDat[queueRear].dat   = nums[0];        //先将窗口包含数组第一个数值
+    queueDat[queueRear].index = 0;
+    queueRear++;
+    dp[0]=nums[0];
+    sum += nums[0];
+    for(int i=1; i < numsSize; i++)
+    {
+        //首先进行状态转移,其中dp[q[head]]是符合条件的j中dp[j]最大
+        dp[i] = fmax(0,dp[queueDat[queueFront].index]) + nums[i] ;    
+        sum   = fmax(sum,dp[i]);//更新答案
+
+
+        //入队前 预处理   //因为是负数  需要弄成 -1 -2 -3让-1让后最前面
+        while(queueFront < queueRear && dp[i] >= dp[queueDat[queueRear-1].index])
+        {
+            queueRear--;
+        }
+        queueDat[queueRear].dat   = nums[i];
+        queueDat[queueRear].index = i;
+        queueRear++;
+        if((i -  queueDat[queueFront].index) >= k)
+        {
+            queueFront++;
+        }
+    }
+    return sum;
+}
