@@ -1,0 +1,191 @@
+typedef struct {
+    int val;
+    int *arrIdx;
+} element_t;
+
+typedef bool (*cmp_func_t)(element_t* element1, element_t* element2);
+bool cmp_element1_bigger(element_t* element1, element_t* element2)
+{
+    return element1->val > element2->val;
+}
+
+bool cmp_element2_bigger(element_t* element1, element_t* element2)
+{
+    return !cmp_element1_bigger(element1, element2);
+}
+#define PQ_MAX_CNT 100001
+
+/* 优先队列的实现，基本不用动以下代码 */
+#define PQ_BIG_TOP 0xda
+#define PQ_SMALL_TOP 0xad
+
+typedef struct {
+    int type;
+    int cnt;
+    cmp_func_t cmp;
+    element_t eles[PQ_MAX_CNT];
+} prior_queue_t;
+prior_queue_t obj;
+
+void init_pq(int type)
+{
+    obj.cnt = 0;
+    obj.type = type;
+    if (type == PQ_BIG_TOP) {
+        obj.cmp = cmp_element1_bigger;
+    } else {
+        obj.cmp = cmp_element2_bigger;
+    }
+}
+
+bool pq_is_empty()
+{
+    return obj.cnt <= 0;
+}
+
+element_t pq_get_top()
+{
+    return obj.eles[1];
+}
+
+void pq_delete_top() 
+{
+    element_t* eles = obj.eles;
+    element_t last_val = eles[obj.cnt];
+    obj.cnt--;
+    if (obj.cnt == 0) return;
+
+    int i = 1;
+    int child;
+    for (i = 1; i * 2 <= obj.cnt; i = child) {
+        child = i * 2;
+        if ((child != obj.cnt) && !obj.cmp(&eles[child], &eles[child + 1])) {
+            child++;
+        }
+        if (obj.cmp(&eles[child], &last_val)) {
+            eles[i] = eles[child];
+        } else {
+            break;
+        }
+    }
+    eles[i] = last_val;
+}
+
+void pq_insert_ele(element_t cur_ele) {
+    int i = 0;
+    element_t temp = cur_ele;
+    element_t* eles = obj.eles;
+    for (i = ++obj.cnt; !obj.cmp(&eles[i / 2], &temp) && i > 1; i /= 2) {
+        eles[i] = eles[i / 2];
+    }
+    eles[i] = temp;
+}
+
+struct HashMap *g_hashHead = NULL;
+#define MAXSTRLEN 41
+struct HashMap {
+	int key[MAXSTRLEN];
+	int times;
+	UT_hash_handle hh;
+};
+ 
+//加入HASH
+void InsertHash(int *keyStr)
+{
+	struct HashMap *s = NULL;
+	HASH_FIND(hh, g_hashHead , keyStr, sizeof(int) * MAXSTRLEN, s);
+	if (s == NULL) {
+		s = malloc(sizeof(struct HashMap));
+		s->times = 0;
+        memcpy(s->key, keyStr, sizeof(int) * MAXSTRLEN);
+		//HASH_ADD_STR第二个参数传入是结构体定义key字段名称
+		HASH_ADD(hh, g_hashHead ,key, sizeof(int) * MAXSTRLEN, s);
+	}
+	s->times++;
+	return;
+}
+//查找HASH:
+int GetKeyTimes(int *keyStr)
+{
+	struct HashMap  *s = NULL;
+	HASH_FIND(hh, g_hashHead , keyStr, sizeof(int) * MAXSTRLEN, s);
+	if (s != NULL ) {
+		return s->times;
+	}
+	return 0;
+}
+
+void FreeHashMap()
+{
+	struct HashMap *s = NULL;
+	struct HashMap *tmp = NULL;
+	HASH_ITER(hh,g_hashHead,s,tmp) {        
+		HASH_DEL(g_hashHead,s);
+		free(s);
+	}
+	return;
+}
+
+int kthSmallest(int** mat, int matSize, int* matColSize, int k){
+    int *arr0 = (int *)malloc(sizeof(int) * matSize);
+    init_pq(PQ_SMALL_TOP);
+    int sum = 0;
+    int i = 0;
+    int col = *matColSize;
+    while (i < matSize){
+        sum += mat[i][0];
+        arr0[i] = 0;
+        i++;
+    }
+
+    element_t ele;
+    ele.val = sum;
+    ele.arrIdx = arr0;
+
+    pq_insert_ele(ele);
+
+    i = 1;
+    while (i < k){
+        ele = pq_get_top();
+        int *arrIdx = ele.arrIdx;
+
+        pq_delete_top();
+
+        int j = 0; 
+        while (j < matSize){
+            if (arrIdx[j] + 1 >= col){
+                j++;
+                continue;
+            }
+
+            int *arr = (int *)malloc(sizeof(int) * matSize);
+            element_t cur;
+            cur.arrIdx = arr;
+            cur.val = ele.val - mat[j][arrIdx[j]] + mat[j][arrIdx[j] + 1];
+            memcpy(arr, arrIdx, sizeof(int) * matSize);
+            cur.arrIdx[j]++;
+
+            int *tmpArr = malloc(sizeof(int) * MAXSTRLEN);
+            memset(tmpArr, 0, sizeof(int) * MAXSTRLEN);
+            for (int k = 0; k < matSize; k++){
+                tmpArr[k] = cur.arrIdx[k];
+            }
+
+            if (0 == GetKeyTimes(tmpArr)){
+                InsertHash(tmpArr);
+                free(tmpArr);
+                pq_insert_ele(cur);
+            }
+
+            j++;
+        }
+
+        free(ele.arrIdx);
+        i++;
+    }
+
+    ele = pq_get_top();
+
+    FreeHashMap();
+    return ele.val;
+}
