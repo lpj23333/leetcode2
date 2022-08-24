@@ -1,0 +1,26 @@
+void dfs(int n, int k, int* cnt, char* path, int pos, char* ret){
+    if(pos==n){
+        (*cnt)++;
+        if(*cnt==k){
+            memcpy(ret, path, sizeof(char)*n);
+        }
+        return;
+    }
+    char nums[3] = {'a', 'b', 'c'};
+    for(int i=0; i<3; i++){
+        if(pos==0 || (pos>0 && nums[i]!=path[pos-1])){
+            path[pos] = nums[i];
+            dfs(n, k, cnt, path, pos+1, ret);
+        }
+    }
+}
+
+char * getHappyString(int n, int k){
+    char path[n];
+    int pos = 0;
+    int cnt = 0;
+    char* ret = (char*)malloc(sizeof(char)*(n+1));
+    memset(ret, 0, sizeof(char)*(n+1));
+    dfs(n, k, &cnt, path, pos, ret);
+    return ret;
+}
