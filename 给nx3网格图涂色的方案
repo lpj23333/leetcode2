@@ -1,0 +1,18 @@
+int numOfWays(int n){
+    long int *hash=(long int*)malloc(sizeof(long int)*2);
+    int *seq=(int*)malloc(sizeof(int)*4); 
+    int i;
+    int temp;
+    hash[0]=6;
+    hash[1]=6;
+    seq[0]=3;
+    seq[1]=2;
+    seq[2]=2;
+    seq[3]=2;
+    for(i=0;i<n-1;i++){
+        temp=hash[0];
+        hash[0]=(hash[0]*seq[0]+hash[1]*seq[1])%1000000007;
+        hash[1]=(hash[1]*seq[2]+temp*seq[3])%1000000007;
+    }
+    return (hash[0]+hash[1])%1000000007;
+}  
