@@ -1,0 +1,9 @@
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+int minStartValue(int* nums, int numsSize){
+    int accSum = 0, accSumMin = 0;
+    for (int i = 0; i < numsSize; i++) {
+        accSum += nums[i];
+        accSumMin = MIN(accSumMin, accSum);
+    }
+    return -accSumMin + 1;
+}
