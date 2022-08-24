@@ -1,0 +1,40 @@
+char* largestNumber(int* cost, int costSize, int target) {
+    int dp[10][target + 1];
+    memset(dp, 0x80, sizeof(dp));
+    dp[0][0] = 0;
+    int from[10][target + 1];
+    memset(from, 0, sizeof(from));
+    for (int i = 0; i < 9; ++i) {
+        int c = cost[i];
+        for (int j = 0; j <= target; ++j) {
+            if (j < c) {
+                dp[i + 1][j] = dp[i][j];
+                from[i + 1][j] = j;
+            } else {
+                if (dp[i][j] > dp[i + 1][j - c] + 1) {
+                    dp[i + 1][j] = dp[i][j];
+                    from[i + 1][j] = j;
+                } else {
+                    dp[i + 1][j] = dp[i + 1][j - c] + 1;
+                    from[i + 1][j] = j - c;
+                }
+            }
+        }
+    }
+    if (dp[9][target] < 0) {
+        return "0";
+    }
+    char* ans = malloc(sizeof(char) * (target + 1));
+    int ansSize = 0;
+    int i = 9, j = target;
+    while (i > 0) {
+        if (j == from[i][j]) {
+            --i;
+        } else {
+            ans[ansSize++] = '0' + i;
+            j = from[i][j];
+        }
+    }
+    ans[ansSize] = 0;
+    return ans;
+}
