@@ -1,0 +1,40 @@
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+void swap(int*tmp,int index,int len)
+{
+    int data=tmp[index];
+    for(int i=index-1;i>=0;i--)
+    {
+        tmp[i+1]=tmp[i];
+    }
+    tmp[0]=data;
+}
+
+
+int* processQueries(int* queries, int queriesSize, int m, int* returnSize)
+{
+    int*tmp=(int*)malloc(sizeof(int)*m);
+    int*ret=(int*)malloc(sizeof(int)*queriesSize);
+    for(int i=0;i<m;i++)
+    {
+        tmp[i]=i+1;
+    }
+    int index=0;
+    for(int i=0;i<queriesSize;i++)
+    {
+        int c=queries[i];
+        for(int j=0;j<m;j++)
+        {
+            if(queries[i]==tmp[j])
+            {
+                ret[index++]=j;
+                swap(tmp,j,m);
+            }
+        }
+
+
+    }
+    *returnSize=queriesSize;
+    return ret;
+}
