@@ -1,0 +1,11 @@
+int findLucky(int* arr, int arrSize){
+    int* hash=(int*)malloc(sizeof(int)*arrSize);
+    memset(hash,0,sizeof(int)*arrSize);
+    for(int i=0;i<arrSize;i++){
+        if(arr[i]<=arrSize) hash[arr[i]-1]++;
+    }
+    for(int i=arrSize-1;i>=0;i--){
+        if(hash[i]==i+1) return i+1;
+    }
+    return -1;
+}
