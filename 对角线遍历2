@@ -1,0 +1,66 @@
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+int* findDiagonalOrder(int** nums, int numsSize, int* numsColSize, int* returnSize)
+{
+    int maxRow = numsSize;
+    int qeueueDat[100001][2];
+    int queueFront = 0;
+    int queueRear  = 0;
+
+    bool **flag =   (bool **)malloc(sizeof(bool *) * numsSize);//记录被选中的数据
+    for(int i =0; i< numsSize ;i ++)
+    {
+        flag[i]= (bool *)malloc(sizeof(bool ) * numsColSize[i]);
+        memset(flag[i],0, sizeof(bool) * numsColSize[i] );
+    }
+
+
+    *returnSize =0;
+    int *returnNums =(int *)malloc(sizeof(int ) * 100001);
+    qeueueDat[queueRear][0] =0;
+    qeueueDat[queueRear][1] =0;
+    queueRear++;
+
+    flag[0][0] = true;
+    while(queueFront < queueRear)
+    {
+        int last = queueRear;
+        while(queueFront < last)
+        {
+            int row = qeueueDat[queueFront][0];
+            int col = qeueueDat[queueFront][1];
+            queueFront++;
+            returnNums[*returnSize] = nums[row][col];
+            *returnSize = *returnSize + 1;
+            
+            
+            //检查下一行的数据
+            if(row + 1 < maxRow &&  col < numsColSize[row + 1])
+            {
+                //检测对应的col是否
+                //是否在下一行中存在
+                if(!flag[row + 1][col] )
+                {
+                    qeueueDat[queueRear][0] = row + 1;
+                    qeueueDat[queueRear][1] = col;
+                    queueRear++;
+                    flag[row + 1][col]= true;
+                }
+            }
+
+            //检查下一列的数据
+            if(col + 1 < numsColSize[row])
+            {
+                if(!flag[row ][col+1] )
+                {
+                    qeueueDat[queueRear][0] = row;
+                    qeueueDat[queueRear][1] = col + 1;
+                    queueRear++;
+                    flag[row ][col + 1]= true;
+                }
+            }
+        }
+    }
+    return returnNums;
+}
