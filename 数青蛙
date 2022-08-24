@@ -1,0 +1,30 @@
+int minNumberOfFrogs(char * croakOfFrogs){
+    int len=strlen(croakOfFrogs),hash[5]={0};
+    int i,j=0,result=0;
+    for(i=0;i<len;i++){
+        if(croakOfFrogs[i]=='c'){
+            hash[0]++;
+            j++;
+            result=j>result?j:result;
+        }
+        if(croakOfFrogs[i]=='r'){
+            hash[1]++;
+            if(hash[1]>hash[0]) return -1;
+        }
+        if(croakOfFrogs[i]=='o'){
+            hash[2]++;
+            if(hash[2]>hash[1]) return -1;
+        }
+        if(croakOfFrogs[i]=='a'){
+            hash[3]++;
+            if(hash[3]>hash[2]) return -1;
+        }
+        if(croakOfFrogs[i]=='k'){
+            j--;
+            hash[4]++;
+            if(hash[4]>hash[3]) return -1;
+        }
+    }
+    if(hash[0]==hash[1]&&hash[0]==hash[2]&&hash[0]==hash[3]&&hash[0]==hash[4]) return result;
+    else return -1;
+}
