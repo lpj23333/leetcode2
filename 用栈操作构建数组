@@ -1,0 +1,16 @@
+char ** buildArray(int* target, int targetSize, int n, int* returnSize){
+    char** ans=(char**)malloc((2*n-1)*sizeof(char*));
+    int j=0;
+    int pos=0;
+    for(int i=1;i<=n,j<targetSize;i++){
+        if(i<target[j]){
+            ans[pos++]="Push";
+            ans[pos++]="Pop";
+        }else{
+            ans[pos++]="Push";
+            j++;
+        }
+    }
+    *returnSize=pos;
+    return ans;
+}
