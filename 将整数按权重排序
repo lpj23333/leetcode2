@@ -1,0 +1,56 @@
+typedef struct {
+    int num;      // 数字
+    int weight;   // 权重
+} Record;
+
+/* qsort 核心函数 */
+int compare(void *a, void *b)
+{
+    Record *ap = (Record *)a;
+    Record *bp = (Record *)b;
+
+    if (ap->weight == bp->weight) {   // 如果权重相同，则按照自身数值升序排序
+        return ap->num - bp->num;
+    }
+
+    return ap->weight - bp->weight;
+}
+
+/* 权重计算函数 */
+int getWeight(int num)
+{
+    int weight = 0;
+    if (num == 1) {
+        return weight;
+    }
+
+    while (num != 1) {
+        if ((num % 2) == 0) {
+            num /= 2;
+            weight++;
+        } else {
+            num = 3 * num + 1;
+            weight++;
+        }
+    }
+
+    return weight;
+}
+
+int getKth(int lo, int hi, int k)
+{
+    Record *tmp = (Record *)malloc(sizeof(Record) * (hi - lo + 1));
+    if (tmp == NULL) {
+        return -1;
+    }
+
+    int i;
+    for (i = lo; i <= hi; i++) {
+        tmp[i - lo].num = i;
+        tmp[i - lo].weight = getWeight(i);
+    }
+
+    qsort(tmp, hi - lo + 1, sizeof(Record), compare);
+
+    return tmp[k - 1].num;
+}
