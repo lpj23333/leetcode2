@@ -1,0 +1,38 @@
+#define MIN 1e-2
+void CircleCenter(double x1,double y1,double x2,double y2,double R,double *x,double *y)  {  
+    double c1 = (x2*x2 - x1*x1 + y2*y2 - y1*y1) / (2 *(x2 - x1));  
+    double c2 = (y2 - y1) / (x2 - x1);  //斜率
+    double A = (c2*c2 + 1);  
+    double B = (2 * x1*c2 - 2 * c1*c2 - 2 * y1);  
+    double C = x1*x1 - 2 * x1*c1 + c1*c1 + y1*y1 - R*R;  
+    *y = (-B + sqrt(B*B - 4 * A*C)) / (2 * A);
+    *x = c1 - c2 * (*y);     
+}
+double dist(double x1,double y1,double x2,double y2){
+    return sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
+}
+int numPoints(int** points, int pointsSize, int* pointsColSize, int r){
+    int i,j,k,max=0,sum;
+    for (i = 0; i < pointsSize; i++) {
+        for (j = 0; j < pointsSize; j++) {
+            if (i == j) {
+                sum = 0;
+                for (k = 0; k < pointsSize; k++) {
+                    double d = dist(points[i][0], points[i][1], points[k][0], points[k][1]);
+                    if (d <= r)sum++;
+                }max = fmax(sum, max);
+            }
+            else {
+                if (dist(points[i][0], points[i][1], points[j][0], points[j][1]) / 2 > r)continue;
+                double x = 0, y = 0;
+                CircleCenter(points[i][0], points[i][1], points[j][0], points[j][1], r, &x, &y);
+                sum = 0;
+                for (k = 0; k < pointsSize; k++) {
+                    double d = dist(x, y, points[k][0], points[k][1]);
+                    if (d-r<MIN)sum++;
+                }max = fmax(sum, max);
+            }
+        }
+    }
+    return max;
+}
