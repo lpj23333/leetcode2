@@ -1,0 +1,44 @@
+double dp[49][49][9][9][9][9]; 
+double getProbability(int* balls, int ballsSize){
+    memset(dp,0,sizeof(dp)); dp[0][0][0][0][0][0]=1;
+    int i,j,ll,rl,ls,rs,len=0,n=ballsSize; int list[50];     
+    for(i=0;i<ballsSize;i++){
+        for(j=0;j<balls[i];j++){
+            list[len++]=i+1;
+        }
+    }
+    for(i=0;i<len;i++){
+        for(j=0;j<=len/2;j++){
+            for(ll=0;ll<=n;ll++){
+                for(rl=0;rl<=n;rl++){
+                    for(ls=0;ls<=n;ls++){
+                        for(rs=0;rs<=n;rs++){
+                            if(dp[i][j][ll][rl][ls][rs]==0)continue;
+                            double left=(len/2-j)/(double)(len-i);
+                            double right=1-left;
+                            if(list[i]!=ll){
+                                dp[i+1][j+1][list[i]][rl][ls+1][rs]+=dp[i][j][ll][rl][ls][rs]*left;
+                            }else{
+                                dp[i+1][j+1][ll][rl][ls][rs]+=dp[i][j][ll][rl][ls][rs]*left;
+                            }
+                            if(list[i]!=rl){
+                                dp[i+1][j][ll][list[i]][ls][rs+1]+=dp[i][j][ll][rl][ls][rs]*right;
+                            }else{
+                                dp[i+1][j][ll][rl][ls][rs]+=dp[i][j][ll][rl][ls][rs]*right;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    double res=0;
+    for(ll=0;ll<=n;ll++){
+        for(rl=0;rl<=n;rl++){
+            for(ls=0;ls<=n;ls++)
+            res+=dp[len][len/2][ll][rl][ls][ls];
+        }
+        
+    }
+    return res;
+}
