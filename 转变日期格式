@@ -1,0 +1,32 @@
+#define MAX_LEN 11
+
+#define MONTH 12
+
+char month[MONTH][4] = {
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+};//设置字典
+
+char *reformatDate(char *date)
+{
+    char day[5] = { 0 };
+    char year[5] = { 0 };
+    char month_temp[4] = { 0 };
+    int imonth;
+
+    char *ans = (char*)malloc(sizeof(char) * MAX_LEN);
+    //最终的答案
+
+    sscanf(date, "%[0-9]%*[a-z] %s %s", day, month_temp, year);
+    //sscanf和sprintf两个函数十分重要，需要记一下
+    //这样就可以不用分割函数，直接写进去
+
+    for (int i = 0; i < MONTH; i++) {
+        if (strcmp(month_temp, &month[i]) == 0) {
+            //要是月份没有匹配上，就加一，这样就可以得到数字
+            imonth = i + 1;
+        }
+    }
+    sprintf(ans, "%s-%02d-%02d", year, imonth, atoi(day));
+    //sprintf的用法也要记住
+    return ans;
+}
