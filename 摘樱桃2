@@ -1,0 +1,40 @@
+int cherryPickup(int** grid, int gridSize, int* gridColSize){
+    int n=*(gridColSize+0),i=0,j=0,k=0,max=0;
+    int **dp = malloc(sizeof(int *)*n);
+    int **predp = malloc(sizeof(int *)*n);
+    for(i=0;i<n;i++){
+        *(dp+i) = malloc(sizeof(int)*n);
+        memset(*(dp+i),0xff,sizeof(int)*n);
+        *(predp+i) = malloc(sizeof(int)*n);
+        memset(*(predp+i),0xff,sizeof(int)*n);
+    }
+    *(*(dp+0)+n-1) = *(*(grid+0)+0)+*(*(grid+0)+n-1);
+    for(k=1;k<=gridSize-1;k++){
+        for(i=0;i<n;i++){
+            memcpy(*(predp+i),*(dp+i),sizeof(int)*n);
+            memset(*(dp+i),0xff,sizeof(int)*n);
+        }
+        for(i=0;i<n;i++){
+            for(j=0;j<n;j++){
+                int pi=i-1,pj=j-1;
+                int tmpval = *(*(grid+k)+i);
+                if(i!=j){
+                    tmpval = tmpval + *(*(grid+k)+j);
+                }
+                for(pi=i-1;pi<=i+1;pi++){
+                    for(pj=j-1;pj<=j+1;pj++){
+                        if(pi<0||pi>n-1||pj<0||pj>n-1||*(*(predp+pi)+pj)==-1){
+                            continue;
+                        }
+                        *(*(dp+i)+j) = fmax(*(*(dp+i)+j),*(*(predp+pi)+pj)+tmpval);
+                    }
+                }
+                if(k==gridSize-1){
+                    max = fmax(max,*(*(dp+i)+j));
+                }
+            }
+        }
+    }
+
+    return max;
+}
