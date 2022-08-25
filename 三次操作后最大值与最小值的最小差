@@ -1,0 +1,78 @@
+int minDifference(int *nums, int numsSize)
+{
+    int minIdx[4] = {0, -1, -1, -1};
+    int maxIdx[4] = {0, -1, -1, -1};
+    /* 注意nums[0]已经被初始化为最大值、最小值索引，所以接下来从下标1开始查看。 */
+    int i = 1, result = INT_MAX;
+
+    if(4 >= numsSize)
+    {
+        return 0;
+    }
+
+    while(numsSize > i)
+    {
+        /* minIdx */
+        if(nums[i] <= nums[minIdx[0]])
+        {
+            minIdx[3] = minIdx[2];
+            minIdx[2] = minIdx[1];
+            minIdx[1] = minIdx[0];
+            minIdx[0] = i;
+        }
+        else if(-1 == minIdx[1] || nums[i] <= nums[minIdx[1]])
+        {
+            minIdx[3] = minIdx[2];
+            minIdx[2] = minIdx[1];
+            minIdx[1] = i;
+        }
+        else if(-1 == minIdx[2] || nums[i] <= nums[minIdx[2]])
+        {
+            minIdx[3] = minIdx[2];
+            minIdx[2] = i;
+        }
+        else if(-1 == minIdx[3] || nums[i] < nums[minIdx[3]])
+        {
+            minIdx[3] = i;
+        }
+
+        /* maxIdx */
+        if(nums[i] >= nums[maxIdx[0]])
+        {
+            maxIdx[3] = maxIdx[2];
+            maxIdx[2] = maxIdx[1];
+            maxIdx[1] = maxIdx[0];
+            maxIdx[0] = i;
+        }
+        else if(-1 == maxIdx[1] || nums[i] >= nums[maxIdx[1]])
+        {
+            maxIdx[3] = maxIdx[2];
+            maxIdx[2] = maxIdx[1];
+            maxIdx[1] = i;
+        }
+        else if(-1 == maxIdx[2] || nums[i] >= nums[maxIdx[2]])
+        {
+            maxIdx[3] = maxIdx[2];
+            maxIdx[2] = i;
+        }
+        else if(-1 == maxIdx[3] || nums[i] > nums[maxIdx[3]])
+        {
+            maxIdx[3] = i;
+        }
+
+        i++;
+    }
+
+    /* 最大值和第四小值、第二大值和第三小值、第三大值和第二小值、第四大值和最小值，这几者之间找差值的最小值。 */
+    i = 0;
+    while(4 > i)
+    {
+        if(nums[maxIdx[i]] - nums[minIdx[3 - i]] < result)
+        {
+            result = nums[maxIdx[i]] - nums[minIdx[3 - i]];
+        }
+        i++;
+    }
+
+    return result;
+}
