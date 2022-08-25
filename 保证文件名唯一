@@ -1,0 +1,39 @@
+#define NAME_MAX_SIZE 25
+
+struct hash_entry {
+    char name[NAME_MAX_SIZE];
+    int count;
+    UT_hash_handle hh;
+};
+
+char **getFolderNames(char **names, int namesSize, int *returnSize)
+{
+    int count = 0;
+    char name[NAME_MAX_SIZE];
+    struct hash_entry *nMap = NULL;
+    struct hash_entry *tmp = NULL;
+    struct hash_entry *name_tmp = NULL;
+    char **created = (char **)malloc(namesSize * sizeof(char *));
+
+    for (int i = 0; i < namesSize; i++) {
+        strcpy(name, names[i]);
+        HASH_FIND_STR(nMap, &name, tmp);
+        name_tmp = tmp;
+        while (tmp != NULL) {
+            sprintf(name, "%s(%d)", names[i], name_tmp->count);
+            name_tmp->count++;
+            HASH_FIND_STR(nMap, &name, tmp);
+        }
+        tmp = (struct hash_entry *)malloc(sizeof(struct hash_entry));
+        strcpy(tmp->name, name);
+        tmp->count = 1;
+        HASH_ADD_STR(nMap, name, tmp);
+    }
+
+    HASH_ITER(hh, nMap, tmp, name_tmp) {
+        created[count++] = tmp->name;
+    }
+
+    *returnSize = count;
+    return created;
+}
