@@ -1,0 +1,70 @@
+typedef struct {
+    int key;
+    int val;
+    UT_hash_handle hh;
+} HashItem; 
+
+HashItem *hashFindItem(HashItem **obj, int key) {
+    HashItem *pEntry = NULL;
+    HASH_FIND_INT(*obj, &key, pEntry);
+    return pEntry;
+}
+
+bool hashAddItem(HashItem **obj, int key, int val) {
+    if (hashFindItem(obj, key)) {
+        return false;
+    }
+    HashItem *pEntry = (HashItem *)malloc(sizeof(HashItem));
+    pEntry->key = key;
+    pEntry->val = val;
+    HASH_ADD_INT(*obj, key, pEntry);
+    return true;
+}
+
+bool hashSetItem(HashItem **obj, int key, int val) {
+    HashItem *pEntry = hashFindItem(obj, key);
+    if (!pEntry) {
+        hashAddItem(obj, key, val);
+    } else {
+        pEntry->val = val;
+    }
+    return true;
+}
+
+int hashGetItem(HashItem **obj, int key, int defaultVal) {
+    HashItem *pEntry = hashFindItem(obj, key);
+    if (!pEntry) {
+        return defaultVal;
+    }
+    return pEntry->val;
+}
+
+void hashFree(HashItem **obj) {
+    HashItem *curr = NULL, *tmp = NULL;
+    HASH_ITER(hh, *obj, curr, tmp) {
+        HASH_DEL(*obj, curr);  
+        free(curr);             
+    }
+}
+
+bool canBeEqual(int* target, int targetSize, int* arr, int arrSize){
+    HashItem *counts1 = NULL, *counts2 = NULL;
+    for (int i = 0; i < targetSize; i++) {
+        hashSetItem(&counts1, target[i], hashGetItem(&counts1, target[i], 0) + 1);
+    }
+    for (int i = 0; i < arrSize; i++) {
+        hashSetItem(&counts2, arr[i], hashGetItem(&counts2, arr[i], 0) + 1);
+    }
+    if (HASH_COUNT(counts1) != HASH_COUNT(counts2)) {
+        return false;
+    }
+    for (HashItem *pEntry = counts1; pEntry != NULL; pEntry = pEntry->hh.next) {
+        int key = pEntry->key, value = pEntry->val;
+        if (hashGetItem(&counts2, key, 0) != value) {
+            return false;
+        }
+    }
+    hashFree(&counts1);
+    hashFree(&counts2);
+    return true;
+}
