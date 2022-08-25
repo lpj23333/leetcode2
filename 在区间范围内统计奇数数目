@@ -1,0 +1,27 @@
+int countOdds(int low, int high)
+{
+        if(!(0 <= low <= high <= 1000000000))    //参数过滤
+        {
+            return 0;
+        }
+        if(low == high)      //low == high
+        {
+            if(low%2==0)     //判断第一个数的奇偶性
+                return 0;    //第一个数是偶数，返回0
+            else
+                return 1;    //第一个数是奇数，返回1
+        }
+        long int num;       //保存奇数的数目
+        if(((high-low)+1)%2==0)             //偶数个元素
+        {
+            num = (high-low+1)/2;
+        }
+        else if(low%2!=0)                   //奇数个元素且low为奇数
+        {
+            num = ((high-low+1)/2)+1;       
+        }else                               //奇数个元素且low为偶数
+        {
+             num = ((high-low+1)/2);            
+        }
+    return num;             
+}
