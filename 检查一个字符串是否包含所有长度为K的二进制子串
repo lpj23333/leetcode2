@@ -1,0 +1,30 @@
+struct my_struct {
+    char *name;
+    UT_hash_handle hh; 
+};
+
+bool hasAllCodes(char * s, int k){
+    struct my_struct *users = NULL, *s1 = NULL, *tmp = NULL;
+    int count = 0;
+    int len = strlen(s);
+    char* str = (char*)calloc(len+1,sizeof(char));
+    int j = 0;
+    for(int i = 0; i <= len; i++){
+        if(j == k){
+            str[k] = '\0';
+            HASH_FIND_STR(users, str, tmp);
+            if(!tmp){
+                s1 = (struct my_struct*)malloc(sizeof(struct my_struct));
+                s1->name = str;
+                HASH_ADD_STR(users, name, s1);
+                count++;
+                    }
+            str++;
+            j--,i--;
+                }
+        else {
+            str[j++] = s[i];
+            }
+        }
+    return count == pow(2,k);
+}
