@@ -1,0 +1,62 @@
+typedef struct {
+    int pool;
+    int day;
+    UT_hash_handle hh;
+} RainHash;
+
+RainHash *g_poolInfo = NULL; /* 记录湖泊最后下雨的日期 */
+RainHash *g_sunDay   = NULL; /* 记录不下雨的日期       */
+
+/* 1 非下雨天, 存入g_sunDay中, res[i]=1               */
+/* 2 下雨天, 判断该pool之前是否下过雨                 */
+/*   2.1 没有下过雨, 添加到g_poolInfo中               */
+/*   2.2 下过雨, 需要判断之前有没某一天可以抽干该pool */
+/*      不能抽干, 则洪水泛滥                          */
+/*      可以抽干, 将res[i]该为晴天日, 并删除晴天信息  */
+int* avoidFlood(int* rains, int rainsSize, int* returnSize){
+    int i, j, rain;
+    int      *res = (int*)malloc(sizeof(int) * rainsSize);
+    RainHash *s1  = NULL;
+    RainHash *s2  = NULL;
+    RainHash *tmp = NULL;
+    g_poolInfo    = NULL; /* hash表初始化 */
+    g_sunDay      = NULL;
+    *returnSize   = rainsSize;
+    
+    for (i = 0; i < rainsSize; i++) {
+        rain = rains[i];
+        if (rain == 0) { /* 非下雨天处理 */
+            s2 = (RainHash*)malloc(sizeof(RainHash));
+            s2->pool = i;
+            HASH_ADD_INT(g_sunDay, pool, s2);
+            res[i] = 1;
+            continue;
+        }
+        res[i] = -1;
+        HASH_FIND_INT(g_poolInfo, &rain, s1);
+        if (s1 == NULL) { /* 该湖泊没有下过雨, 加到HASH中 */
+            s1 = (RainHash*)malloc(sizeof(RainHash));
+            s1->pool = rain;
+            s1->day  = i;
+            HASH_ADD_INT(g_poolInfo, pool, s1);
+        } else {
+            j = 0; 
+            /* 从前往后找到一天抽干该水池 */
+            HASH_ITER(hh, g_sunDay, s2, tmp) {
+                if (s2->pool > s1->day) {
+                    break;
+                }
+                j++;
+            }
+            /* 找不到能抽干该水池, 洪水泛滥 */
+            if (j == HASH_COUNT(g_sunDay)) {
+                *returnSize = 0;
+                return NULL;
+            }
+            s1->day       = i;
+            res[s2->pool] = s1->pool; /* 结果中修改抽干的pool值 */
+            HASH_DEL(g_sunDay, s2);   /* 在不下雨的hash表删除s2 */
+        }
+    }
+    return res;
+}
