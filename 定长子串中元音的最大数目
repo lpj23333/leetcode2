@@ -1,0 +1,32 @@
+int maxVowels(char * s, int k){
+    int idx = 0;
+    int num = 0;
+    int max = 0;
+    while(s[idx] != '\0'){
+        if(s[idx] == 'a' ||
+            s[idx] == 'e' ||
+            s[idx] == 'i' ||
+            s[idx] == 'o' ||
+            s[idx] == 'u'){
+            num++;
+        }
+
+        if(idx - k >= 0){
+            if(s[idx - k] == 'a' ||
+            s[idx - k] == 'e' ||
+            s[idx - k] == 'i' ||
+            s[idx - k] == 'o' ||
+            s[idx - k] == 'u'){
+                num--;
+            }
+        }
+
+        if(num > max){
+            max = num;
+        }
+
+        idx++;
+    }
+
+    return max;
+}
