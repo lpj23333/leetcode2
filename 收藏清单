@@ -1,0 +1,80 @@
+#define MAX_FAVORITE_LEN 500
+#define MAX_COMPANIES_LEN 21
+typedef struct tag_FavoriteInfo
+{
+    int index;
+    int count;
+    char **favoriteCompanies;
+} FavoriteInfo_S;
+
+int CompareStr(const void *a, const void *b)
+{
+    char *s1 = *(char **)a;
+    char *s2 = *(char **)b;
+    return strcmp(s1, s2);
+}
+
+int CompareCount(const void *a, const void *b)
+{
+    FavoriteInfo_S *fa = (FavoriteInfo_S *)a;
+    FavoriteInfo_S *fb = (FavoriteInfo_S *)b;
+    return fb->count - fa->count;
+}
+
+int CompareIndex(const void *a, const void *b)
+{
+    return *(int *)a - *(int *)b;
+}
+
+bool IsSubCollect(char **dstStr, int dSize, char **srcStr, int sSize)
+{
+    int i;
+    int index = 0;
+    int isSame;
+    for (i = 0; i < dSize; i++) { 
+        isSame = strcmp(dstStr[i], srcStr[index]);
+        if (isSame == 0) {
+            index++;
+        }
+        if (index == sSize) {
+            return true;
+        }
+    }
+    return false; 
+}
+int* peopleIndexes(char *** favoriteCompanies, int favoriteCompaniesSize, int* favoriteCompaniesColSize, int* returnSize)
+{
+   int i;
+   int j;
+   bool isCollect = false;
+   int *result = (int *)malloc(sizeof(int) * favoriteCompaniesSize);
+   memset(result, 0, sizeof(int) * favoriteCompaniesSize);
+   *returnSize = 0;
+
+   FavoriteInfo_S *favoriteInfo = (FavoriteInfo_S *)malloc(sizeof(FavoriteInfo_S) * favoriteCompaniesSize);
+   memset(favoriteInfo, 0, sizeof(FavoriteInfo_S) * favoriteCompaniesSize);
+   for (i = 0; i < favoriteCompaniesSize; i++) {
+       favoriteInfo[i].index = i;
+       favoriteInfo[i].count = favoriteCompaniesColSize[i];
+       favoriteInfo[i].favoriteCompanies = (char **)malloc(sizeof(char *) * favoriteCompaniesColSize[i]);
+       favoriteInfo[i].favoriteCompanies = favoriteCompanies[i];
+       qsort(favoriteCompanies[i], favoriteCompaniesColSize[i], sizeof(char *), CompareStr);
+       
+   }
+   qsort(favoriteInfo, favoriteCompaniesSize, sizeof(FavoriteInfo_S), CompareCount);
+   for (i = 0; i < favoriteCompaniesSize; i++) {
+        for (j = i - 1; j >= 0; j--) {
+            isCollect = IsSubCollect(favoriteInfo[j].favoriteCompanies, favoriteInfo[j].count, favoriteInfo[i].favoriteCompanies, favoriteInfo[i].count);
+            if (isCollect == true) {
+                break;      
+            }
+           
+        }
+        if (isCollect == false) {
+            result[(*returnSize)++] = favoriteInfo[i].index;      
+        }
+        isCollect = false;      
+   }
+   qsort(result, *returnSize, sizeof(int), CompareIndex);
+   return result;
+}
