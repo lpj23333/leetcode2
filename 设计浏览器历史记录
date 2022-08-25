@@ -1,0 +1,46 @@
+typedef struct {
+    char** stack[101];
+    int top;
+    int idx;
+} BrowserHistory;
+
+
+BrowserHistory* browserHistoryCreate(char * homepage) {
+    BrowserHistory* obj = (BrowserHistory*)malloc(sizeof(BrowserHistory));
+    obj->top = -1;
+    obj->idx = -1;
+    obj->stack[++obj->idx] = homepage;
+    obj->top++;
+    return obj;
+}
+
+void browserHistoryVisit(BrowserHistory* obj, char * url) {
+    obj->stack[++obj->idx] = url;
+    obj->top = obj->idx;
+}
+
+char * browserHistoryBack(BrowserHistory* obj, int steps) {
+    //printf("Back Succ:%d\n",obj->idx);
+    printf("stack[0]:%s\n",obj->stack[0]);
+    while(steps>0) {
+        if(obj->idx > 0) {
+            obj->idx--;
+        } 
+        steps--;  
+    }
+    printf("Back Succ:%d\n",obj->idx);
+    return obj->stack[obj->idx];
+}
+
+char * browserHistoryForward(BrowserHistory* obj, int steps) {
+    while(obj->idx < obj->top && steps>0) {
+        obj->idx++;
+        steps--;
+    }
+    printf("Forward Succ\n");
+    return obj->stack[obj->idx];
+}
+
+void browserHistoryFree(BrowserHistory* obj) {
+    free(obj);
+}
