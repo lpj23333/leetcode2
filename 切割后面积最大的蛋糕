@@ -1,0 +1,41 @@
+#include <stdlib.h>
+
+
+int cmp(const void* a, const void* b){
+    return *(int*)a - *(int*)b;
+}
+
+int getMax(int* arr, int size, int border){
+    int res = arr[0];
+    for(int i = 1; i < size; i++){
+        int diff = arr[i] - arr[i - 1];
+        if(diff > res){
+            res = diff;
+        }
+    }
+
+    if(res < border - arr[size - 1]){
+        res = border - arr[size - 1];
+    }
+
+    return res;
+}
+
+int maxArea(int h, int w, int* horizontalCuts, int horizontalCutsSize, int* verticalCuts, int verticalCutsSize){
+    qsort(horizontalCuts, horizontalCutsSize, sizeof(int), cmp);
+    qsort(verticalCuts, verticalCutsSize, sizeof(int), cmp);
+
+    int hmax = 0;
+    int wmax = 0;
+
+    hmax = getMax(horizontalCuts, horizontalCutsSize, h);
+    wmax = getMax(verticalCuts, verticalCutsSize, w);
+
+    hmax %= 1000000007;
+    wmax %= 1000000007;
+
+    long long res = (long long)hmax * (long long)wmax;
+    res %= 1000000007;
+
+    return (int)res;
+}
