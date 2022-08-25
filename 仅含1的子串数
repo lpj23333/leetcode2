@@ -1,0 +1,26 @@
+int numSub(char * s){
+
+    int left,length,ans=0,right;
+    int n=1000000007;
+    left=0;
+    right=0;
+    length=strlen(s);
+    while(left<=right&&right<length){
+        while(s[left]=='0'){
+            left++;
+        }
+        right=left;
+        while(s[right]=='1'){
+            right++;
+        }
+        right-=1;
+        for(int i=right-left+1;i>0;i--){
+            ans=ans%n;
+            ans+=i;
+            ans=ans%n;
+        }
+        right+=1;
+        left=right;
+    }
+    return ans;
+}
