@@ -1,0 +1,95 @@
+struct Node {
+    int *succs;
+    double *probs;
+    int size;
+    int cur;
+};
+
+double maxProbability(int n, int** edges, int edgesSize, int* edgesColSize, double* succProb, int succProbSize, int start, int end) {
+    // printf("pre count.\n");
+    int *ecnts = (int *) malloc(sizeof(int) * n);
+    if (!ecnts) {
+        return 0.0;
+    }
+    memset(ecnts, 0, sizeof(int) * n);
+    for (int i = 0; i < edgesSize; i++) {
+        ecnts[edges[i][0]]++;
+        ecnts[edges[i][1]]++;
+    }
+    // printf("alloc graph.\n");
+    struct Node *graph = (struct Node *) malloc(sizeof(struct Node) * n);
+    if (!graph) {
+        return 0.0;
+    }
+    for (int i = 0; i < n; i++) {
+        // printf("node %d has size %d.\n", i, ecnts[i]);
+        graph[i].size = ecnts[i];
+        graph[i].cur = 0;
+        if (ecnts[i] == 0) { // avoid malloc(0)
+            graph[i].succs = NULL;
+            graph[i].probs = NULL;
+            continue;
+        }
+        graph[i].succs = (int *) malloc(sizeof(int) * ecnts[i]);
+        if (!graph[i].succs) {
+            return 0.0;
+        }
+        memset(graph[i].succs, 0, sizeof(int) * ecnts[i]);
+        graph[i].probs = (double *) malloc(sizeof(double) * ecnts[i]);
+        if (!graph[i].probs) {
+            return 0.0;
+        }
+        memset(graph[i].probs, 0.0, sizeof(double) * ecnts[i]);
+    }
+    // printf("build graph.\n");
+    for (int i = 0; i < edgesSize; i++) {
+        int a = edges[i][0];
+        int b = edges[i][1];
+        graph[a].succs[graph[a].cur] = b;
+        graph[a].probs[graph[a].cur] = succProb[i];
+        graph[a].cur++;
+        // printf("add %d to %d with prob %lf.\n", a, graph[a].succs[graph[a].cur - 1], graph[a].probs[graph[a].cur - 1]);
+        graph[b].succs[graph[b].cur] = a;
+        graph[b].probs[graph[b].cur] = succProb[i];
+        graph[b].cur++;
+        // printf("add %d to %d with prob %lf.\n", b, graph[b].succs[graph[b].cur - 1], graph[b].probs[graph[b].cur - 1]);
+    }
+    // printf("init probs.\n");
+    double *probs = (double *) malloc(sizeof(double) * n);
+    if (!probs) {
+        return 0.0;
+    }
+    memset(probs, 0.0, sizeof(double) * n);
+    probs[start] = 1.0;
+    // printf("init visited.\n");
+    bool *visited = (bool *) malloc(sizeof(bool) * n);
+    if (!visited) {
+        return 0.0;
+    }
+    memset(visited, false, sizeof(bool) * n);
+    // printf("run dijkstra.\n");
+    while (true) {
+        double maxp = 0.0;
+        int cur = -1;
+        for (int i = 0; i < n; i++) {
+            if (!visited[i] && probs[i] > maxp) {
+                maxp = probs[i];
+                cur = i;
+            }
+        }
+        if (cur == -1) {
+            break;
+        }
+        // printf("relaxed by %d with %d succs.\n", cur, graph[cur].size);
+        visited[cur] = true;
+        for (int i = 0; i < graph[cur].size; i++) {
+            int tnode = graph[cur].succs[i];
+            // printf("try to relax %d from %lf to %lf.\n", tnode, probs[tnode], probs[cur] * graph[cur].probs[i]);
+            if (!visited[tnode] && probs[tnode] < probs[cur] * graph[cur].probs[i]) {
+                // printf("relax %d from %lf to %lf.\n", tnode, probs[tnode], probs[cur] * graph[cur].probs[i]);
+                probs[tnode] = probs[cur] * graph[cur].probs[i];
+            }
+        }
+    }
+    return probs[end];
+}
