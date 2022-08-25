@@ -1,0 +1,22 @@
+int* finalPrices(int* prices, int pricesSize, int* returnSize){
+    int stack[pricesSize][2];   //单调栈，stack[pos][0]记录price，stack[pos][1]记录元素的位置
+    int pos=0;
+    *returnSize=pricesSize;
+    int*ans=(int*)malloc(pricesSize*sizeof(int));
+
+    for(int i=0;i<pricesSize;i++){
+        while(pos>0&&prices[i]<=stack[pos-1][0]){
+            ans[stack[pos-1][1]]=stack[pos-1][0]-prices[i];     //遇见下一个更小元素的时候，大的元素出栈，小的元素入栈
+            pos--;                                              //同时修改返回的价格
+        }
+        stack[pos][0]=prices[i];    
+        stack[pos][1]=i;
+        pos++;
+    }
+
+    while(pos){                 //此时栈中元素递增
+        ans[stack[pos-1][1]]=stack[pos-1][0];
+        pos--;
+    }
+    return ans;
+}
