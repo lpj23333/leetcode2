@@ -1,0 +1,23 @@
+#define MAX_SIZE 3
+int longestSubarray(int* nums, int numsSize){
+    int freq[MAX_SIZE] = {0};
+    int left = 0;
+    int right = 0;
+    int maxCount = 0;
+    int ans = 0;
+
+    while (right < numsSize) {
+        if (nums[right] == 1) {
+            freq[nums[right]]++;
+        }
+        maxCount = fmax(maxCount, freq[nums[right]]);
+
+        if (right - left + 1 > maxCount + 1) {
+            freq[nums[left]]--;
+            left++;
+        }
+        ans = fmax(ans, right - left + 1);
+        right++;
+    }
+    return ans - 1;
+}
