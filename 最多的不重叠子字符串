@@ -1,0 +1,104 @@
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+#define MAXNUM 26
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
+typedef struct {
+    int l;
+    int r;
+    int cnt;
+}charInfo;
+
+int cmp(const void *a, const void *b)
+{
+    int *A = (int*)a;
+    int *B = (int*)b;
+    return (A[0] > B[0] ? 1 : -1);
+}
+
+char ** maxNumOfSubstrings(char * s, int* returnSize)
+{
+    int len = strlen(s);
+
+    // 1.若一个字符串中包含字符C,那么s中所有c都应该在这个字符串中，2.由于最后要使得字符串总长度最小
+    // 所以，第一步，按满足上述1条件将字符串拆分，且尽可能使字符串短
+    // 最多26个子串
+
+    // 记录每个字符有几个，其起始位置和结束位置
+    charInfo strInfo[MAXNUM] = {0};
+    for (int i = 0; i < len; i++) {
+        if (strInfo[s[i] - 'a'].cnt == 0) {
+            strInfo[s[i] - 'a'].l = i;
+        }
+        strInfo[s[i] - 'a'].r = i;
+        strInfo[s[i] - 'a'].cnt++;
+    }
+
+    // 找到满足【若一个字符串中包含字符C,那么s中所有c都应该在这个字符串中】且【单个字符串长度尽可能短】的所有子数组，记录其 l，r
+    int subStrLrArr[MAXNUM][2];
+    memset(subStrLrArr, -1, sizeof(int) * MAXNUM * 2);
+
+    for (int i = 0; i < MAXNUM; i++) {
+        int end = 0;
+        for (int j = 0; j < len; j++) {
+            int idx = s[j] - 'a';
+            if (idx == i && subStrLrArr[i][0] == -1) {
+                subStrLrArr[i][0] = j;
+                end = strInfo[idx].r;
+                if (end == j) {
+                    subStrLrArr[i][1] = end;
+                    break;
+                }
+            }
+            if (subStrLrArr[i][0] != -1) {
+                int left = strInfo[idx].l;
+                if (left < subStrLrArr[i][0]) { // 前面有元素
+                    break;
+                }
+                end = MAX(end, strInfo[idx].r);
+                if (j == end) {
+                    subStrLrArr[i][1] = end;
+                    break;
+                }
+            }
+        }
+    }
+
+    // 整理数组，将有效元素移至前面，并统计有效个数
+    int idx = 0;
+    for (int i = 0; i < MAXNUM; i++) {
+        if (subStrLrArr[i][1] != -1) {
+            subStrLrArr[idx][0] = subStrLrArr[i][0];
+            subStrLrArr[idx][1] = subStrLrArr[i][1];
+            idx++;
+        }
+    }
+
+    qsort(subStrLrArr, idx, sizeof(subStrLrArr[0]), cmp); // 按起始位置，l 从小到大排序
+
+    // 排序后，最后一个一定满足条件
+    int cnt = 1;
+    int ansDic[MAXNUM]; // 记录 subStrLrArr 中满足最终条件的子串位置
+    int l = subStrLrArr[idx - 1][0];
+    ansDic[0] = idx - 1;
+    for (int i = idx- 2; i >= 0; i--) { // 从后往前遍历，满足 ri < l 的字符串符合条件，更新l
+        if (subStrLrArr[i][1] < l) { // i全在当前元素左侧
+            l = subStrLrArr[i][0];
+            ansDic[cnt] = i;
+            cnt++;
+        }
+    }
+
+    char **ans = (char**)malloc(sizeof(char*) * cnt);
+    for (int i = 0; i < cnt; i++) {
+        int subStrLen = subStrLrArr[ansDic[i]][1] - subStrLrArr[ansDic[i]][0] + 2;  // + 2 '\0'
+        ans[i] = (char*)malloc(sizeof(char) * subStrLen);
+        memset(ans[i], '\0', sizeof(char) * subStrLen);
+        strncpy(ans[i], s + subStrLrArr[ansDic[i]][0], subStrLen - 1);
+    }
+
+    *returnSize = cnt;
+
+    return ans;
+}
