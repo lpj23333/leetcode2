@@ -1,0 +1,68 @@
+double getDist(int** positions, int positionsSize, double xc, double yc) {
+    double ans = 0;
+    for (int i = 0; i < positionsSize; i++) {
+        int* pos = positions[i];
+        ans += sqrt((pos[0] - xc) * (pos[0] - xc) + (pos[1] - yc) * (pos[1] - yc));
+    }
+    return ans;
+};
+
+void shuffle(int** positions, int positionsSize) {
+    for (int i = positionsSize - 1; i >= 0; i--) {
+        int add = rand() % (i + 1);
+        int tmp[2] = {positions[add][0], positions[add][1]};
+        positions[add][0] = positions[i][0];
+        positions[add][1] = positions[i][1];
+        positions[i][0] = tmp[0];
+        positions[i][1] = tmp[1];
+    }
+}
+
+double getMinDistSum(int** positions, int positionsSize, int* positionsColSize) {
+    double eps = 1e-7;
+    double alpha = 1;
+    double decay = 1e-3;
+
+    int batchSize = positionsSize;
+
+    double x = 0.0, y = 0.0;
+    for (int i = 0; i < positionsSize; i++) {
+        int* pos = positions[i];
+        x += pos[0];
+        y += pos[1];
+    }
+    x /= positionsSize;
+    y /= positionsSize;
+
+    srand(time(0));
+
+    while (true) {
+        // 将数据随机打乱
+        shuffle(positions, positionsSize);
+        double xPrev = x;
+        double yPrev = y;
+
+        for (int i = 0; i < positionsSize; i += batchSize) {
+            int j = fmin(i + batchSize, positionsSize);
+            double dx = 0.0, dy = 0.0;
+            // 计算导数，注意处理分母为零的情况
+            for (int k = i; k < j; ++k) {
+                int* pos = positions[k];
+                dx += (x - pos[0]) / (sqrt((x - pos[0]) * (x - pos[0]) + (y - pos[1]) * (y - pos[1])) + eps);
+                dy += (y - pos[1]) / (sqrt((x - pos[0]) * (x - pos[0]) + (y - pos[1]) * (y - pos[1])) + eps);
+            }
+            x -= alpha * dx;
+            y -= alpha * dy;
+
+            // 每一轮迭代后，将学习率进行衰减
+            alpha *= (1.0 - decay);
+        }
+
+        // 判断是否结束迭代
+        if (sqrt((x - xPrev) * (x - xPrev) + (y - yPrev) * (y - yPrev)) < eps) {
+            break;
+        }
+    }
+
+    return getDist(positions, positionsSize, x, y);
+}
