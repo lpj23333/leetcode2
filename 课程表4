@@ -1,0 +1,31 @@
+bool* checkIfPrerequisite(int numCourses, int** prerequisites, int prerequisitesSize, int* prerequisitesColSize, int** queries, int queriesSize, int* queriesColSize, int* returnSize){
+    bool *res=(bool *)malloc(queriesSize*sizeof(bool));
+    bool map[numCourses][numCourses];       
+    memset(map,0,sizeof(map));
+    memset(res,0,sizeof(bool)*queriesSize);
+
+    for(int i=0;i<prerequisitesSize;i++)
+        map[prerequisites[i][1]][prerequisites[i][0]]=true;         //反向建图
+
+    for(int mid=0;mid<numCourses;mid++)     //中间节点
+    {
+        for(int start=0;start<numCourses;start++)
+        {
+            for(int end=0;end<numCourses;end++)
+            {
+                if(map[start][end])     //start到end直接连通 则不需要处理
+                    continue;
+                if(map[start][mid]&&map[mid][end])       //start->mid连通 mid->end连通 即start->end为间接连通
+                    map[start][end]=true;
+            }
+        }
+    }
+
+    for(int i=0;i<queriesSize;i++)
+        if(map[queries[i][1]][queries[i][0]])
+            res[i]=true;
+    *returnSize=queriesSize;
+    return res;
+
+
+}
