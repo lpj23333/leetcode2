@@ -1,0 +1,21 @@
+#define MAX 1000000007
+
+int numOfSubarrays(int* arr, int arrSize){
+    int count = 0,i = 0,sum;
+    long oddsum = 0,evensum = 0;
+    for(int j = 0; j < arrSize; j++){
+        if(arr[j] % 2 == 0){
+            count++;
+        }
+        else{
+            if(i % 2 == 0) evensum += count + 1;
+            else oddsum += count + 1;
+            i++;
+            count = 0;
+        }
+    }
+    if(i % 2 == 0) evensum += count + 1;
+    else oddsum += count + 1;
+    sum = (evensum % MAX * oddsum % MAX) % MAX;
+    return sum;
+}
