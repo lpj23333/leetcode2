@@ -1,0 +1,46 @@
+int comp(const void *a, const void *b) {
+    return *(int *)a - *(int *)b;
+}
+
+int numSubseq(int* nums, int numsSize, int target){
+    qsort(nums, numsSize, sizeof(int), comp);
+
+    /* 存储子序列的个数 */
+    int f[numsSize];
+   // memset(f, 1, sizeof(int) * numsSize);
+    f[0] = 1;
+    for (int i = 1; i < numsSize; i++) {
+        f[i] = (long long)f[i - 1] * 2 % 1000000007;
+       // f[i] -= 1;
+    }
+
+    int left = 0;
+    int right = numsSize - 1;
+    int mid = left + (right - left) / 2;
+    int cnt = 0;
+    for(int i = 0; i < numsSize; i++) {
+        left = i;
+        right = numsSize - 1;
+        mid = left + (right - left) / 2;
+        while(left <= right) {
+            mid = left + (right - left) / 2;
+            if ( nums[i] + nums[mid] > target) {
+                right  = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        }
+       // printf("right = %d left = %d i = %d\n", right, left, i);
+        if(right >= i) {
+           // printf("right = %d left = %d i = %d\n", right, left, i);
+        cnt += f[right - i];
+        cnt %= 1000000007;
+       // printf("cnt = %d, f[%d] = %d\n", cnt, right, f[right]);
+        } else {
+          //  break;
+        }
+    
+    }
+
+    return cnt;
+}
