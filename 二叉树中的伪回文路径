@@ -1,0 +1,55 @@
+int g_cnt;     // 回文路径计数变量
+int g_num[10]; // 数字个数计数数组，记录0-9的数字个数
+
+int is_palindrome()
+{
+    int odd_cnt = 0;  // 数字个数为奇数个的计数
+    for (int i = 0; i < 10; i++) {
+        if (g_num[i] % 2 == 1) {
+            odd_cnt++;
+            // 巧妙判断是否是回文序列：如果数字个数的奇数个数 <= 1，可以构成回文序列；否则不能构成回文序列
+            if (odd_cnt > 1) {
+                return 0;
+            }
+        }
+    }
+    
+    return 1;
+}
+
+void dfs(struct TreeNode *cur)
+{
+    int i;
+    // printf("cur_val = %d\n", cur->val);
+    
+    // 到达叶子节点，如果路径为回文序列，总计数+1
+    if (cur->left == NULL && cur->right == NULL) {
+        if (is_palindrome()) {
+            g_cnt++;
+        }
+        return;
+    }
+
+    if (cur->left) {
+        g_num[cur->left->val]++;   // 更新数字个数的计数
+        dfs(cur->left);
+        g_num[cur->left->val]--;
+    }
+
+    if (cur->right) {
+        g_num[cur->right->val]++;
+        dfs(cur->right);
+        g_num[cur->right->val]--;
+    }
+
+    return;
+}
+
+int pseudoPalindromicPaths(struct TreeNode *root)
+{
+    g_cnt = 0;
+    memset(g_num, 0, sizeof(int) *10);
+    g_num[root->val]++; // 根结点数字个数计数
+    dfs(root);
+    return g_cnt;
+}
