@@ -1,0 +1,13 @@
+#define Max(a,b) a>b?a:b
+int getLastMoment(int n, int* left, int leftSize, int* right, int rightSize){
+    int i,max=-1;
+    for(i=0;i<leftSize;i++)
+    {
+        max=Max(max,left[i]);
+    }
+    for(i=0;i<rightSize;i++)
+    {
+        max=Max(max,n-right[i]);
+    }
+    return max;
+}
