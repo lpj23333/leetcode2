@@ -1,0 +1,32 @@
+int cmp(int *a, int *b){
+    return *a - *b;
+}
+int findLeastNumOfUniqueInts(int* arr, int arrSize, int k){
+    qsort(arr, arrSize, sizeof(int), cmp);
+    int i;
+    int numsCount[arrSize];
+    memset(numsCount, 0, sizeof(int) * arrSize);
+    numsCount[0] = 1;
+    int count = 0;
+    // 排序后去除重复记录一共有几个不重复的数
+    for (i = 1; i < arrSize; i++) {
+        if (arr[i] == arr[i - 1]) {
+            numsCount[count]++;
+        } else {
+            count++;
+            numsCount[count] = 1;
+        }
+    }
+    qsort(numsCount, count + 1, sizeof(int), cmp);
+    int ret = count + 1;
+    // 根据各个数字的数量排序，删除数量少的，即能保证最后剩下的不同整数最小
+    for (i = 0; i < count + 1; i++) {
+        if (k >= numsCount[i]) {
+            k -= numsCount[i];
+            ret--;
+        } else {
+            break;
+        }
+    }
+    return ret;
+}
