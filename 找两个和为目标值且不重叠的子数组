@@ -1,0 +1,59 @@
+typedef struct {
+    int st;
+    int ed;
+}Sub;
+
+int Cmp(const void *a, const void *b)
+{
+    Sub sa = *(Sub*)a;
+    Sub sb = *(Sub*)b;
+    return (sa.ed - sa.st != sb.ed - sb.st) ? (sa.ed - sa.st - sb.ed + sb.st) : (sa.st - sb.st);
+}
+
+int minSumOfLengths(int* arr, int arrSize, int target){
+    Sub sub[arrSize];
+    int ls = 0;
+
+    int sum = 0;
+    for (int l = 0, r = 0; r < arrSize; r++) {
+        sum += arr[r];
+        while (sum > target) {
+            sum -= arr[l];
+            l++;
+        }
+        if (sum == target) {
+            Sub tsub = {l, r};
+            sub[ls++] = tsub;
+        }
+    }
+    if (ls == 0) {
+        return -1;
+    }
+
+    qsort(sub, ls, sizeof(Sub), Cmp);
+
+    int eual = 0;
+    if (sub[0].ed - sub[0].st == sub[ls - 1].ed - sub[ls - 1].st) {
+        eual = 1;
+    }
+
+    int min = 0x7fffffff;
+    for (int i = 0; i < ls; i++) {
+        int cur = sub[i].ed - sub[i].st;
+        for (int j = i + 1; j < ls; j++) {
+            if ((sub[j].st >= sub[i].st && sub[j].st <= sub[i].ed) ||
+                (sub[i].st >= sub[j].st && sub[i].st <= sub[j].ed)) {
+                continue;
+            }
+            if (min > cur + sub[j].ed - sub[j].st) {
+                min = cur + sub[j].ed - sub[j].st;
+            } else {
+                break;
+            }
+        }
+        if (eual) {
+            break;
+        }
+    }
+    return (min == 0x7fffffff) ? -1 : (min + 2);
+}
