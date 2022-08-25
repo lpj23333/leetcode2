@@ -1,0 +1,72 @@
+static inline int max3(int a, int b, int c)
+{
+    if(a > b)
+    {
+        return (a > c) ? a : c;
+    }
+    return (b > c) ? b : c;
+}
+
+int maxDotProduct(int *nums1, int nums1Size, int *nums2, int nums2Size)
+{
+    int x = 1, y = 1, t1 = 0, t2 = 0, t3 = 0, max = nums1[0] * nums2[0];
+    int record[nums1Size][nums2Size];
+
+    record[0][0] = (0 < nums1[0] * nums2[0]) ? nums1[0] * nums2[0] : 0;
+
+    while(nums1Size > x)
+    {
+        if(nums1[x] * nums2[0] > record[x - 1][0])
+        {
+            record[x][0] = nums1[x] * nums2[0];
+        }
+        else
+        {
+            record[x][0] = record[x - 1][0];
+        }
+        if(max < nums1[x] * nums2[0])
+        {
+            max = nums1[x] * nums2[0];
+        }
+        x++;
+    }
+
+    while(nums2Size > y)
+    {
+        if(nums1[0] * nums2[y] > record[0][y - 1])
+        {
+            record[0][y] = nums1[0] * nums2[y];
+        }
+        else
+        {
+            record[0][y] = record[0][y - 1];
+        }
+        if(max < nums1[0] * nums2[y])
+        {
+            max = nums1[0] * nums2[y];
+        }
+        y++;
+    }
+
+    x = 1;
+    while(nums1Size > x)
+    {
+        y = 1;
+        while(nums2Size > y)
+        {
+            t1 = record[x - 1][y];
+            t2 = record[x][y - 1];
+            t3 = (0 < nums1[x] * nums2[y]) ? (record[x - 1][y - 1] + nums1[x] * nums2[y]) : record[x - 1][y - 1];
+            record[x][y] = max3(t1, t2, t3);
+            y++;
+        }
+        x++;
+    }
+
+    if(0 > max)
+    {
+        return max;
+    }
+
+    return record[nums1Size - 1][nums2Size - 1];
+}
