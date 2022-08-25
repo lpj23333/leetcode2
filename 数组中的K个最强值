@@ -1,0 +1,28 @@
+int g_m; 
+
+
+int cmp_up(const void *a, const void *b)
+{
+    return (*(int *)a - *(int *)b);
+}
+
+
+int cmp(const void *a, const void *b)
+{
+    int *p = (int *)a;
+    int *q = (int *)b;
+
+    if (abs(*p - g_m) != abs(*q - g_m)) {
+        return abs(*q - g_m) - abs(*p - g_m);
+    } else {
+        return *q - *p;
+    }
+}
+int* getStrongest(int* arr, int arrSize, int k, int* returnSize){
+    qsort(arr, arrSize, sizeof(int), cmp_up);
+    g_m = (arrSize - 1) / 2;
+    g_m = arr[g_m];
+    qsort(arr, arrSize, sizeof(int), cmp);
+    *returnSize = k;
+    return arr;
+}
