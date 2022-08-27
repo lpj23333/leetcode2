@@ -1,0 +1,42 @@
+bool onesize (int*arr ,int arrSize,int index,int *strings,int m)
+{
+    int leftsize=0;
+    int rightsize=0;
+    strings[index]=1;
+    int left=index-1;
+    int right=index+1;
+    while(  leftsize<=m && left>=0  && strings[left--]==0  )
+    {
+         leftsize++;
+    }
+    while(  rightsize<=m &&right<arrSize && strings[right++]==0)
+    {
+         rightsize++;
+    }
+   // int size=leftsize>rightsize?rightsize:leftsize;
+   if((leftsize==m) ||(rightsize==m)) 
+    return true;
+    else return false;
+}
+
+
+int findLatestStep(int* arr, int arrSize, int m)
+{
+  if(m>arrSize)
+  return -1;
+  if(m==arrSize)
+  return arrSize; 
+int i=arrSize-1;
+int index=arr[i]-1;
+int* strings=(int *)malloc(arrSize*sizeof(int)) ;
+  memset(strings,0,arrSize*sizeof(int));
+  while(  i>0   && !onesize(arr,arrSize,index,strings,m) )
+{
+    index=arr[--i]-1;
+}                  //i=0
+
+
+  if (i==0)
+        return -1;
+     else  return i;   
+}
