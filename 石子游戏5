@@ -1,0 +1,35 @@
+
+
+
+int MAX(int a, int b)
+{
+    return a > b ? a : b;
+}
+
+int stoneGameV(int* stoneValue, int stoneValueSize)
+{
+    int **dp = (int**)calloc(stoneValueSize,sizeof(int*));
+    for(int i = 0; i < stoneValueSize;i++) {
+        dp[i] = (int*)calloc(stoneValueSize,sizeof(int*));
+    }
+    int *sum = (int*)calloc(stoneValueSize + 1,sizeof(int));
+    for (int i = 0; i < stoneValueSize;i++) {
+        sum[i + 1] = sum[i] + stoneValue[i];
+    }    
+    for (int len = 2; len <= stoneValueSize; len++) {
+        for (int i = 0; i + len <= stoneValueSize; i++) {
+            for (int j = i; j < i + len - 1; j++) {
+                int left = sum[j + 1] - sum[i];
+                int right = sum[i + len] - sum[j + 1];
+                if (left < right) {
+                    dp[i][i + len - 1] = MAX(dp[i][i + len - 1], left + dp[i][j]);
+                } else if (right < left) {
+                    dp[i][i + len - 1] = MAX(dp[i][i + len - 1], right + dp[j + 1][i + len - 1]);
+                } else {
+                    dp[i][i + len - 1] = MAX(dp[i][i + len - 1],MAX(right + dp[j + 1][i + len - 1],left + dp[i][j]));
+                }
+            }
+        }    
+    }
+    return dp[0][stoneValueSize - 1];    
+}
