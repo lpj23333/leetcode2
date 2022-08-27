@@ -1,0 +1,28 @@
+int dfs(int n, int map[1024][2], int *mapSize)
+{
+    if (n <= 1) {
+        return n;
+    }
+    
+    // 找到重复的n，返回其最小值
+    for (int i = 0; i < (*mapSize); i++) {
+        if (map[i][0] == n) {
+            return map[i][1];
+        }
+    }
+
+    // 传入n / 2即可，n % 2的余数必然按1减，最后加一个本次的操作1
+    // 传入n / 3即可，n % 3的余数必然按1减，最后加一个本次的操作1
+    int min = fmin(dfs(n / 2, map, mapSize) + n % 2 + 1, dfs(n / 3, map, mapSize) +  + n % 3 + 1);
+    map[*mapSize][0] = n;
+    map[*mapSize][1] = min;
+    (*mapSize)++;
+    return min;
+}
+
+int minDays(int n)
+{
+    int map[1024][2] = {0}; // 1024大于其最大递归层数，递归层数计算是 2 * log(2)2*10^9
+    int mapSize = 0;
+    return dfs(n, map, &mapSize);
+}
