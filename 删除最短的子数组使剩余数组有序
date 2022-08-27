@@ -1,0 +1,37 @@
+int findLengthOfShortestSubarray(int *arr, int arrSize)
+{
+    int x = 1, y = arrSize - 1, result = 0;
+
+    /* 先找左半段尽量多的递增子数组。 */
+    while(arrSize > x && arr[x] >= arr[x - 1])
+    {
+        x++;
+    }
+
+    /* 整个数组本来就已经是递增的，则一个元素都不用删。 */
+    if(arrSize == x)
+    {
+        return result;
+    }
+
+    /* 初始化为先删除右半部分的长度。 */
+    result = arrSize - x;
+    x--;
+
+    /* 右半部分加入的必须是从右往左递减的子数组。 */
+    while(arrSize - 1 == y || arr[y] <= arr[y + 1])
+    {
+        /* 线性往左缩减的方式。 */
+        while(0 <= x && arr[x] > arr[y])
+        {
+            x--;
+        }
+        if(y - x - 1 < result)
+        {
+            result = y - x - 1;
+        }
+        y--;
+    }
+
+    return result;
+}
