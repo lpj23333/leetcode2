@@ -1,0 +1,8 @@
+char * restoreString(char * s, int* indices, int indicesSize){
+    char *ss = (char *)malloc(sizeof(char)*indicesSize + 1);
+    for (int i = 0; i < indicesSize;i ++) {
+        ss[indices[i]] = s[i];
+    }
+    ss[indicesSize] = '\0';
+    return ss;
+}
