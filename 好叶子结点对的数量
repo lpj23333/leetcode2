@@ -1,0 +1,105 @@
+#define maxNumVertex 12000
+
+typedef struct LGraph LGraph;
+struct LGraph{
+    int V;
+    LGraph* next;
+};
+
+//头插法插入邻接点
+void InertVertex(LGraph* obj, int pos, int v){
+    LGraph* tmp = (LGraph*)malloc(sizeof(LGraph));
+    tmp->V = v;
+    tmp->next = obj[pos].next;
+    obj[pos].next = tmp;
+}
+
+//初始化邻接表
+LGraph* BuildGraph(int NumVertex){
+    LGraph* obj = (LGraph*)calloc(NumVertex, sizeof(LGraph));   //结构体数组
+    for(int i = 0; i < NumVertex; i++){
+        obj[i].V = i;
+        obj[i].next = NULL;
+        }
+    return obj;
+}
+
+int Unweighted(LGraph* obj, int* dist, int* Queue, int distance, int S, bool* leaf){
+    int front, rear, level, cnt, tmp;
+    front = rear = -1;
+    level = cnt = 0;
+    dist[S] = 0;    //源点到自己的距离为0
+    Queue[++rear] = S;  //源点入队
+    LGraph* p;
+    tmp = S;
+    while(front != rear && level < distance){
+        int size = rear - front;
+        for(int i = 0; i < size; i++){
+            tmp = Queue[++front];
+            p = (&obj[tmp])->next;
+            while(p != NULL){   //访问当前顶点的所有邻接点
+                Queue[++rear] = p->V;
+                if(dist[p->V] == -1){
+                    dist[p->V] = dist[tmp] + 1;
+                    if(leaf[p->V] == true) cnt++;
+                    }
+                p = p->next;
+                }
+            }
+        level++;
+        }
+    return cnt;
+}
+
+int countPairs(struct TreeNode* root, int distance){
+    int count = 0;
+    LGraph* obj = BuildGraph(maxNumVertex);
+    bool* leaf = (bool*)calloc(maxNumVertex, sizeof(bool)); //记录叶子节点
+    for(int i = 0; i < maxNumVertex; i++) leaf[i] = false;
+    int* dist = (int*)calloc(maxNumVertex, sizeof(int));    //dist[i]的值表示源点到i点的最短 
+    struct TreeNode** queue = (struct TreeNode**)calloc(maxNumVertex, sizeof(struct TreeNode*));
+    int* Queue = (int*)calloc(maxNumVertex, sizeof(int));
+    int front, rear, size, v;
+    front = rear = -1;
+    v = 0;
+    if(root){
+        root->val = v++;
+        queue[++rear] = root;  //根节点入队
+        }
+    struct TreeNode* tmp;
+    while(front != rear){
+        size = rear - front;
+        for(int i = 0; i < size; i++){
+            tmp = queue[++front];
+            if(tmp->left == NULL && tmp->right == NULL)    //找到叶子节点
+                leaf[tmp->val] = true;
+            if(tmp->left){
+                tmp->left->val = v++;
+                queue[++rear] = tmp->left;
+                InertVertex(obj, tmp->val, tmp->left->val);
+                InertVertex(obj, tmp->left->val, tmp->val);
+                }
+            if(tmp->right){
+                tmp->right->val = v++;
+                queue[++rear] = tmp->right;
+                InertVertex(obj, tmp->val, tmp->right->val);
+                InertVertex(obj, tmp->right->val, tmp->val);
+                }
+            }
+        }
+    //到此为止就建好了图，并且记录了所有的叶子节点
+
+    for(int i = 0; i < maxNumVertex; i++){
+        if(leaf[i] == true){    //找到了叶子节点，以distance为BFS深度进行搜索
+            memset(dist, -1, maxNumVertex * sizeof(int));   //-1表示没有访问过
+            count += Unweighted(obj, dist, Queue, distance, i, leaf);
+            }
+        }
+    //释放相应空间
+    free(obj);
+    free(leaf);
+    free(dist);
+    free(queue);
+    free(Queue);
+    return count/2;
+}
