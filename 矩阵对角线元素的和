@@ -1,0 +1,8 @@
+int diagonalSum(int** mat, int matSize, int* matColSize){
+char end=*matColSize;
+int sum=0;
+for(char i=0;i<end;i++)
+{sum+=mat[i][i];
+if(&mat[i][i]!=&mat[i][end-1-i])
+sum+=mat[i][end-1-i];}
+return sum;}
