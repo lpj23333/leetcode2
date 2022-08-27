@@ -1,0 +1,12 @@
+char * makeGood(char * s){
+    int i = 0, j;
+    for (j = 1; j < strlen(s); j ++) {
+        if ( i == -1 || (s[i] != s[j] - 32  &&  s[i] != s[j] + 32) ) {
+            s[++ i] = s[j];
+        } else {
+            i --;
+        }
+    }
+    s[++ i] = '\0';
+    return s;
+}
