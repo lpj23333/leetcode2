@@ -1,0 +1,78 @@
+#define MAXN 101
+
+struct round_s {
+    unsigned int num; // 编号
+    unsigned int cnt; // 次数
+} g_round[MAXN];
+
+// 先比较cnt，从大到小；如果cnt相等，则编号从小到大
+int cmp(const void *a, const void *b)
+{
+    const struct round_s *p = a;
+    const struct round_s *q = b;
+
+    if (p->cnt != q->cnt) {
+        return q->cnt- p->cnt;
+    } else {
+        return p->num - q->num;
+    }
+}
+
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+int *mostVisited(int n, int *rounds, int roundsSize, int *returnSize)
+{
+    int i, j;
+
+    memset(g_round, 0, sizeof(struct round_s) * MAXN);
+    i = rounds[0]; // 第0阶段开始点，从rounds[0]开始计数
+    j = 1;         // 第0阶段结束点，在rounds[1]结束
+    // 更新编号和cnt
+    g_round[i].num = i;
+    g_round[i].cnt++;
+
+    while (1) {
+        // i一直逆时针递增，增到n之后，从1开始
+        i++;
+        if (i > n) {
+            i = 1;
+        }
+        // 更新编号和cnt
+        g_round[i].num = i;
+        g_round[i].cnt++;
+        
+        // i增加到结束点，更新结束点。如果结束点走完，跳出循环
+        if (i == rounds[j]) {
+            j++;
+            if (j >= roundsSize) {
+                break;
+            }
+        }
+    }
+
+    // 根据题意排序
+    qsort(g_round, n + 1, sizeof(struct round_s), cmp);
+    // 计算最大cnt的编号数
+    *returnSize = 1;
+    for (i = 1; i < n; i++) {
+        if (g_round[i].cnt == g_round[0].cnt) {
+            (*returnSize)++;
+        } else {
+            break;
+        }
+    }
+
+    // 分配并初始化结果数组内存
+    int *res = (int *)malloc(*returnSize * sizeof(int));
+    if (res == NULL) {
+        return NULL;
+    }
+    memset(res, 0, *returnSize * sizeof(int));
+    // 填入结果数组
+    for (i = 0; i < *returnSize; i++) {
+        res[i] = g_round[i].num;
+    }
+
+    return res;
+}
