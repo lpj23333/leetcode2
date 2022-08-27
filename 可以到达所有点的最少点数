@@ -1,0 +1,28 @@
+int* findSmallestSetOfVertices(int n, int** edges, int edgesSize, int* edgesColSize, int* returnSize)
+{
+    //标记能够到达的位置
+    int  flag[n];
+    memset(flag,  0, sizeof(flag));
+
+    //将所有的目标全部存在来
+    for(int i = 0; i < edgesSize; i++)
+    {
+        int dst = edges[i][1];
+        if(!flag[dst])
+        {
+            flag[dst] = 1;
+        }
+    }
+
+    int *returnNums = (int *)malloc(sizeof(int) *n);
+    *returnSize   = 0;
+    for(int i = 0; i < n; i++)
+    {
+        if(!flag[i])
+        {
+            returnNums[*returnSize] = i;
+            *returnSize = *returnSize + 1;
+        }
+    }
+    return returnNums;
+}
