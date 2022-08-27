@@ -1,0 +1,39 @@
+int findZero(int** grid, int row, int col,int n,int *visit){
+    int count=0;
+    for(int i=0;i<row;i++){
+        count=0;
+        for(int j=col-n;j<col;j++){
+            if(grid[i][j]==0)count++;
+        }
+        if(count==n&&visit[i]!=1)return i;
+    }
+    return -1;
+}
+
+int visit_step(int *visit,int i,int size){
+    int count=0;
+    i++;
+    for(;i<size;i++){
+        if(visit[i]==1)count++;
+    }
+    return count;
+}
+
+
+int minSwaps(int** grid, int gridSize, int* gridColSize){
+    int visit[gridSize];
+    memset(visit,0,gridSize);
+    int nums=0;
+    int row=gridSize;
+    int col=gridColSize[0];
+    if(gridSize==0)return 0;
+    for(int i=row-1;i>0;i--){
+        int n=findZero(grid,row,col,i,visit);
+        int add=visit_step(visit,n,row);
+        if(n==-1)return -1;
+        visit[n]=1;
+        nums=nums+(n-(row-i-1))+add;
+        
+    }
+    return nums;
+}
