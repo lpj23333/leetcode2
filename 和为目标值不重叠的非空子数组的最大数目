@@ -1,0 +1,51 @@
+typedef struct {
+    int key;
+    UT_hash_handle hh;
+} HashMap;
+
+void AddHash(HashMap **hash, int key)
+{
+    HashMap *hashNode = NULL;
+    HASH_FIND_INT(*hash, &key, hashNode);
+    if (hashNode == NULL) {
+        hashNode = (HashMap *)malloc(sizeof(HashMap));
+        hashNode->key = key;
+        HASH_ADD_INT(*hash, key, hashNode);
+    }
+}
+
+bool FindHash(HashMap **hash, int key)
+{
+    HashMap *hashNode = NULL;
+    HASH_FIND_INT(*hash, &key, hashNode);
+    if (hashNode == NULL) {
+        return false;
+    }
+    return true;
+}
+
+int maxNonOverlapping(int* nums, int numsSize, int target)
+{
+    int i = 0;
+    int preSum;
+    int count = 0;
+    HashMap *hash = NULL;
+    AddHash(&hash, 0);
+    while (i < numsSize) {
+        preSum = 0;
+        while (i < numsSize) {
+            preSum += nums[i];
+            if (FindHash(&hash, preSum - target)) {
+                count++;
+                hash = NULL;
+                AddHash(&hash, 0);
+                break;
+            } else {
+                AddHash(&hash, preSum);
+                i++;
+            }
+        }
+        i++;
+    }
+    return count;
+}
