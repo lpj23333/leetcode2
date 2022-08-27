@@ -1,0 +1,25 @@
+int comp(const void* a, const void* b) {
+    return *(int*)a - *(int*)b;
+}
+
+int minCost(int n, int* cuts, int cutsSize) {
+    qsort(cuts, cutsSize, sizeof(int), comp);
+    int* tmp = malloc(sizeof(int) * (cutsSize + 2));
+    for (int i = 0; i < cutsSize; i++) {
+        tmp[i + 1] = cuts[i];
+    }
+    tmp[0] = 0, tmp[cutsSize + 1] = n;
+    int f[cutsSize + 2][cutsSize + 2];
+    memset(f, 0, sizeof(f));
+    for (int i = cutsSize; i >= 1; --i) {
+        for (int j = i; j <= cutsSize; ++j) {
+            f[i][j] = (i == j ? 0 : INT_MAX);
+            for (int k = i; k <= j; ++k) {
+                f[i][j] = fmin(f[i][j], f[i][k - 1] + f[k + 1][j]);
+            }
+            f[i][j] += tmp[j + 1] - tmp[i - 1];
+        }
+    }
+    free(tmp);
+    return f[1][cutsSize];
+}
