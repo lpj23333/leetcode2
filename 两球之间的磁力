@@ -1,0 +1,47 @@
+// 升序 比较函数
+int cmp_up(const void *a, const void *b)
+{
+    return (*(int *)a - *(int *)b);
+}
+
+bool is_ok(int *position, int positionSize, int m, int distance)
+{
+    int cnt = 1;
+    int i;
+    int temp = 0;
+
+    for (i = 1; i < positionSize; i++) {
+        if (position[i] - position[temp] >= distance) {
+            cnt++;
+            if (cnt >= m) {
+                return true;
+            }
+            temp = i;
+        }
+    }
+
+    return false;
+}
+
+int maxDistance(int *position, int positionSize, int m)
+{
+    int left, right, mid;
+    
+    qsort(position, positionSize, sizeof(int), cmp_up);
+    left = 1;
+    right = (position[positionSize - 1] - position[0]) / (m - 1);
+    // printf("left = %d, right = %d\n", left, right);
+
+    while (left <= right) {
+        mid = (left + right) / 2;
+        // printf("mid = %d\n", mid);
+        if (is_ok(position, positionSize, m, mid)) {
+            // printf("mid = %d is ok\n", mid);
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+
+    return left - 1;
+}
