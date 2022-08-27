@@ -1,0 +1,19 @@
+bool containsPattern(int* arr, int arrSize, int m, int k){
+    int len = m * k;
+    if (arrSize < len) {
+        return false;
+    }
+    for (int i = 0; i <= arrSize - len; i++) {
+        int match = true;
+        for (int j = i; j < i + (k - 1) * m; j += m) {
+            if (memcmp(arr + j, arr + j + m, m * sizeof(int))) {
+                match = false;
+                break;
+            }
+        }
+        if (match) {
+            return true;
+        }
+    }
+    return false;
+}
