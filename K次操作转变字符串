@@ -1,0 +1,29 @@
+int bian(int k) {
+    return k % 26;
+}
+
+bool canConvertString(char * s, char * t, int k)
+{
+    int len = strlen(s);
+    int len2 = strlen(t);
+    if (len != len2) {
+        return false;
+    }
+    
+    int *count = (int *)calloc(26, sizeof(int));
+    
+    for (int i = 0; i < len; i++) {
+        int diff = (t[i] - s[i] + 26) % 26;
+        count[diff]++;
+    }
+    
+    for (int i = 1; i < 26; i++) {
+        int change = i + (count[i] - 1) * 26;
+        if (change > k) {
+            return false;
+        }
+    }
+    
+    return true;
+    
+}
