@@ -1,0 +1,13 @@
+
+int cmp(int *a,int *b){
+    return *a-*b;
+}
+int maxCoins(int* piles, int pilesSize){
+    int len=pilesSize;
+    qsort(piles,len,sizeof(int),cmp);
+    int ans=0;
+    for(int i=len-1;i>=len/3;i-=2){
+        ans+=piles[i-1];
+    }
+    return ans;
+}
