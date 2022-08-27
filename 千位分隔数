@@ -1,0 +1,10 @@
+char * thousandSeparator(int n){
+    char *res = (char*)calloc(42, 1);
+    sprintf(res, "%03d.%03d.%03d.%03d", n / 1000000000, (n / 1000000) % 1000, (n / 1000) % 1000, (n % 1000));
+    while ((!isdigit(*res) || (*res) == '0') && (*res) != '\0') {
+        res++;
+    }
+    if (*res == '\0')
+        return "0";
+    return res;
+}
