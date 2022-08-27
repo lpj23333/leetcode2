@@ -1,0 +1,34 @@
+int mod = 1000000007;
+
+int f[101][201];
+
+int dfs(int* locations, int locationsSize, int pos, int finish, int rest) {
+    if (f[pos][rest] != -1) {
+        return f[pos][rest];
+    }
+
+    f[pos][rest] = 0;
+    if (abs(locations[pos] - locations[finish]) > rest) {
+        return 0;
+    }
+
+    for (int i = 0; i < locationsSize; ++i) {
+        if (pos != i) {
+            int cost = abs(locations[pos] - locations[i]);
+            if (cost <= rest) {
+                f[pos][rest] += dfs(locations, locationsSize, i, finish, rest - cost);
+                f[pos][rest] %= mod;
+            }
+        }
+    }
+    if (pos == finish) {
+        f[pos][rest] += 1;
+        f[pos][rest] %= mod;
+    }
+    return f[pos][rest];
+}
+
+int countRoutes(int* locations, int locationsSize, int start, int finish, int fuel) {
+    memset(f, -1, sizeof(f));
+    return dfs(locations, locationsSize, start, finish, fuel);
+}
