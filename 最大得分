@@ -1,0 +1,33 @@
+const int MOD = 1000000007;
+
+long long max(long long a, long long b) {
+    return a > b ? a : b;
+}
+
+int maxSum(int* nums1, int nums1Size, int* nums2, int nums2Size) {
+    long long best1 = 0, best2 = 0;
+    int i = 0, j = 0;
+    while (i < nums1Size || j < nums2Size) {
+        if (i < nums1Size && j < nums2Size) {
+            if (nums1[i] < nums2[j]) {
+                best1 += nums1[i];
+                ++i;
+            } else if (nums1[i] > nums2[j]) {
+                best2 += nums2[j];
+                ++j;
+            } else {
+                long long best = fmax(best1, best2) + nums1[i];
+                best1 = best2 = best;
+                ++i;
+                ++j;
+            }
+        } else if (i < nums1Size) {
+            best1 += nums1[i];
+            ++i;
+        } else if (j < nums2Size) {
+            best2 += nums2[j];
+            ++j;
+        }
+    }
+    return max(best1, best2) % MOD;
+}
