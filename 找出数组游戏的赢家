@@ -1,0 +1,17 @@
+int getWinner(int* arr, int arrSize, int k)
+{
+    int stack = 0; // 栈空间：只有一个栈顶，存储的是最大的数组元素下标 初始化为第一个元素下标
+    int cnt = 0; // 连续比其他数组元素的计数
+    for (int i = 1; i < arrSize; i++) {
+        if (arr[i] > arr[stack]) {
+            stack = i;
+            cnt = 1;
+        } else {
+            cnt++;
+        }
+        if (cnt >= k) { // 找到连续赢了k次
+            break;
+        }
+    }
+    return arr[stack]; 
+}
