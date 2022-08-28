@@ -1,0 +1,137 @@
+typedef struct {
+    int id;
+    int timeout;
+} ListNode, *Item;
+
+//typedef int Item;
+typedef int (*Compare)(Item, Item);
+
+typedef struct {
+    Item *data;
+    int size;
+    Compare compare;
+} PriorityQueue;
+
+PriorityQueue *NewPQ(int cap, Compare compare);
+void Push(PriorityQueue *pq, Item item);
+Item Top(PriorityQueue *pq);
+Item Pop(PriorityQueue *pq);
+bool IsEmpty(PriorityQueue *pq);
+int compare(Item a, Item b) {
+    return a->timeout - b->timeout;
+    //return a - b;
+}
+int compare_id(Item a, Item b) {
+    return a->id - b->id;
+    //return a - b;
+}
+int* busiestServers(int k, int* arrival, int arrivalSize, int* load, int loadSize, int* returnSize){
+    int *arrsrv = calloc(k, sizeof(int));
+    int *ans = calloc(k, sizeof(int));
+    Item pnode = NULL;
+    PriorityQueue *pq = NewPQ(100010, compare);
+    PriorityQueue *available = NewPQ(100010, compare_id);
+    int i, id, max, cnt = 0;
+    for (i = 0; i < k && i < arrivalSize; i++) {
+        pnode = calloc(1, sizeof(ListNode));
+        pnode->id = i;
+        pnode->timeout = arrival[i] + load[i];
+        Push(pq, pnode);
+        max = arrsrv[i]++;
+    }
+    if (arrivalSize <= k){
+        *returnSize = arrivalSize;
+        for (i = 0; i < arrivalSize; i++){
+            ans[i] = i;
+        }
+        return ans;
+    }
+    
+    for (i = k; i < arrivalSize; i++){
+        pnode = Top(pq);
+        while (pnode != NULL && arrival[i] >= pnode->timeout){
+            pnode = Pop(pq);
+            pnode->id = i + ((pnode->id - i) % k + k) % k;
+            Push(available, pnode);
+            pnode = Top(pq);
+        }
+        if (IsEmpty(available))
+            continue;
+
+        pnode = Pop(available);
+        pnode->timeout = arrival[i] + load[i];
+        pnode->id = pnode->id % k;
+        Push(pq, pnode);
+        id = pnode->id;
+        arrsrv[id]++;
+        max = arrsrv[id] > max ? arrsrv[id] : max;
+    }
+
+    for (i = 0; i < k; i++){
+        if (arrsrv[i] == max)
+            ans[cnt++] = i;
+    }
+    *returnSize = cnt;
+    return ans;
+}
+
+static void swap(Item *data, int i, int j) {
+    Item t = data[i];
+    data[i] = data[j];
+    data[j] = t;
+}
+static void up(PriorityQueue *pq, int index) {
+    Item *data = pq->data;
+    Compare comp = pq->compare;
+    while (index > 0 && comp(data[index], data[(index - 1) >> 1]) < 0) {
+        swap(data, index, (index - 1) >> 1);
+        index = (index - 1) >> 1;
+    }
+}
+static void down(PriorityQueue *pq, int index) {
+    Item *data = pq->data;
+    int size = pq->size;
+    Compare comp = pq->compare;
+    int left = index << 1 | 1;
+    while (left < size) {
+        int greater = (left + 1 < size && comp(data[left + 1], data[left]) < 0) ? (left + 1) : left;
+        if (comp(data[index], data[greater]) < 0)
+            break;
+        swap(data, index, greater);
+        index = greater;
+        left = index << 1 | 1;
+    }
+}
+
+PriorityQueue *NewPQ(int cap, Compare compare) {
+    PriorityQueue *pq = malloc(sizeof(PriorityQueue));
+    pq->data = malloc(sizeof(Item) * cap);
+    pq->size = 0;
+    pq->compare = compare;
+    return pq;
+}
+
+void Push(PriorityQueue *pq, Item item) {
+    pq->data[pq->size] = item;
+    up(pq, pq->size);
+    pq->size++;
+}
+Item Top(PriorityQueue *pq) {
+    if (pq->size == 0)
+        return NULL;
+    Item *data = pq->data;
+    Item item = data[0];
+    return item;
+}
+Item Pop(PriorityQueue *pq) {
+    Item *data = pq->data;
+    Item item = data[0];
+    swap(data, 0, pq->size - 1);
+    pq->size--;
+    down(pq, 0);
+    return item;
+}
+
+bool IsEmpty(PriorityQueue *pq) {
+    return pq->size == 0;
+}
