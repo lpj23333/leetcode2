@@ -1,0 +1,80 @@
+bool checkPalindromeFormation(char *a, char *b)
+{
+    const int module = 32452843, radix = 33, length = strlen(a), halfLength = length / 2, doubleLength = length * 2;
+    int x = 0, i1 = 0, i2 = 0, left = 0, right = 0;
+    /* halfLength有可能等于0，所以用它定义数组长度时，需加上1，以确保不会编译报错。 */
+    int power[halfLength + 1];
+
+    /* 先计算b的左半部分哈希值，和右半部分的倒序哈希值。
+    特殊地，当length == 1，halfLength == 0时，left和right为空的子字符串，哈希值就等于初始化的0。 */
+    while(halfLength > x)
+    {
+        i1 = b[x] - 'a' + 1;
+        left = (left * radix + i1) % module;
+        i2 = b[length - 1 - x] - 'a' + 1;
+        right = (right * radix + i2) % module;
+        /* 顺便计算一下halfLength以内的33幂次方，power[x] = 33^x，结果对module取模。 */
+        power[x] = (0 == x) ? 1 : power[x - 1] * radix % module;
+        x++;
+    }
+
+    /* 先判断左a右b的情况，以a + b作为总窗口，挖去滑动窗口内的部分，剩余的left和right进行计算。
+    while判决条件中，注意有“left != right”的语句。循环变量x此时表示滑动窗口的右边界。 */
+    x = length;
+    while(doubleLength > x && left != right)
+    {
+        /* left发生变化，right不变。 */
+        if(length + halfLength > x)
+        {
+            /* 对应位多出了i2，少了i1，差值乘以幂次即为变化量。可能为负数，加上模再取模即可。 */
+            i1 = b[x - length] - 'a' + 1;
+            i2 = a[x - length] - 'a' + 1;
+            left = (((left + (i2 - i1) * power[length + halfLength - x - 1]) % module) + module) % module;
+        }
+        /* right发生变化，left不变。 */
+        /* 如果length是偶数，这里的else if就等同于else，如果是奇数，则中间有一位，是left和right都不会变化的。 */
+        else if(doubleLength - halfLength <= x)
+        {
+            /* 对应位多出了i2，少了i1，差值乘以幂次即为变化量。注意，right计算时，是倒序。 */
+            i1 = b[x - length] - 'a' + 1;
+            i2 = a[x - length] - 'a' + 1;
+            right = (((right + (i2 - i1) * power[x - doubleLength + halfLength]) % module) + module) % module;
+        }
+        x++;
+    }
+
+    /* 上面循环结束时，left和right就是a的左半部分哈希值，和右半部分倒序哈希值。
+    然后判断左b右a的情况，以b + a作为总窗口，挖去滑动窗口内的部分，剩余的left和right进行计算。
+    同上，while判决条件中，注意有“left != right”的语句。循环变量x此时表示滑动窗口的右边界。 */
+    x = length;
+    while(doubleLength > x && left != right)
+    {
+        /* left发生变化，right不变。 */
+        if(length + halfLength > x)
+        {
+            /* 对应位多出了i2，少了i1，差值乘以幂次即为变化量。可能为负数，加上模再取模即可。 */
+            i1 = a[x - length] - 'a' + 1;
+            i2 = b[x - length] - 'a' + 1;
+            left = (((left + (i2 - i1) * power[length + halfLength - x - 1]) % module) + module) % module;
+        }
+        /* right发生变化，left不变。 */
+        /* 如果length是偶数，这里的else if就等同于else，如果是奇数，则中间有一位，是left和right都不会变化的。 */
+        else if(doubleLength - halfLength <= x)
+        {
+            /* 对应位多出了i2，少了i1，差值乘以幂次即为变化量。注意，right计算时，是倒序。 */
+            i1 = a[x - length] - 'a' + 1;
+            i2 = b[x - length] - 'a' + 1;
+            right = (((right + (i2 - i1) * power[x - doubleLength + halfLength]) % module) + module) % module;
+        }
+        x++;
+    }
+
+    /* 只要出现过一次回文串，即可返回true。 */
+    if(left == right)
+    {
+        return true;
+    }
+
+    /* 否则返回false。 */
+    return false;
+}
