@@ -1,0 +1,25 @@
+long long g_ans;
+#define MOD 1000000007 
+void dfs(int** grid, int gridSize, int* gridColSize, int row, int col, long long multi)
+{
+    bool valid = (0 <= row && row < gridSize && 0 <= col && col < gridColSize[0]);
+    if (!valid) {
+        return;
+    }
+
+    multi *= grid[row][col];
+    if (multi == 0 || (row == gridSize - 1 && col == gridColSize[0] - 1)) {
+        g_ans = fmax(g_ans, multi);
+        return;
+    }
+
+    dfs(grid, gridSize, gridColSize, row + 1, col, multi);
+    dfs(grid, gridSize, gridColSize, row, col + 1, multi);
+    return;
+}
+
+int maxProductPath(int** grid, int gridSize, int* gridColSize){
+    g_ans = -1;
+    dfs(grid, gridSize, gridColSize, 0, 0, 1);
+    return g_ans %= MOD;
+}
