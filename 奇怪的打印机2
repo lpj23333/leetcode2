@@ -1,0 +1,147 @@
+
+// 获取最大的颜色序号
+int getMaxTurn(int** targetGrid, int high, int width)
+{
+    int max = 0;
+
+    for (int i = 0; i < high; i++) {
+        for (int j = 0; j < width; j++) {
+            if (max < targetGrid[i][j]) {
+                max = targetGrid[i][j];
+            }
+        }
+    }
+
+    return max;
+}
+
+// 遍历targetGrid获取每种颜色的边界，边界意味着矩形形状
+void statistics_borders_core(int** targetGrid, int i, int j, int **borders)
+{
+    int turn = targetGrid[i][j];
+
+    // 0:up
+    if (borders[turn][0] == -1 || borders[turn][0] > i) {
+        borders[turn][0] = i;
+    }
+
+    // 1:down
+    if (borders[turn][1] == -1 || borders[turn][1] < i) {
+        borders[turn][1] = i;
+    }
+
+    // 2:left
+    if (borders[turn][2] == -1 || borders[turn][2] > j) {
+        borders[turn][2] = j;
+    }
+
+    // 3:right
+    if (borders[turn][3] == -1 || borders[turn][3] < j) {
+        borders[turn][3] = j;
+    }
+}
+
+// 遍历targetGrid获取每种颜色的边界，边界意味着矩形形状
+void statistics_borders(int** targetGrid, int high, int width, int **borders)
+{
+    for (int i = 0; i < high; i++) {
+        for (int j = 0; j < width; j++) {
+            statistics_borders_core(targetGrid, i, j, borders);
+        }
+    }
+}
+
+// 判断currTurn序号的颜色是否是一个完整的矩形
+int redo_print_core(int** targetGrid, int **borders, int currTurn)
+{
+    int up = borders[currTurn][0];
+    int down = borders[currTurn][1];
+    int left = borders[currTurn][2];
+    int right = borders[currTurn][3];
+
+    // 如果已分析过或者没有该颜色 直接跳过
+    if (up == -1) {
+        return 0;
+    }
+
+    // 分析[up, left] -> [down, right]矩形是否颜色相同或者是-1(-1表示被其他颜色覆盖)
+    for (int i = up; i <= down; i++) {
+        for (int j = left; j <= right; j++) {
+            if (targetGrid[i][j] != currTurn && targetGrid[i][j] != -1) {
+                return 1; // 表示该次不能打印该矩形
+            }
+        }
+    }
+
+    // 可以成功打印就把区域内颜色置为-1
+    for (int i = up; i <= down; i++) {
+        for (int j = left; j <= right; j++) {
+            targetGrid[i][j] = -1;
+        }
+    }
+
+    // 已分析过
+    borders[currTurn][0] = -1;
+    return 0;
+}
+
+// 从最后颜色开始，依次分析每种颜色的矩形是否可以一次打印
+bool redo_print(int** targetGrid, int **borders, int maxTurn)
+{
+    int failed_num1;
+    int failed_num2;
+
+    do {
+        failed_num1 = 0;
+        failed_num2 = 0;
+        for (int i = maxTurn; i > 0; i--) {
+            failed_num1 += redo_print_core(targetGrid, borders, i);
+        }
+        if (failed_num1 == 0) {
+            return true;
+        }
+
+        for (int i = maxTurn; i > 0; i--) {
+            failed_num2 += redo_print_core(targetGrid, borders, i);
+        }
+        if (failed_num2 == 0) {
+            return true;
+        }
+    } while (failed_num1 != failed_num2); // 如果2次不可打印的矩形一样多，说明无法打印
+    
+    return false;
+}
+
+int **borders_create(int maxturn)
+{
+    int **borders = (int**)malloc(sizeof(int*) * (maxturn + 1) + sizeof(int) * 4 * maxturn);
+    int offset = sizeof(int*) * (maxturn + 1);
+
+    for (int i = 1; i <= maxturn; i++) {
+        borders[i] = (int*)((char *)borders + offset);
+        offset += sizeof(int) * 4;
+        borders[i][0] = -1;
+        borders[i][1] = -1;
+        borders[i][2] = -1;
+        borders[i][3] = -1;
+    }
+
+    return borders;
+}
+
+void borders_free(int **borders)
+{
+    free(borders);
+}
+
+bool isPrintable(int** targetGrid, int targetGridSize, int* targetGridColSize){
+    int high = targetGridSize;
+    int width = targetGridColSize[0];
+    int maxturn = getMaxTurn(targetGrid, high, width);
+    int **borders = borders_create(maxturn);
+
+    statistics_borders(targetGrid, high, width, borders);
+    bool ret = redo_print(targetGrid, borders, maxturn);
+    borders_free(borders);
+    return ret;
+}
