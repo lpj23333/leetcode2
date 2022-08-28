@@ -1,0 +1,43 @@
+void swap(int *a, int *b) {
+    int tmp = *a;
+    *a = *b, *b = tmp;
+}
+
+int find(int *fa, int x) {
+    if (fa[x] == x) {
+        return x;
+    }
+    fa[x] = find(fa, fa[x]);
+    return fa[x];
+}
+
+void add(int *fa, int *sz, int x, int y) {
+    int fx = find(fa, x), fy = find(fa, y);
+    if (fx == fy) {
+        return;
+    }
+    if (sz[fx] > sz[fy]) {
+        swap(&fx, &fy);
+    }
+    fa[fx] = fy;
+    sz[fy] += sz[fx];
+}
+
+bool* areConnected(int n, int threshold, int** queries, int queriesSize, int* queriesColSize, int* returnSize){
+    int fa[n + 1], sz[n + 1];
+    for (int i = 1; i <= n; i++) {
+        fa[i] = i;
+        sz[i] = 1;
+    }
+    for (int i = threshold + 1; i < n; ++i) {
+        for (int j = 2*i; j <= n; j += i) {
+            add(fa, sz, i, j);
+        }
+    }
+    bool *res = malloc(sizeof(bool)*queriesSize);
+    *returnSize = 0;
+    for (int i = 0; i < queriesSize; ++i) {
+        res[(*returnSize)++] = (find(fa, queries[i][0]) == find(fa, queries[i][1]));
+    }
+    return res;
+}
