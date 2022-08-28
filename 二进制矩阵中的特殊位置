@@ -1,0 +1,29 @@
+static bool rowSpecial(int** mat, int r, int c, int colsize) {
+    for (int x = 0; x < colsize; x++) {
+        if ((mat[r][x] == 1) && (x != c)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static bool colSpecial(int** mat, int r, int c, int rowsize) {
+    for (int y = 0; y < rowsize; y++) {
+        if ((mat[y][c] == 1) && (y != r)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+int numSpecial(int** mat, int matSize, int* matColSize){
+    int res = 0;
+    for (int y = 0; y < matSize; y++) {
+        for (int x = 0; x < matColSize[y]; x++) {
+            if ((mat[y][x] == 1) && rowSpecial(mat, y, x, matColSize[y]) && colSpecial(mat, y, x, matSize)) {
+                res++;
+            }
+        }
+    }
+    return res;
+}
