@@ -1,0 +1,35 @@
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+int* bestCoordinate(int** towers, int towersSize, int* towersColSize, int radius, int* returnSize){
+    int *ans = malloc(sizeof(int) * 2);
+    memset(ans, 0, sizeof(ans));
+    int x_min = towers[0][0], y_min = towers[0][1], x_max = towers[0][0], y_max = towers[0][1];
+    for (int i = 0; i < towersSize; i++) {
+        x_min = fmin(x_min, towers[i][0]);
+        x_max = fmax(x_max, towers[i][0]);
+        y_min = fmin(y_min, towers[i][1]);
+        y_max = fmax(y_max, towers[i][1]);
+    }
+    // printf("%d %d %d %d\n", x_min, x_max, y_min, y_max);
+    int max_value = 0;
+    for (int i = x_min; i <= x_max; i++) {
+        for (int j = y_min; j <= y_max; j++) {
+            int tmp = 0;
+            for (int k = 0; k < towersSize; k++) {
+                int distance = (i - towers[k][0]) * (i - towers[k][0]) + (j - towers[k][1]) * (j - towers[k][1]);
+                // printf("%d\n", distance);
+                if (sqrt(distance) <= radius) tmp += towers[k][2]/(1 + sqrt(distance));
+            }
+            // printf("%d %d %d\n", i, j, tmp);
+            if (tmp > max_value) {
+                max_value = tmp;
+                ans[0] = i;
+                ans[1] = j;
+            }
+        }
+    }
+
+    *returnSize = 2;
+    return ans;
+}
