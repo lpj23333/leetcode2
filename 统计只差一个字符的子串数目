@@ -1,0 +1,61 @@
+typedef struct _NODE_ {
+    char *str;
+    struct _NODE_ *next;
+} NODE;
+
+void buildSubNodes(char *str, NODE *subNodes[]) {
+    int iLen = strlen(str);
+    for (int i = 0; i < iLen; i++) {
+        for (int j = i; j < iLen; j++) {
+            int subLen = j - i + 1;
+            NODE *node = (NODE*)calloc(1, sizeof(NODE));
+            node->str = (char *)calloc(subLen + 1, sizeof(char));
+            memcpy(node->str, str + i, subLen);
+            node->next = subNode[subLen];
+            subNode[subLen] = node;
+        }
+    }
+    return;
+}
+
+bool IsDiffOneChar(char *s1, char *s2, int len) {
+    int count = 0;
+    for (int i = 0; i < len; i++) {
+        if (s1[i] != s2[i]) {
+            count++;
+            if (count > 1) {
+                return false;
+            }
+        }
+    }
+
+    return (count == 1);
+}
+
+int cmpSubNodes(NODE *sSubNodes, NODE *tSubNodes, int iLen) {
+    int count = 0;
+    for (NODE *s = sSubNodes; s != NULL; s = s->next) {
+        for (NODE *t = tSubNodes; t != NULL; t = t->next) {
+            if (IsDiffOneChar(s->str, t->str, iLen)) {
+                count++;
+            }
+        }
+    }
+    return count;
+}
+
+int countSubstrings(char * s, char * t){
+    NODE *sSubNodes[104] = {0};
+    NODE *tSubNodes[104] = {0};
+
+    buildSubstrNode(s, sSubNodes);
+    buildSubstrNode(t, tSubNodes);
+    int count = 0;
+    for (int i = 0; i < 104; i++) {
+        if (sSubNodes[i] == NULL || tSubNodes[i] == NULL) {
+            continue;
+        }
+        count += cmpSubNodes(sSubNodes[i], tSubNodes[i], i);
+    }
+    return count;    
+}
