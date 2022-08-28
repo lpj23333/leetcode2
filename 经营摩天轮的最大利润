@@ -1,0 +1,22 @@
+int minOperationsMaxProfit(int* customers, int customersSize, int boardingCost, int runningCost){
+    int cnt = 0;
+    int maxProfit = INT_MIN;
+    int minCnt = 0;
+    int cur, profit;
+    int sumServed = 0;
+    int sum = 0;
+    int i = 0;
+    while (i < customersSize || sum > 0) {
+        sum += (i < customersSize) ? customers[i++] : 0;
+        cur        = fmin(4, sum);  /* 当前上摩天轮的人数 */
+        sum       -= cur;           /* 剩余人数     */
+        sumServed += cur;           /* 服务过的人数 */ 
+        cnt++;
+        profit     = sumServed * boardingCost - cnt * runningCost;
+        if (maxProfit < profit) {
+            maxProfit = profit;
+            minCnt    = cnt;
+        }
+    }
+    return maxProfit <= 0 ? -1 : minCnt;
+}
