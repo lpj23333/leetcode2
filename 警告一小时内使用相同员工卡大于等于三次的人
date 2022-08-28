@@ -1,0 +1,67 @@
+typedef struct {
+    char keyName[11];
+    int keyTime[100];
+    int cnt;
+    UT_hash_handle hh;
+} HashTable;
+
+HashTable *map; 
+
+int TimeToSec(char *time) {
+    int hour;
+    int min;
+    sscanf(time, "%d:%d", &hour, &min);
+    return hour * 60 + min;
+}
+
+int cmp1(HashTable *a, HashTable *b) {
+    return strcmp(a->keyName, b->keyName);
+}
+
+int cmp2(const void *a, const void *b) {
+    return *(int*)a - *(int*)b;
+}
+
+char ** alertNames(char ** keyName, int keyNameSize, char ** keyTime, int keyTimeSize, int* returnSize){
+    char **res = (char**)calloc(keyNameSize, sizeof(char*));
+    HashTable *s, *cur, *temp;
+
+    for (int i = 0; i < keyNameSize; i++) {
+        res[i] = (char*)calloc(11, sizeof(char));
+    }
+    *returnSize = 0;
+
+    for (int i = 0; i < keyNameSize; i++) {
+        HASH_FIND_STR(map, keyName[i], s);
+        if (s == NULL) {
+            s = (HashTable*)calloc(1, sizeof(HashTable));
+            strcpy(s->keyName, keyName[i]);
+            s->cnt = 0;
+            s->keyTime[s->cnt++] = TimeToSec(keyTime[i]);
+            HASH_ADD_STR(map, keyName, s);
+        } else {
+            s->keyTime[s->cnt++] = TimeToSec(keyTime[i]);
+        }
+    }
+    HASH_SORT(map, cmp1);
+    HASH_ITER(hh, map, cur, temp) {
+        if (cur->cnt < 2) {
+            continue;
+        }
+        qsort(cur->keyTime, cur->cnt, sizeof(int), cmp2);
+         
+        for (int i = 2; i < cur->cnt; i++) {
+            if (cur->keyTime[i] - cur->keyTime[i-2] <= 60) {
+                strcpy(res[*returnSize], cur->keyName);
+                (*returnSize)++;
+                break;
+            }
+        }
+    }
+
+    HASH_ITER(hh, map, cur, temp) {
+        HASH_DEL(map, cur);
+        free(cur);
+    }
+    return res;
+}
