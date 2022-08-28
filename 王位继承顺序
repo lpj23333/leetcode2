@@ -1,0 +1,100 @@
+#define MAXLENGTH 16
+#define MAXSIZE 15
+
+typedef struct {
+    char name[MAXLENGTH];
+    bool isValid;
+    struct ThroneInheritance *children[MAXSIZE];
+    int count;
+} ThroneInheritance;
+
+typedef struct {
+    char keyname[MAXLENGTH];
+    ThroneInheritance *node;
+    UT_hash_handle hh; 
+} HashTable;
+
+HashTable *hashTable = NULL;
+
+ThroneInheritance* throneInheritanceCreate(char * kingName) {
+    hashTable = NULL;
+    ThroneInheritance *obj = (ThroneInheritance *)malloc(sizeof(ThroneInheritance));
+    memset(obj, 0, sizeof(ThroneInheritance));
+    strcpy(obj->name, kingName);
+    obj->isValid = true;
+
+    HashTable *tmp = (HashTable *)malloc(sizeof(HashTable));
+    memset(tmp, 0,sizeof(HashTable));
+    strcpy(tmp->keyname, kingName);
+    tmp->node = obj;
+    HASH_ADD_STR(hashTable, keyname, tmp);
+
+    return obj;
+}
+ThroneInheritance* GetNode(char * name)
+{
+    HashTable *tmp = NULL;
+    HASH_FIND_STR(hashTable, name, tmp);
+    return tmp->node;
+}
+void throneInheritanceBirth(ThroneInheritance* obj, char * parentName, char * childName) {
+    ThroneInheritance* parent = GetNode(parentName);
+    if (parent == NULL) {
+        return;
+    } 
+    ThroneInheritance* child = (ThroneInheritance *)malloc(sizeof(ThroneInheritance));
+    memset(child, 0, sizeof(ThroneInheritance));
+    strcpy(child->name, childName);
+    child->isValid = true;
+    parent->children[parent->count++] = (struct ThroneInheritance *)child;
+
+    HashTable *tmp = (HashTable *)malloc(sizeof(HashTable));
+    memset(tmp, 0,sizeof(HashTable));
+    strcpy(tmp->keyname, childName);
+    tmp->node = child;
+    HASH_ADD_STR(hashTable, keyname, tmp);
+    return;
+}
+
+void throneInheritanceDeath(ThroneInheritance* obj, char * name) {
+    ThroneInheritance* node = GetNode(name);
+    if (node == NULL) {
+        return;
+    }
+    node->isValid = false;
+    return;
+}
+void Dfs(ThroneInheritance* obj, char** result, int* retSize) {
+    if (obj == NULL) {
+        return;
+    }
+    if (obj->isValid == true) {
+        result[*retSize] = obj->name;
+        (*retSize)++;
+    }
+
+    for (int i = 0; i < obj->count; i++) {
+        Dfs((ThroneInheritance*)obj->children[i], result, retSize);
+    }
+    return;
+}
+char ** throneInheritanceGetInheritanceOrder(ThroneInheritance* obj, int* retSize) {
+    char **result = (char **)malloc(100000 * sizeof(char *));
+    *retSize = 0;
+    Dfs(obj, result, retSize);
+    return result;
+}
+
+void throneInheritanceFree(ThroneInheritance* obj) {
+    if (obj->count == 0) {
+        free(obj);
+        obj = NULL;
+        return;
+    }
+    for (int i = 0; i < obj->count; i++) {
+        throneInheritanceFree((ThroneInheritance*)obj->children[i]);
+    }
+    free(obj);
+    obj = NULL;
+    return;
+}
