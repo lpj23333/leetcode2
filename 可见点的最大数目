@@ -1,0 +1,53 @@
+#define PI 3.1415926
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
+int cmp(const void* a, const void* b) {
+    double* pa = (double*)a;
+    double* pb = (double*)b;
+    return *pa > *pb ? 1 : -1;
+}
+
+int binarySearch(double* nums, int numsSize, double target, bool lower) {
+    int left = 0, right = numsSize - 1;
+    int ans = 0;
+    while (left <= right) {
+        int mid = (left + right) / 2;
+        if (nums[mid] > target || (lower && nums[mid] >= target)) {
+            right = mid - 1;
+            ans = mid;
+        } else {
+            left = mid + 1;
+        }
+    }
+    return ans;
+}
+
+int visiblePoints(int** points, int pointsSize, int* pointsColSize, int angle, int* location, int locationSize){
+    int sameCnt = 0;
+    int polarSize = 0;
+    double* polarDegrees = (double*)malloc(sizeof(double) * pointsSize * 2);
+    for (int i = 0; i < pointsSize; ++i) {
+        if (points[i][0] == location[0] && points[i][1] == location[1]) {
+            sameCnt++;
+            continue;
+        }
+        double degree = atan2(points[i][1] - location[1], points[i][0] - location[0]);
+        polarDegrees[polarSize] = degree;
+        polarSize++;
+    }
+    qsort(polarDegrees, polarSize, sizeof(double), cmp);
+
+    int m = polarSize;
+    for (int i = 0; i < m; ++i) {
+        polarDegrees[polarSize] = polarDegrees[i] + 2 * PI;
+        polarSize++;
+    }
+
+    int maxCnt = 0; 
+    double degree = angle * PI / 180.0;
+    for (int i = 0; i < m; ++i) {
+        int iteration = binarySearch(polarDegrees, polarSize, polarDegrees[i] + degree, false);
+        maxCnt = MAX(maxCnt, iteration - i);
+    }
+    return maxCnt + sameCnt;
+}
