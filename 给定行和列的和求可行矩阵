@@ -1,0 +1,30 @@
+int min(int a, int b) {
+	return a < b ? a : b;
+}
+
+int** restoreMatrix(int* rowSum, int rowSumSize, int* colSum, int colSumSize, int* returnSize, int** returnColumnSizes) {
+	int **res = NULL;
+	int **res_int = NULL;
+	*returnSize = rowSumSize;
+	*returnColumnSizes = (int*)malloc(sizeof(int) * rowSumSize);
+
+	// 建立好返回的矩阵，并置零，并且添加列长返回值
+	res = (int**)malloc(sizeof(int*) * rowSumSize);
+	for (int i = 0; i < *returnSize; i++)
+	{
+		(*returnColumnSizes)[i] = colSumSize;
+		res[i] = (int*)malloc(sizeof(int) * colSumSize);
+		memset(res[i], 0, sizeof(int) * colSumSize);
+	}
+
+	//贪心算法计算矩阵
+	for (int i = 0; i < rowSumSize; i++) {
+		for (int j = 0; j < colSumSize; j++) {
+			int minNum = min(rowSum[i], colSum[j]);
+			res[i][j] = minNum;
+			rowSum[i] -= minNum;
+			colSum[j] -= minNum;
+		}
+	}
+	return res;
+}
