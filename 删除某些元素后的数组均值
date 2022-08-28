@@ -1,0 +1,13 @@
+int cmp(int* a,int* b)
+{
+    return *a - *b;
+}
+
+double trimMean(int* arr, int arrSize){
+qsort(arr,arrSize,sizeof(int),cmp);//排序
+double sum=0;
+for(int i=(int)(0.05*arrSize);i<(int)(arrSize*0.95);i++)//求和
+    sum += arr[i];
+
+return sum/((arrSize*0.95)-(arrSize*0.05));//平均数
+}
