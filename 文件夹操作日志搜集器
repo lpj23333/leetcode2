@@ -1,0 +1,13 @@
+int minOperations(char ** logs, int logsSize){
+    int res = 0;
+    for (int i = 0; i < logsSize; i++) {
+        if (logs[i][0] == '.' && logs[i][1] == '/') { /* 本层 */
+            continue;
+        } else if (logs[i][0] == '.' && logs[i][1] == '.') { /* 上一层 */
+            res = fmax(res - 1, 0);
+        } else {  /* 进入子文件夹 */
+            res++;
+        }
+    }
+    return res;
+}
