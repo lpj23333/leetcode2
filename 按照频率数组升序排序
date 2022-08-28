@@ -1,0 +1,31 @@
+#define NUM_MAX 201
+int g_hash[NUM_MAX];
+
+int cmp(const void *a, const void *b)
+{
+    int tmpa = *(int *)a + 100;
+    int tmpb = *(int *)b + 100;
+    // 如果频率相等，数字降序排序
+    if (g_hash[tmpb] == g_hash[tmpa]) {
+        return tmpb - tmpa;
+    }
+    // 如果频率不等，频率升序排序
+    return g_hash[tmpa] - g_hash[tmpb];
+}
+
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+int *frequencySort(int *nums, int numsSize, int *returnSize)
+{
+    int i;
+
+    memset(g_hash, 0, sizeof(int) * NUM_MAX);
+    for (i = 0; i < numsSize; i++) {
+        g_hash[nums[i] + 100]++;
+    }
+    qsort(nums, numsSize, sizeof(int), cmp);
+
+    *returnSize = numsSize;
+    return nums;
+}
