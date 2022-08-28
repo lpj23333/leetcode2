@@ -1,0 +1,13 @@
+int maxLengthBetweenEqualCharacters(char * s){
+    int i, len = strlen(s), index[26], ans = 0;
+    memset(index, -1, sizeof(int) * 26);
+    for (i = 0; i < len; i++){
+        if (index[s[i] - 'a'] == -1){
+            index[s[i] - 'a'] = i;
+        }
+    }
+    for (i = len - 1; i >= 0; i--){
+        ans = fmax(ans, i - index[s[i] - 'a']);
+    }
+    return ans - 1;
+}
