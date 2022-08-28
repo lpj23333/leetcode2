@@ -1,0 +1,17 @@
+int minCost(char* colors, int* neededTime, int neededTimeSize) {
+    int i = 0;
+    int ret = 0;
+    while (i < neededTimeSize) {
+        char ch = colors[i];
+        int maxValue = 0;
+        int sum = 0;
+
+        while (i < neededTimeSize && colors[i] == ch) {
+            maxValue = fmax(maxValue, neededTime[i]);
+            sum += neededTime[i];
+            i++;
+        }
+        ret += sum - maxValue;
+    }
+    return ret;
+}
