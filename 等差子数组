@@ -1,0 +1,47 @@
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+bool checkArithmetic(int *nums,int  numsSize)
+{
+    int d = nums[1] - nums[0];
+    for(int i = 2; i < numsSize; i++)
+    {
+        if( (nums[i] - nums[ i -1] ) != d )
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+int compareFunc(void *a,void *b)
+{
+    if(*(int *)a > *(int *)b)
+    {
+        return 1;
+    }
+    return -1;
+}
+
+bool* checkArithmeticSubarrays(int* nums, int numsSize, int* l, int lSize, int* r, int rSize, int* returnSize)
+{
+
+    int *newTemp        =  (int *) malloc(sizeof(int) *numsSize);
+    bool *returnNums    =  (bool *) malloc(sizeof(bool) *lSize);
+    *returnSize         =  lSize;
+    for(int i= 0 ; i < lSize; i++)
+    {
+        int gap = r[i] - l[i] + 1;
+        memcpy(newTemp,&nums[l [i]], sizeof(int) * gap);
+        qsort(newTemp, gap, sizeof(int),compareFunc);
+        if(checkArithmetic(newTemp,gap))
+        {
+            returnNums[i] = true;
+        }
+        else
+        {
+            returnNums[i] = false;
+        }
+    }
+    return returnNums;
+}
