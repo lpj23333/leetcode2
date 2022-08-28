@@ -1,0 +1,47 @@
+struct list{
+    int A;
+    int B;
+};
+typedef struct {} Fancy;
+struct list map1[50000];
+long map[50000],AA,BB;
+int right,right1,mod;
+
+int Pow(long long a, int b)
+{    int ans = 1;
+    a = a % mod;
+    while(b>0) {
+        if(b % 2 == 1)
+        ans = (ans * a) % mod;
+        b = b/2;
+        a = (a * a) % mod;
+    }
+    return ans;
+}
+
+Fancy* fancyCreate() {
+    right=-1; right1=-1; AA=1;BB=0;mod=1000000007;
+    return NULL;
+}
+
+void fancyAppend(Fancy* obj, int val) {
+    map1[++right1].A=AA;map1[right1].B=BB;
+    map[++right]=val;
+}
+
+void fancyAddAll(Fancy* obj, int inc) {
+    BB=(BB+inc)%mod;
+}
+
+void fancyMultAll(Fancy* obj, int m) {
+    AA=(AA*m)%mod;    BB=(BB*m)%mod;
+}
+
+int fancyGetIndex(Fancy* obj, int idx) {
+    if(idx>right)return -1;
+    long A0=(AA*Pow(map1[idx].A,1000000005))%mod;
+    long B0=(BB-(map1[idx].B*A0)%mod+mod)%mod;
+    return (map[idx]*A0+B0)%mod;
+}
+
+void fancyFree(Fancy* obj) {}
