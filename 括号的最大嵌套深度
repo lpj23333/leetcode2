@@ -1,0 +1,15 @@
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
+int maxDepth(char * s){
+    int ans = 0, size = 0;
+    int n = strlen(s);
+    for (int i = 0; i < n; ++i) {
+        if (s[i] == '(') {
+            ++size;
+            ans = MAX(ans, size);
+        } else if (s[i] == ')') {
+            --size;
+        }
+    }
+    return ans;
+}
