@@ -1,0 +1,18 @@
+int Cmp(const void *a, const void *b)
+{
+    return *(int *)a - *(int *)b;
+}
+int maxWidthOfVerticalArea(int** points, int pointsSize, int* pointsColSize)
+{
+    int *tmp = (int *)malloc(pointsSize * sizeof(int));
+    int count = 0;
+    for (int i = 0; i < pointsSize; i++) {
+        tmp[count++] = points[i][0];
+    }
+    qsort(tmp, count, sizeof(int), Cmp);
+    int ret = 0;
+    for (int j = 0; j < count - 1;  j++) {
+        ret = fmax(tmp[j + 1] - tmp[j], ret);
+    }
+    return ret;
+}
