@@ -1,0 +1,80 @@
+/* 哈希表。 */
+struct HashMapNode
+{
+    int key;
+    int val;
+    UT_hash_handle hh;
+};
+
+int minSubarray(int *nums, int numsSize, int p)
+{
+    struct HashMapNode *table = NULL, *node = NULL, *t = NULL;
+    int i = 0, j = 0, remain = 0, result = numsSize, key = 0;
+
+    /* 先计算总和对P的余数。直接求总和可能会导致越界，所以中间过程便进行取余数运算。
+    这一步只计算总和对P的余数，不要操作哈希表，否则会影响后面的判断。 */
+    while(numsSize > i)
+    {
+        remain = (remain + nums[i]) % p;
+        i++;
+    }
+
+    /* 如果总和已经能被P整除，则直接返回0，表示不需要删除任何子数组。 */
+    if(0 == remain)
+    {
+        return 0;
+    }
+
+    i = 0;
+    while(numsSize > i)
+    {
+        /* j表示从nums[0]到nums[i]的子数组和对P的余数。 */
+        j = (j + nums[i]) % p;
+
+        /* 先存到哈希表里面，val就表示最新的下标。 */
+        key = j;
+        HASH_FIND_INT(table, &key, node);
+        if(NULL == node)
+        {
+            node = (struct HashMapNode *)malloc(sizeof(struct HashMapNode));
+            node->key = key;
+            node->val = i;
+            HASH_ADD_INT(table, key, node);
+        }
+        else
+        {
+            /* 如果已有记录，则更新val为最新的下标i，以确保等会儿别人来查询时，查到的是最接近的下标，即子数组的长度尽量短。 */
+            node->val = i;
+        }
+
+        /* 如果j等于remain，[nums[0],nums[i]]本身就是可以删除的子数组之一。 */
+        if(remain == j && i + 1 < result)
+        {
+            result = i + 1;
+        }
+
+        /* 如果key小于0，要再加上P，保证余数为非负数。 */
+        key = (j >= remain) ? j - remain : j - remain + p;
+        HASH_FIND_INT(table, &key, node);
+        if(NULL != node && i - node->val < result)
+        {
+            result = i - node->val;
+        }
+
+        i++;
+    }
+
+    /* 如果仍然是初始化的nums.length，则按照题目要求，返回-1。 */
+    if(numsSize == result)
+    {
+        result = -1;
+    }
+
+    HASH_ITER(hh, table, node, t)
+    {
+        HASH_DEL(table, node);
+        free(node);
+    }
+
+    return result;
+}
