@@ -1,0 +1,17 @@
+const int mod = 1000000007;
+int cache[1005][1005]; //cache[n][k] 表示从右边数剩下 n 个点被 k 条线段覆盖有几种方法
+int dfs(int n, int k){
+    if(cache[n][k] != -1) return cache[n][k];
+   if(k == n) return 0;
+   if(k == 1) return ((n - 1) % mod) * (n % mod) / 2;
+   int ret = dfs(n - 1, k); //case1:最左端的点不被线段覆盖
+   for(int i = n - 1; i >= k; i--){ //case2:最左端的点被线段覆盖，可选的线段长度范围是k~n-1
+       ret = (ret + dfs(i, k - 1) % mod) % mod;
+   } 
+   return cache[n][k] = ret;
+}
+
+int numberOfSets(int n, int k){
+    memset(cache, -1, sizeof(cache));
+    return dfs(n, k);
+}
