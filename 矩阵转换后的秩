@@ -1,0 +1,422 @@
+// 解法参考 https://leetcode-cn.com/problems/rank-transform-of-a-matrix/solution/pai-xu-by-mike-meng-7/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
+// 哈希表API实现
+#define HASHMAP_INIT_SIZE 16
+typedef struct _MyDictEntry {
+    int key;
+    void *value;
+    struct _MyDictEntry *next;
+} MyDictEntry;
+
+typedef struct _MyHashTable {
+    MyDictEntry **tables;
+    int used;
+    int mask;
+    int size;
+} MyHashTable;
+
+typedef struct {
+    MyHashTable ht;
+} MyHashMap;
+
+// ====================================== HashTable API begin ======================================
+MyHashMap* myHashMapCreate(int size) {
+    MyHashMap *map = (MyHashMap *)malloc(sizeof(MyHashMap));
+    map->ht.used = 0;
+    map->ht.size = size;
+    map->ht.mask = map->ht.size - 1;
+    map->ht.tables = (MyDictEntry **)malloc(sizeof(MyDictEntry *) * map->ht.size);
+    for (int i = 0; i < map->ht.size; ++i) {
+        map->ht.tables[i] = NULL;
+    }
+    return map;
+}
+
+static void FreeList(MyDictEntry *p) {
+    MyDictEntry *t;
+    while (p) {
+        t = p;
+        p = p->next;
+        free(t);
+    }
+}
+
+static unsigned int _GetHashCode(unsigned int a)
+{
+   a = (a+0x7ed55d16) + (a<<12);
+   a = (a^0xc761c23c) ^ (a>>19);
+   a = (a+0x165667b1) + (a<<5);
+   a = (a+0xd3a2646c) ^ (a<<9);
+   a = (a+0xfd7046c5) + (a<<3);
+   a = (a^0xb55a4f09) ^ (a>>16); 
+   return a;
+}
+
+/*
+static unsigned int _GetHashCode(int key) {
+    return (key >> 3) * 2654435761;
+}
+*/
+
+void _HtAdd(MyHashTable *ht, int key, void* value)
+{
+    unsigned int hashCode = _GetHashCode(key); 
+    unsigned int idx = hashCode & ht->mask;
+    MyDictEntry *e = (MyDictEntry *)malloc(sizeof(MyDictEntry));
+    e->key = key;
+    e->value = value;
+
+    if (ht->tables[idx] == NULL) {
+        e->next = NULL;
+        ht->tables[idx] = e;
+    } else {
+        e->next = ht->tables[idx];
+        ht->tables[idx] = e;
+    }    
+    ++(ht->used);
+}
+
+static void _RehashIfNeeded(MyHashMap *obj) {
+    // load_factor >= 1, then rehash
+    if (obj->ht.used < obj->ht.size) {
+        return;
+    }
+
+    MyHashTable ht;
+    ht.used = 0;
+    ht.size = 2 * obj->ht.size;
+    ht.mask = ht.size - 1;
+    ht.tables = (MyDictEntry **)malloc(sizeof(MyDictEntry *) * ht.size);
+    for (int i = 0; i < ht.size; ++i) {
+        ht.tables[i] = NULL;
+    }
+
+    MyDictEntry *p;
+    for (int i = 0; i < obj->ht.size; ++i) {
+        p = obj->ht.tables[i];
+        while (p) {
+            _HtAdd(&ht, p->key, p->value);
+            p = p->next;
+        }
+    }
+
+    for (int i = 0; i < obj->ht.size; ++i) {
+        FreeList(obj->ht.tables[i]);
+    }
+    free(obj->ht.tables);
+    obj->ht.tables = ht.tables;
+    obj->ht.size = ht.size;
+    obj->ht.mask = ht.mask;
+}
+
+/** value will always be non-negative. */
+void myHashMapPut(MyHashMap* obj, int key, void *value) {
+    _RehashIfNeeded(obj);
+
+    unsigned int hashCode = _GetHashCode(key); 
+    unsigned int idx = hashCode & obj->ht.mask;
+
+    MyDictEntry *p = obj->ht.tables[idx];
+    while(p) {
+        if (p->key == key) {
+            p->value = value;   // update
+            return;
+        }
+        p = p->next;
+    }
+    // insert
+    MyDictEntry *e = (MyDictEntry *)malloc(sizeof(MyDictEntry));
+    e->key = key;
+    e->value = value;
+
+    if (obj->ht.tables[idx] == NULL) {
+        e->next = NULL;
+        obj->ht.tables[idx] = e;
+    } else {
+        e->next = obj->ht.tables[idx];
+        obj->ht.tables[idx] = e;
+    }    
+    ++(obj->ht.used);
+}
+
+/** Returns the value to which the specified key is mapped, or -1 if this map contains no mapping for the key */
+void *myHashMapGet(MyHashMap* obj, int key) {
+    unsigned int hashCode = _GetHashCode(key); 
+    unsigned int idx = hashCode & obj->ht.mask;
+
+    MyDictEntry *p = obj->ht.tables[idx];
+    while(p) {
+        if (p->key == key) {
+            return p->value;
+        }
+        p = p->next;
+    }
+    return NULL;
+}
+
+/** Removes the mapping of the specified value key if this map contains a mapping for the key */
+void myHashMapRemove(MyHashMap* obj, int key) {
+    unsigned int hashCode = _GetHashCode(key); 
+    unsigned int idx = hashCode & obj->ht.mask;
+  
+    MyDictEntry *cur = obj->ht.tables[idx];
+    MyDictEntry *pre = NULL;
+    MyDictEntry *t;
+    while(cur) {
+        if (cur->key == key) {
+            if (pre == NULL) {
+                if (cur->next == NULL) {
+                    free(obj->ht.tables[idx]);
+                    obj->ht.tables[idx] = NULL;
+                } else {
+                    t = obj->ht.tables[idx];
+                    obj->ht.tables[idx] = cur->next;
+                    free(t);
+                }
+            } else {
+                t = cur;
+                pre->next = cur->next;
+                free(t);
+            }
+            --(obj->ht.used);
+            return;
+        }
+        pre = cur;
+        cur = cur->next;
+    }
+}
+
+void myHashMapFree(MyHashMap* obj) {
+    for(int i = 0; i < obj->ht.size; ++i) {
+        FreeList(obj->ht.tables[i]);
+    }
+    free(obj->ht.tables);
+    free(obj);
+}
+
+void printHashMap(MyHashMap *obj) {
+    for(int i = 0; i < obj->ht.size; ++i) {
+        MyDictEntry *t = obj->ht.tables[i];
+        if (t == NULL) {
+            continue;
+        } 
+        printf("list(%d): ", i);
+        while(t) {
+            printf("(%d, %p) -> ", t->key, t->value);
+            t = t->next;
+        }
+        printf("\n");
+    }
+}
+// ====================================== HashTable API end ======================================
+
+// ====================================== UFSets API begin =======================================
+typedef struct _UFSets {
+    int *parent;
+    int *rank;
+    int size;
+} UFSets;
+
+// 路径压缩优化
+int Find(UFSets *s, int x)
+{
+    int p = x;
+    int t;
+    while (s->parent[p] != p) {
+        p = s->parent[p];
+    }
+    while (x != p) {
+        t = s->parent[x];
+        s->parent[x] = p;
+        x = t;
+    }
+    return x;
+}
+
+// 秩优化
+void Union(UFSets *s, int x, int y)
+{
+    int rootx = Find(s, x);
+    int rooty = Find(s, y);
+    if (rootx == rooty) {
+        return;
+    }
+
+    // 高的那个树成为父
+    if (s->rank[rootx] > s->rank[rooty]) {
+        s->parent[rooty] = rootx; 
+    } else {
+        s->parent[rootx] = rooty;
+        if (s->rank[rootx] == s->rank[rooty]) {
+            ++s->rank[rooty];
+        }
+    }
+}
+// ====================================== UFSets API end =======================================
+
+typedef struct _MatrixNode {
+    int pos;        // pos = rowSize * rowIndex + colIndex
+    int parent;
+    int value;              
+} MatrixNode;
+
+UFSets * InitUFSets(int **matrix, int rowSize, int colSize)
+{
+    UFSets *s = (UFSets *)malloc(sizeof(*s));
+    s->size = rowSize * colSize;
+    s->parent = (int *)malloc(sizeof(int) * s->size);
+    s->rank = (int *)malloc(sizeof(int) * s->size);
+    memset(s->rank, 0, sizeof(int) * s->size);
+    for (int i = 0; i < rowSize; ++i) {
+        for (int j = 0; j < colSize; ++j) {
+            s->parent[i * colSize + j] = i * colSize + j;
+        }
+    }
+    return s;
+}
+
+void MergeSameRowOrColElementWithUFSets(int **matrix, int rowSize, int colSize, UFSets *s)
+{
+    // 对每一行相同的元素用并查集合并
+    for (int i = 0; i < rowSize; ++i) {
+        MyHashMap *h = myHashMapCreate(HASHMAP_INIT_SIZE);
+        for (int j = 0; j < colSize; ++j) {
+            int *value = (int *)myHashMapGet(h, matrix[i][j]);
+            if (value == NULL) {
+                int *newInt = (int *)malloc(sizeof(int));
+                *newInt = i * colSize + j;
+                myHashMapPut(h, matrix[i][j], (void *)newInt);
+            } else {
+                Union(s, *value, i * colSize + j);
+                *value = i * colSize + j;
+            }
+        }
+    }
+
+    // 对每一列相同的元素用并查集合并
+    for (int i = 0; i < colSize; ++i) {
+        MyHashMap *h = myHashMapCreate(HASHMAP_INIT_SIZE);
+        for (int j = 0; j < rowSize; ++j) {
+            int *value = (int *)myHashMapGet(h, matrix[j][i]);
+            if (value == NULL) {
+                int *newInt = (int *)malloc(sizeof(int));
+                *newInt = j * colSize + i;
+                myHashMapPut(h, matrix[j][i], (void *)newInt);
+            } else {
+                Union(s, *value, j * colSize + i);
+                *value = j * colSize + i;
+            }
+        }
+    }
+    return;
+}
+
+int CompareByValueAndParent(const void *a, const void *b)
+{
+    MatrixNode *a1 = (MatrixNode *)a;
+    MatrixNode *b1 = (MatrixNode *)b;
+    if (a1->value != b1->value) {
+        return a1->value - b1->value;
+    }
+    return a1->parent - b1->parent;
+}
+
+MatrixNode *GetSortedArray(int **matrix, int rowSize, int colSize, UFSets *s)
+{
+    int arrSize = rowSize * colSize;
+    MatrixNode *arr = (MatrixNode *)malloc(sizeof(MatrixNode) * arrSize);
+    for (int i = 0; i < rowSize; ++i) {
+        for (int j = 0; j < colSize; ++j) {
+            int pos = i * colSize + j;
+            arr[pos].pos = pos;
+            arr[pos].parent = Find(s, pos);
+            arr[pos].value = matrix[i][j];
+        }
+    }
+    // 根据(value, parent)排序
+    qsort(arr, arrSize, sizeof(MatrixNode), CompareByValueAndParent);
+/*
+    for (int i = 0; i < arrSize; ++i) {
+        printf("(%d, %d, %d) ->", arr[i].value, arr[i].pos, arr[i].parent);
+    }
+    printf("\n");
+*/
+    return arr;
+}
+
+int ** CalculateZHIBySortedArray(int **matrix, int rowSize, int colSize, MatrixNode *arr, int *returnSize, int **returnColumnSizes)
+{
+    int **res = (int **)malloc(sizeof(int *) * rowSize);
+    for (int i = 0; i < rowSize; ++i) {
+        res[i] = (int *)malloc(sizeof(int) * colSize);
+    }
+
+    // 遍历数组，计算秩, 相同的元素必须用相同的秩去更新
+    int *maxRows = (int *)malloc(sizeof(int) * rowSize);
+    int *maxCols = (int *)malloc(sizeof(int) * colSize);
+    memset(maxRows, 0, sizeof(int) * rowSize);
+    memset(maxCols, 0, sizeof(int) * colSize);
+    int arrSize = rowSize * colSize;
+
+    for (int i = 0; i < arrSize; ++i) {
+        // 求出相同元素区间
+        int parent = arr[i].parent;
+        int end = i + 1;
+        while (end < arrSize && arr[end].parent == parent) ++end;
+        
+        // 先确认相同元素的秩
+        int max_x_zhi = 0;
+        int max_y_zhi = 0; 
+        int max_zhi = 0;
+        for (int j = i; j < end; ++j) {
+            int row = arr[j].pos / colSize;      
+            int col = arr[j].pos % colSize;
+            max_x_zhi = MAX(max_x_zhi, maxRows[row]);
+            max_y_zhi = MAX(max_y_zhi, maxCols[col]);
+        }
+        max_zhi = MAX(max_x_zhi, max_y_zhi) + 1;
+        // 再更新这个秩, 同时更新maxRows, maxCols
+        for (int j = i; j < end; ++j) {
+            int row = arr[j].pos / colSize;
+            int col = arr[j].pos % colSize;
+            maxRows[row] = max_zhi;
+            maxCols[col] = max_zhi;
+            res[row][col] = max_zhi;
+        }
+
+        // 下次循环跳过所有相同数, i指向上次的end
+        if (arrSize == end) {
+            break;
+        }
+        i = end - 1;
+    }
+
+    // 出参处理
+    *returnColumnSizes = (int *)malloc(sizeof(int) * rowSize);
+    for (int i = 0; i < rowSize; ++i) {
+        (*returnColumnSizes)[i] = colSize;
+    }
+    *returnSize = rowSize;
+    return res;
+}
+
+int** matrixRankTransform(int** matrix, int matrixSize, int* matrixColSize, int* returnSize, int** returnColumnSizes)
+{
+    // 1. 初始化并查集
+    UFSets *s = InitUFSets(matrix, matrixSize, matrixColSize[0]);
+
+    // 2. 对每一行相同的元素用并查集合并，对每一列相同的元素用并查集合并
+    MergeSameRowOrColElementWithUFSets(matrix, matrixSize, matrixColSize[0], s);
+
+    // 3. 数组排序，元素(pos, parent, value), 根据(value, parent)排序
+    MatrixNode *arr = GetSortedArray(matrix, matrixSize, matrixColSize[0], s);
+
+    // 4. 遍历数组，计算秩, 相同的元素用相同的秩去更新
+    return CalculateZHIBySortedArray(matrix, matrixSize, matrixColSize[0], arr, returnSize, returnColumnSizes);
+}
