@@ -1,0 +1,83 @@
+void swap(int* a, int* b) {
+    int tmp = *a;
+    *a = *b, *b = tmp;
+}
+
+struct DisjointSetUnion {
+    int *f, *size;
+    int n, setCount;
+};
+
+void initDSU(struct DisjointSetUnion* obj, int n) {
+    obj->f = malloc(sizeof(int) * n);
+    obj->size = malloc(sizeof(int) * n);
+    obj->n = n;
+    obj->setCount = n;
+    for (int i = 0; i < n; i++) {
+        obj->f[i] = i;
+        obj->size[i] = 1;
+    }
+}
+
+int find(struct DisjointSetUnion* obj, int x) {
+    return obj->f[x] == x ? x : (obj->f[x] = find(obj, obj->f[x]));
+}
+
+int unionSet(struct DisjointSetUnion* obj, int x, int y) {
+    int fx = find(obj, x), fy = find(obj, y);
+    if (fx == fy) {
+        return false;
+    }
+    if (obj->size[fx] < obj->size[fy]) {
+        swap(&fx, &fy);
+    }
+    obj->size[fx] += obj->size[fy];
+    obj->f[fy] = fx;
+    obj->setCount--;
+    return true;
+}
+
+int maxNumEdgesToRemove(int n, int** edges, int edgesSize, int* edgesColSize) {
+    struct DisjointSetUnion* ufa = malloc(sizeof(struct DisjointSetUnion));
+    initDSU(ufa, n);
+    struct DisjointSetUnion* ufb = malloc(sizeof(struct DisjointSetUnion));
+    initDSU(ufb, n);
+    int ans = 0;
+
+    // 节点编号改为从 0 开始
+    for (int i = 0; i < edgesSize; i++) {
+        edges[i][1]--;
+        edges[i][2]--;
+    }
+
+    // 公共边
+    for (int i = 0; i < edgesSize; i++) {
+        if (edges[i][0] == 3) {
+            if (!unionSet(ufa, edges[i][1], edges[i][2])) {
+                ++ans;
+            } else {
+                unionSet(ufb, edges[i][1], edges[i][2]);
+            }
+        }
+    }
+
+    // 独占边
+    for (int i = 0; i < edgesSize; i++) {
+        if (edges[i][0] == 1) {
+            // Alice 独占边
+            if (!unionSet(ufa, edges[i][1], edges[i][2])) {
+                ++ans;
+            }
+        } else if (edges[i][0] == 2) {
+            // Bob 独占边
+            if (!unionSet(ufb, edges[i][1], edges[i][2])) {
+                ++ans;
+            }
+        }
+    }
+
+    if (ufa->setCount != 1 || ufb->setCount != 1) {
+        return -1;
+    }
+    return ans;
+}
