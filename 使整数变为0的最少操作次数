@@ -1,0 +1,14 @@
+int minimumOneBitOperations(int n){
+    if (n==0){
+        return 0;
+    }
+    if (n==1){
+        return 1;
+    }
+    int num = 0;
+    int digi = log2(n);
+    int most_under = 1<<digi; //找到不大于n的最大二进制整数2^i
+    int m = most_under ^ n; //去掉首位之后剩下的数
+    int k = minimumOneBitOperations(m); //剩下的数到0需要的次数
+    return most_under*2 - 1 - k;
+}
