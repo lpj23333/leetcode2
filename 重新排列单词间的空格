@@ -1,0 +1,72 @@
+char * reorderSpaces(char * text){
+    char* p = text, * q = NULL;
+	char* ret = (char*)malloc(101 * sizeof(char));
+	int blanks = 0, words = 0,i;
+	int dBlanks, remainBlanks;
+	if (ret == NULL)
+	{
+		exit(0);
+	}
+	//计算空格数和单词数
+	while (*p != '\0')
+	{
+		while (*p==' ')
+		{
+			++p;
+			++blanks;
+		}
+		if (*p >= 'a' && *p <= 'z')
+		{
+			++words;
+		}
+		while (*p >= 'a' && *p <= 'z')
+		{
+			++p;
+		}
+	}
+	if (words > 1) 
+	{
+		dBlanks = blanks / (words - 1);
+		remainBlanks = blanks % (words - 1);
+	}
+	else
+	{
+		dBlanks = 0;
+		remainBlanks = blanks;
+	}
+	q = ret;
+	p = text;
+	while (*p!='\0')
+	{
+		while (*p == ' ')
+		{
+			++p;
+		}
+		if (*p >= 'a' && *p <= 'z')
+		{
+			--words;
+		}
+		while (*p >= 'a' && *p <= 'z')
+		{
+			*q = *p;
+			++p;
+			++q;
+		}
+		if (words == 0)
+		{
+			break;
+		}
+		for (i = 0; i < dBlanks; ++i)
+		{
+			*q = ' ';
+			++q;
+		}
+	}
+	for (i = 0; i < remainBlanks; ++i)
+	{
+		*q = ' ';
+		++q;
+	}
+	*q = '\0';
+	return ret;
+}
