@@ -1,0 +1,41 @@
+char *findLexSmallestString(char *s, int a, int b)
+{
+    int len = strlen(s);
+    char *ans = (char *)malloc((len + 1) * sizeof(char));
+    char *cur = (char *)malloc((len + 1) * sizeof(char));
+    char *vis = (char *)malloc(len * sizeof(char));
+    memset(vis, 0, len * sizeof(char));
+    strcpy(ans, s);
+    cur[len] = 0;
+
+    // 枚举起始字符位置
+    for (int i = 0; vis[i] == 0; i = (i + b) % len) {
+        vis[i] = 1;
+        strncpy(cur, s + i, len - i);
+        strncpy(cur + len - i, s, i);
+        // 枚举奇数位累加次数，累加10次必定循环
+        for (int j = 0; j < 10; j ++) {
+            for (int k = 1; k < len; k += 2) {
+                cur[k] = ((cur[k] - '0' + a) % 10) + '0';
+            }
+            if (strcmp(ans, cur) > 0) {
+                strcpy(ans, cur);
+            }
+
+            // 当 b 为奇数时，还要枚举偶数位置累加次数
+            if (b % 2) {
+                for (int jj = 0; jj < 10; jj ++) {
+                    for (int kk = 0; kk < len; kk += 2) {
+                        cur[kk] = ((cur[kk] - '0' + a) % 10) + '0';
+                    }
+                    if (strcmp(ans, cur) > 0) {
+                        strcpy(ans, cur);
+                    }
+                }
+            }
+        }
+    }
+    free(cur);
+    free(vis);
+    return ans;
+}
