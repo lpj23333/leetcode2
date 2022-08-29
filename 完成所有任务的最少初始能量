@@ -1,0 +1,17 @@
+int m_cmp(int **a, int **b)
+{
+    int diff = ((*a)[1] - (*a)[0]) - ((*b)[1] - (*b)[0]);
+    return diff > 0 ? 1 : -1;
+}
+int minimumEffort(int** tasks, int tasksSize, int* tasksColSize)
+{
+    qsort(tasks, tasksSize, sizeof(int*), m_cmp);
+    int end = 0;
+    for (int i = 0; i < tasksSize; i++) {
+        end += tasks[i][0];
+        if (end < tasks[i][1]) {
+            end = tasks[i][1];
+        }
+    }
+    return end;
+}
