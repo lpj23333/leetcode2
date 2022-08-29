@@ -1,0 +1,50 @@
+int node[100001];
+
+struct node {
+    int left,right,len,pos;
+};
+
+int find(int x){
+    return node[x]==x? x: (node[x]=find(node[x]));
+}
+
+void insert(int x,int y){
+    node[find(x)]=find(y);
+}
+
+int cmp(const void *a,const void *b){
+    int *ap = *(int **)a;       
+    int *bp = *(int **)b;
+
+    return ap[2]-bp[2];
+}
+int cmp2(const void *a,const void *b){
+    struct node *aa=(struct node *)a;
+    struct node *bb=(struct node *)b;
+
+    return aa->len-bb->len;
+}
+
+bool* distanceLimitedPathsExist(int n, int** edgeList, int edgeListSize, int* edgeListColSize, int** queries, int queriesSize, int* queriesColSize, int* returnSize){
+    int i,j,k;
+    bool *res= (bool*)malloc(sizeof(bool)*queriesSize);
+    for(i=0;i<=n;i++)node[i]=i;
+
+    struct node list[queriesSize];
+    for(i=0;i<queriesSize;i++)list[i]=(struct node){queries[i][0],queries[i][1],queries[i][2],i};
+
+    qsort(edgeList,edgeListSize,sizeof(edgeList[0]),cmp);
+    qsort(list,queriesSize,sizeof(struct node),cmp2);
+
+
+    for(i=0,j=0;i<queriesSize;i++){
+        while(j<edgeListSize&&edgeList[j][2]<list[i].len){
+            insert(edgeList[j][0],edgeList[j][1]);
+            j++;
+        }
+        if(find(list[i].left)==find(list[i].right)){res[list[i].pos]=true;}
+        else res[list[i].pos]=false;
+    }
+    *returnSize=queriesSize;
+    return res;
+}
