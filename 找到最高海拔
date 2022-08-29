@@ -1,0 +1,13 @@
+int largestAltitude(int* gain, int gainSize){
+    int max=0;
+    int height=0;//显示当前高度
+    for(int i=0;i<gainSize;i++)
+    {
+        height+=gain[i];
+        if(height>max)
+        {
+            max=height;
+        }
+    }
+    return max;
+}
