@@ -1,0 +1,15 @@
+char * reformatNumber(char * number){
+    int i, j = 0, n = strlen(number);
+    char* c = (char*)malloc(sizeof(char)*(n+n/3+1));
+    for(i = 0; i < n; i++){
+        if(number[i] == ' ' || number[i] == '-') continue;
+        if(j % 4 == 3) c[j++] = '-';
+        c[j++] = number[i];
+    }
+    if(j % 4 == 1){
+        char t = c[j-3];
+        c[j-3] = '-', c[j-2] = t;
+    }
+    c[j] = '\0';
+    return c;
+}
