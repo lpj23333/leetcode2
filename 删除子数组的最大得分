@@ -1,0 +1,22 @@
+#define MAX_SIZE 10001
+int maximumUniqueSubarray(int* nums, int numsSize){
+    int freq[MAX_SIZE] = {0};
+    int sum = 0;
+    int ans = 0;
+    int left = 0;
+    int right = 0;
+
+    while (right < numsSize) {
+        sum += nums[right];
+        freq[nums[right]]++;
+
+        while (freq[nums[right]] > 1) {
+            sum -= nums[left];
+            freq[nums[left]]--;
+            left++;
+        }
+        ans = fmax(ans, sum);
+        right++;
+    }
+    return ans;
+}
