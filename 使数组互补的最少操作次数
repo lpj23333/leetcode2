@@ -1,0 +1,21 @@
+int minMoves(int* nums, int numsSize, int limit){
+    int* diff=(int*)calloc(2*limit+2,sizeof(int));//差分数组，初试化都为0（数组是相对于 numsSize即最大操作次数）
+    for(int i=0;i<numsSize/2;i++)
+    {
+        int lo=1+fmin(nums[i],nums[numsSize-1-i]);//1+min(a,b)
+        int hi=limit+fmax(nums[i],nums[numsSize-1-i]);//limit+max(a,b)
+        int sum=nums[i]+nums[numsSize-1-i];//a+b
+        diff[lo]--;//更新1+min(a,b)后的所有值，都-1，（题解中的第一种情况,只需要修改一个数）
+        diff[sum]--;//题解的第三种情况，x=a+b,diff[sum]后的元素再-1（共-2）
+        diff[sum+1]++;//把diff[sum+1]之后的都+1，上一个语句把后面的数都多减了1，再加回来
+        diff[hi+1]++;//第一种情况区间[lo,hi],hi之后的都多减了，加回来
+    }
+    int n=numsSize;//最大的操作数
+    int res=numsSize;
+    for(int i=2;i<=2*limit;i++)
+    {
+        n+=diff[i];//差分数组存的相对变量，加上n后才是实际的操作数
+        res=fmin(res,n);
+    }
+    return res;
+}
