@@ -1,0 +1,25 @@
+#define MAX_SIZE 100001
+
+bool arrayStringsAreEqual(char ** word1, int word1Size, char ** word2, int word2Size){
+    if (word1 == NULL || word2 == NULL) {
+        return false;
+    }
+
+    char s1[MAX_SIZE] = { 0 };
+    char s2[MAX_SIZE] = { 0 };
+    memset(s1, '\0', MAX_SIZE);
+    memset(s2, '\0', MAX_SIZE);
+    for (int i = 0; i < word1Size; i++) {
+        if (!strcat(s1, word1[i])) {
+            return false;
+        }
+    }
+
+    for (int i = 0; i < word2Size; i++) {
+        if (!strcat(s2, word2[i])) {
+            return false;
+        }
+    }
+
+    return (strcmp(s1, s2) == 0) ? true : false;
+}
