@@ -1,0 +1,56 @@
+int parent[100000];
+
+int derive(int x) {
+    if (parent[x] == -1) parent[x] = x;
+    while (parent[x] != x) {
+        parent[x] = parent[parent[x]];
+        x = parent[x];
+    }
+    return x;
+}
+
+typedef struct {
+    int x;
+    int cnt;
+    UT_hash_handle hh;
+} Hash;
+
+void add(Hash **hash, int x, int d) {
+    Hash *p;
+    HASH_FIND(hh, *hash, &x, sizeof(int), p);
+    if (!p) {
+        p = malloc(sizeof(Hash));
+        p->x = x;
+        p->cnt = 0;
+        HASH_ADD(hh, *hash, x, sizeof(int), p);
+    }
+    p->cnt += d;
+}
+
+int minimumHammingDistance(int* source, int sourceSize, int* target, int targetSize, int** allowedSwaps, int allowedSwapsSize, int* allowedSwapsColSize){
+    memset(parent, -1, sizeof parent);
+    for (int i=0; i<allowedSwapsSize; ++i) {
+        int a = allowedSwaps[i][0],
+            b = allowedSwaps[i][1];
+        a = derive(a);
+        b = derive(b);
+        parent[a] = b;
+    }
+    Hash *map[sourceSize];
+    memset(map, 0, sizeof map);
+    for (int i=0; i<sourceSize; ++i) {
+        int p = derive(i);
+        add(&(map[p]), source[i], 1);
+        add(&(map[p]), target[i], -1);
+    }
+    int res = 0;
+    for (int i=0; i<sourceSize; ++i) {
+        Hash *cur, *tmp;
+        int t = 0;
+        HASH_ITER(hh, map[i], cur, tmp) {
+            t += abs(cur->cnt);
+        }
+        res += t/2;
+    }
+    return res;
+}
