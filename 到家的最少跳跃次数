@@ -1,0 +1,36 @@
+int arr[6001];
+int brr[6001];
+int max = 6001;
+int x1 = 0, a1 = 0, b1 =0;
+
+int minimumJumps(int* forbidden, int forbiddenSize, int a, int b, int x){
+    if (x == 0 ) return 0;
+    x1 = x; a1 = a; b1 = b;
+    
+    memset(arr,-1,sizeof(arr));
+    memset(brr,-1,sizeof(brr));
+    arr[0] = 0; brr[0] = 0;
+    for (int i=0;i< forbiddenSize; ++i) {
+        arr[forbidden[i]] = -2;
+        brr[forbidden[i]] = -2;
+    }
+
+    do1(0, 0, 0);
+    return arr[x];    
+}
+
+int do1(int i, int time, int y){
+    if (i + a1 < max && arr[i+a1] != -2 && (brr[i+a1] == -1 || time + 1  < brr[i+a1])) {
+        brr[i+a1] = time + 1;
+        if (arr[i+a1] == -1 || time + 1  < arr[i+a1]) {
+            arr[i+a1] = time + 1;
+        }
+        do1(i + a1, time +1, 0);
+    }
+
+    if (y == 0 && i - b1 > 0 && arr[i-b1] != -2  && (arr[i-b1] == -1 || time + 1  < arr[i-b1])) {
+        arr[i-b1] = time + 1;
+        do1(i-b1,time+1,1);
+    }
+    return 0;
+}
