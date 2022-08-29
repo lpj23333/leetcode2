@@ -1,0 +1,7 @@
+int minPartitions(char * n){    
+    int max;
+    for(max = *n;*n;n++)
+        if(*n > max)
+            max = *n;
+    return max-48;
+}
