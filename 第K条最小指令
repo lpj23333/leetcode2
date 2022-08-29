@@ -1,0 +1,39 @@
+char * kthSmallestPath(int* destination, int destinationSize, int k){
+    int len = destination[0] + destination[1] + 2;
+    char* res = (char*)calloc(2*len, sizeof(char));
+    int size = 0;
+    int row = destination[0], col = destination[1];
+    int dp[row + 1][col + 1];
+    //dp[i][j]表示从(i,j)走到终点有多少种走法，dp[i][j] = dp[i][j + 1] + dp[i + 1][j]
+    //由于题目要求字典序排列，因此向右走的优先级高于向下走
+    for(int i = 0; i <= row; i++) dp[i][col] = 1;
+    for(int j = 0; j <= col; j++) dp[row][j] = 1;
+    for(int i = row - 1; i >= 0; i--)
+        for(int j = col - 1; j >= 0; j--)
+            dp[i][j] = dp[i + 1][j] + dp[i][j + 1];
+    
+    int si = 0, sj = 0;
+    while(si != row || sj != col){
+        if(si == row){
+            res[size++] = 'H';
+            sj++;
+            }
+        else if(sj == col){
+            res[size++] = 'V';
+            si++;
+            }
+        else if(si < row && sj < col){
+            if(dp[si][sj + 1] - k >= 0){    //包含在前dp[si][sj + 1]种
+                res[size++] = 'H';
+                sj++;
+                }
+            else{
+                res[size++] = 'V';
+                k = k - dp[si][sj + 1];
+                si++;
+                }
+            }
+        }
+    res[size] = '\0';
+    return res;
+}
