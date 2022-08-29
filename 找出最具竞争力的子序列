@@ -1,0 +1,20 @@
+int* mostCompetitive(int* nums, int numsSize, int k, int* returnSize){
+    int* mono_in_stack = malloc(sizeof(int)*k);
+    memset(mono_in_stack,0,sizeof(int)*k);
+    int size = 0;
+    int max_del_cnt = numsSize - k;
+    *returnSize = k;
+    for(int i = 0;i<numsSize;i++){
+        while(size> 0 && mono_in_stack[size-1]>nums[i]&&max_del_cnt>0){
+            size--;
+            max_del_cnt--;
+        }
+        if(size < k ){
+            mono_in_stack[size] = nums[i];
+            size++;
+        }else{
+            max_del_cnt--;
+        }
+    }
+    return mono_in_stack;
+}
