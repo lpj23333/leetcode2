@@ -1,0 +1,33 @@
+int countSubstrings(char * s, char * t){
+    int len1 = (int) strlen(s);
+    int len2 = (int) strlen(t);
+    int left = 0;
+    int right = 0;
+    int diff = 0;
+    int cnt = 0;
+    while (left < len1) {
+        int l = left;
+        int gap = right - left + 1;
+        int lt = 0;
+        int rt = gap - 1;
+        while (rt < len2) {
+            for (int i = left,j=lt; i <= right; i++,j++) {
+                if (s[i] != t[j]) {
+                    diff++;
+                }
+            }
+            if (diff == 1) {
+                cnt++;
+            }
+            diff = 0;
+            lt++;
+            rt++;
+        }
+        right++;
+        if (right == len1) {
+            left++;
+            right = left;
+        }
+    }
+    return cnt;
+}
