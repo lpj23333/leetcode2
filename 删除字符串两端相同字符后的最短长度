@@ -1,0 +1,25 @@
+int minimumLength(char * s)
+{
+    // 双指针
+    int left = 0;
+    int right = strlen(s) - 1;
+    if (left == right) {
+        return 1;
+    }
+    while (left < right && s[left] == s[right]) {
+        // 移动左指针
+        while (left + 1 <= right && s[left] == s[left + 1]) {
+            left++; // 左边的都相同，继续收缩左指针
+        }
+        // 移动右指针
+        while (right - 1 >= left && s[right] == s[right - 1]) {
+            right--; // 右边的都相同，继续收缩右指针
+        }
+        // 处理下一个的字母
+        left++;
+        right--;
+    }
+    int ans = 0; // 返回值
+    ans = ((right- left + 1) > ans) ? (right- left + 1) : ans;
+    return ans;
+}
