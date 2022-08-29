@@ -1,0 +1,52 @@
+int countStudents(int* students, int studentsSize, int* sandwiches, int sandwichesSize)
+{
+    int datStudent[10001];
+    int datSandwich[10001];
+
+    int  queueStuFront = 0;
+    int  queueStuRear  = 0;
+
+    int  queueSanFront = 0;
+    int  queueSanRear  = 0;
+
+    //入队
+    int count = 0;
+    for(int i =0; i< studentsSize; i++)
+    {
+        datStudent[queueStuRear++]  = students[i];
+        datSandwich[queueSanRear++] = sandwiches[i];
+        count++;
+    }
+
+    while(queueStuFront < queueStuRear)
+    {
+        int sanType =  datSandwich[queueSanFront];
+        int queueStuRearBak = queueStuRear;
+        bool  haveFind =false;
+        while(queueStuFront < queueStuRearBak)
+        {
+            if(datStudent[queueStuFront] == sanType)
+            {
+                queueStuFront++;
+                queueSanFront++;
+                haveFind = true;
+                count--;
+                break;
+            }
+            else
+            {
+                datStudent[queueStuRear++] = datStudent[queueStuFront] ;
+                queueStuFront++;
+            }
+        }
+
+
+        if(!haveFind)
+        {
+            //没有符合的
+            break;
+        }
+    }
+
+    return count;
+}
