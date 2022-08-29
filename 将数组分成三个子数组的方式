@@ -1,0 +1,44 @@
+#define M 1000000007
+#define N 100010
+
+int waysToSplit(int* nums, int n){
+    int s[N] = {0};
+    int ans = 0;
+    int l, r, m, idx1, idx2;
+
+    // 构建前缀和
+    for (int i = 1; i <= n; i++) s[i] = s[i - 1] + nums[i - 1];
+
+    // 第一个指针的下标范围[1, n - 2]
+    for (int i = 1; i <= n-2; i++) {
+        // 固定第一个指针，查找第二个指针的合法区间。
+        // 第二个指针的值域[i + 1, n - 1]
+        l = i + 1;
+        r = n - 1;
+        while (l < r) {
+            m = (l + r) >> 1;
+            if (s[m] - s[i] >= s[i]) r = m;
+            else l = m + 1;
+        }
+
+        // 注意特殊判断r是否无解。
+        if (s[r] - s[i] < s[i] || s[n] - s[r] < s[r] - s[i]) {
+            continue; // 无解说明 第一个指针取当前的i不可以
+        }
+
+        idx1 = r;
+        //有解的情况下，寻找第二个指针的右边界 [idx1, n - 1]。
+        l = idx1;
+        r = n - 1;
+        while (l < r) {
+            m = (l + r + 1) >> 1;
+            if (s[m] - s[i] <= s[n] - s[m]) l = m;
+            else r = m - 1;
+        }
+        idx2 = r;
+
+        ans = (ans + idx2 - idx1 + 1) % M;
+    }
+
+    return ans;
+}
