@@ -1,0 +1,55 @@
+const long int mod_num = 1000000007;
+
+int numWays(char **words, int wordsSize, char *target)
+{
+    const int w = strlen(words[0]), t = strlen(target);
+    int record[w][t], counter[w][26];
+    int x = 0, y = 0;
+    /* 中间计算过程可能会越出int取值范围，先借用long int变量作为临时存储。 */
+    long int z = 0;
+
+    /* 初始化两个二维数组。 */
+    memset(record, 0, sizeof(record));
+    memset(counter, 0, sizeof(counter));
+
+    /* 先统计字典中每一位上不同字母的数量。 */
+    while(w > x)
+    {
+        y = 0;
+        while(wordsSize > y)
+        {
+            counter[x][words[y][x] - 'a']++;
+            y++;
+        }
+        x++;
+    }
+
+    /* 按照上面的公式，依次计算record的数值。 */
+    record[0][0] = counter[0][target[0] - 'a'];
+    x = 1;
+    while(w > x)
+    {
+        /* 中间计算过程先用long int变量存储。 */
+        z = record[x - 1][0] + counter[x][target[0] - 'a'];
+        if(mod_num <= z)
+        {
+            z %= mod_num;
+        }
+        record[x][0] = (int)z;
+        y = 1;
+        while(t > y)
+        {
+            /* 中间计算过程先用long int变量存储。 */
+            z = record[x - 1][y] + (long int)record[x - 1][y - 1] * counter[x][target[y] - 'a'];
+            if(mod_num <= z)
+            {
+                z %= mod_num;
+            }
+            record[x][y] = (int)z;
+            y++;
+        }
+        x++;
+    }
+
+    return record[w - 1][t - 1];
+}
