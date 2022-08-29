@@ -1,0 +1,23 @@
+struct ListNode* mergeInBetween(struct ListNode* list1, int a, int b, struct ListNode* list2){
+    struct ListNode *cur = list1;
+    struct ListNode *la;
+    struct ListNode *lb;
+    int i = 0;//记录下标
+    while(cur){
+        //拿到两端指针
+        if(i == a - 1){
+            la = cur;
+        }
+        if(i == b + 1){
+            lb = cur;
+        }
+        i++;
+        cur = cur->next;
+    }
+    la->next = list2;
+    while(list2->next){
+        list2 = list2->next;
+    }
+    list2->next = lb;
+    return list1;
+}
