@@ -1,0 +1,24 @@
+int sum(int N)
+{
+    int sum=0;
+    while(N!=0)
+    {
+        sum+=N%10;
+        N/=10;
+    }
+    return sum;
+}
+int countBalls(int lowLimit, int highLimit){
+    int hash[46]={0,};
+    while(lowLimit<=highLimit)
+    {
+        hash[sum(lowLimit)]++;
+        lowLimit++;
+    }
+    int max=1;
+    for(int i=0;i<46;i++)
+    {
+        max=fmax(max,hash[i]);
+    }
+    return max;
+}
