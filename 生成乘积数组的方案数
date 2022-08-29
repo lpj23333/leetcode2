@@ -1,0 +1,119 @@
+#define MAX_FACTORS 14
+#define TOP_VALUE 10001
+#define MAX_COMBINE 10016
+#define MOD_VALUE 1000000007
+
+static bool gHasCalc = false;
+static bool gIsComposite[TOP_VALUE] = {false};
+static int gFactorsSize[TOP_VALUE] = {0};
+static int gFactors[TOP_VALUE][MAX_FACTORS];
+static int gCombine[MAX_COMBINE][MAX_FACTORS];
+
+int *waysToFillArray(int **queries, int queriesSize, int *queriesColSize, int *returnSize)
+{
+    int x = 2, y = 0, k = 0;
+    int counter[MAX_FACTORS];
+    int *result = (int *)malloc(sizeof(int) * queriesSize);
+
+    /* 这个gHasCalc全局变量是取巧的操作。
+    力扣运行不同的case，反正都要知道前面这些数值是否质数、合数，以及质因数列表。
+    另外也要用到组合数。
+    那么，用这个变量标记一下，只计算一次就够了，后面的case只需要用现成的结果即可。 */
+    if(false == gHasCalc)
+    {
+        /* 计算过一次之后，就标记这个值为true，后面就不再重复计算了。 */
+        gHasCalc = true;
+        /* 计算哪些是质数，哪些是合数，及其质因子列表。 */
+        while(TOP_VALUE > x)
+        {
+            /* 当x是质数时，才标记它的倍数们。 */
+            if(false == gIsComposite[x])
+            {
+                /* 从2倍开始。 */
+                y = x << 1;
+                while(TOP_VALUE > y)
+                {
+                    /* 倍数必然是合数。 */
+                    gIsComposite[y] = true;
+                    gFactors[y][gFactorsSize[y]] = x;
+                    gFactorsSize[y]++;
+                    /* 进阶x，依次表示3倍、4倍、5倍…… */
+                    y += x;
+                }
+            }
+            x++;
+        }
+        /* 计算组合数。 */
+        x = 0;
+        while(MAX_COMBINE > x)
+        {
+            /* 上面的公式(2)表示的边界值。 */
+            gCombine[x][0] = 1;
+            if(MAX_FACTORS > x)
+            {
+                gCombine[x][x] = 1;
+            }
+            /* 边界值计算过了，计算中间的数值，利用公式(3)的递推关系。 */
+            y = 1;
+            while(x > y && MAX_FACTORS > y)
+            {
+                gCombine[x][y] = gCombine[x - 1][y] + gCombine[x - 1][y - 1];
+                /* 太大了的话需要取模。 */
+                if(MOD_VALUE <= gCombine[x][y])
+                {
+                    gCombine[x][y] -= MOD_VALUE;
+                }
+                y++;
+            }
+            x++;
+        }
+    }
+
+    /* 计算结果。 */
+    x = 0;
+    while(queriesSize > x)
+    {
+        /* 为1时，只有一个方案，即数组为全1。 */
+        if(1 == queries[x][1])
+        {
+            result[x] = 1;
+        }
+        /* 是质数时，这个质数可能放在长度n的任意位置，即共n个方案。 */
+        else if(false == gIsComposite[queries[x][1]])
+        {
+            result[x] = queries[x][0];
+        }
+        /* 是合数时。 */
+        else
+        {
+            /* 前面只计算了每个合数有多少种不同的质因数，但每种质因数各自有多少个还没算呢。
+            这里用一个临时counter[]数组来记录一下。 */
+            memset(counter, 0, sizeof(counter));
+            k = queries[x][1];
+            y = 0;
+            while(gFactorsSize[queries[x][1]] > y)
+            {
+                /* 对每一种质因数，除以它直到不能整除为止，次数就是这种质因数的个数。 */
+                while(0 == k % gFactors[queries[x][1]][y])
+                {
+                    k /= gFactors[queries[x][1]][y];
+                    counter[y]++;
+                }
+                y++;
+            }
+            /* 然后开始逐个乘以各自的组合数。 */
+            result[x] = 1;
+            y = 0;
+            while(gFactorsSize[queries[x][1]] > y)
+            {
+                result[x] = (long int)result[x] * gCombine[counter[y] + queries[x][0] - 1][counter[y]] % MOD_VALUE;
+                y++;
+            }
+        }
+        x++;
+    }
+
+    /* 结果数组的长度等于queriesSize。 */
+    *returnSize = queriesSize;
+    return result;
+}
