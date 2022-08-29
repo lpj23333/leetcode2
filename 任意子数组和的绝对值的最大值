@@ -1,0 +1,15 @@
+int maxAbsoluteSum(int* nums, int numsSize){
+    int preSum[100002] = {0};
+    preSum[0] = 0; // 注意题意可能有0个元素的情况，即前缀和为0的情况
+    int minSum = 0;
+    int maxSum = 0;
+
+    // 找最大和最小的前缀和
+    for (int index = 1; index <= numsSize; index++) {
+        preSum[index] = nums[index - 1] +  preSum[index - 1];
+        minSum = fmin(preSum[index], minSum);
+        maxSum = fmax(preSum[index], maxSum);
+    }
+
+    return fabs(maxSum - minSum);
+}
