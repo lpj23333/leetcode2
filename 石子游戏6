@@ -1,0 +1,29 @@
+int cmp(int **a, int **b)
+{
+    return (*b)[0] - (*a)[0];
+}
+
+int stoneGameVI(int* aliceValues, int aliceValuesSize, int* bobValues, int bobValuesSize)
+{
+    int **value = malloc(aliceValuesSize * sizeof(int *));
+
+    for (int i = 0; i < aliceValuesSize; i++) {
+        value[i] = malloc(2 * sizeof(int));
+        value[i][0] = aliceValues[i] + bobValues[i];
+        value[i][1] = i;
+    }
+
+    qsort(value, aliceValuesSize, sizeof(int *), cmp);
+
+    int alice = 0;
+    int bob = 0;
+    for (int i = 0; i < aliceValuesSize; i++) {
+        if (i % 2 == 0) {
+            alice += aliceValues[value[i][1]];
+        } else {
+            bob += bobValues[value[i][1]];
+        }
+    }
+
+    return alice == bob ? 0 : ((alice > bob) ? 1 : -1);
+}
