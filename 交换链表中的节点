@@ -1,0 +1,23 @@
+struct ListNode* swapNodes(struct ListNode* head, int k){
+    struct ListNode *tar1,*tar2;//目标结点
+    int num=0;
+    struct ListNode *fast;
+    fast=head;
+    tar2=head;
+    while(--k)
+    {
+        fast=fast->next;
+    }
+    tar1=fast;//此时tar1为第k个结点
+    while(fast->next)
+    {
+        fast=fast->next;
+        tar2=tar2->next;//此时tar2为倒数第k个结点
+    }
+    num=tar1->val;
+    tar1->val = tar2->val;
+    tar2->val = num;
+
+return head;
+
+}
