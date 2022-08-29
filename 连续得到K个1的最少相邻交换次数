@@ -1,0 +1,28 @@
+int minMoves(int* nums, int numsSize, int k){
+    long long base[numsSize];
+    long long pos = 0;
+    for (long long i = 0; i < numsSize; i++) {
+        if (nums[i] == 1) {
+            base[pos++] = i - pos; /* base数组存储每个1的索引 */
+        }
+       
+    }
+     /* pos个1的索引的前缀和 */
+     long long sum[pos + 1];
+     sum[0]  = 0;
+     for (long long i = 1; i < pos + 1; i++) {
+         sum[i] = sum[i - 1] + base[i - 1];
+     }
+    long long ans = 0xfffffffe;
+     /* 滑动窗口，窗口大小是k */
+     for (long long i = 0; i < pos + 1 - k; i++) {
+         long long left = i;
+         long long right = i + k - 1;
+         long long mid = (left + right) / 2;
+        long long tmp = base[mid] * (mid - left) - (sum[mid] - sum[left]);
+            tmp += sum[right + 1] - sum[mid + 1] - base[mid] * (right - mid);
+            ans = ans < tmp ? ans : tmp;
+
+     }
+     return ans;
+}
