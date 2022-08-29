@@ -1,0 +1,70 @@
+const int L = 30;
+
+struct TrieNode {
+    struct TrieNode* children[2];
+};
+
+struct TrieNode* createTrieNode() {
+    struct TrieNode* ret = malloc(sizeof(struct TrieNode));
+    ret->children[0] = ret->children[1] = NULL;
+    return ret;
+};
+
+void insert(struct TrieNode* root, int val) {
+    struct TrieNode* node = root;
+    for (int i = L - 1; i >= 0; --i) {
+        int bit = (val >> i) & 1;
+        if (node->children[bit] == NULL) {
+            node->children[bit] = createTrieNode();
+        }
+        node = node->children[bit];
+    }
+}
+
+int getMaxXor(struct TrieNode* root, int val) {
+    int ans = 0;
+    struct TrieNode* node = root;
+    for (int i = L - 1; i >= 0; --i) {
+        int bit = (val >> i) & 1;
+        if (node->children[bit ^ 1] != NULL) {
+            ans |= 1 << i;
+            bit ^= 1;
+        }
+        node = node->children[bit];
+    }
+    return ans;
+}
+
+int cmp1(int* a, int* b) {
+    return *a - *b;
+}
+
+int cmp2(int** a, int** b) {
+    return (*a)[1] - (*b)[1];
+}
+
+int* maximizeXor(int* nums, int numsSize, int** queries, int queriesSize, int* queriesColSize, int* returnSize) {
+    qsort(nums, numsSize, sizeof(int), cmp1);
+    for (int i = 0; i < queriesSize; ++i) {
+        queries[i] = realloc(queries[i], sizeof(int) * 3);
+        queries[i][2] = i;
+    }
+    qsort(queries, queriesSize, sizeof(int*), cmp2);
+    int* ans = malloc(sizeof(int) * queriesSize);
+    *returnSize = queriesSize;
+    struct TrieNode* t = createTrieNode();
+    int idx = 0, n = numsSize;
+    for (int i = 0; i < queriesSize; i++) {
+        int x = queries[i][0], m = queries[i][1], qid = queries[i][2];
+        while (idx < n && nums[idx] <= m) {
+            insert(t, nums[idx]);
+            ++idx;
+        }
+        if (idx == 0) {  // 字典树为空
+            ans[qid] = -1;
+        } else {
+            ans[qid] = getMaxXor(t, x);
+        }
+    }
+    return ans;
+}
