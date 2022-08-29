@@ -1,0 +1,44 @@
+struct HashTable {
+    int key, val;
+    UT_hash_handle hh;
+};
+
+int lower_bound(int* arr, int l, int r, int val) {
+    while (l < r) {
+        int mid = (l + r) >> 1;
+        if (arr[mid] >= val) {
+            r = mid;
+        } else {
+            l = mid + 1;
+        }
+    }
+    return l;
+}
+
+int minOperations(int* target, int targetSize, int* arr, int arrSize) {
+    struct HashTable* hashTable = NULL;
+    for (int i = 0; i < targetSize; i++) {
+        struct HashTable* tmp;
+        HASH_FIND_INT(hashTable, &target[i], tmp);
+        if (tmp == NULL) {
+            tmp = (struct HashTable*)malloc(sizeof(struct HashTable));
+            tmp->key = target[i], tmp->val = i;
+            HASH_ADD_INT(hashTable, key, tmp);
+        }
+    }
+    int d[arrSize], dSize = 0;
+    for (int i = 0; i < arrSize; i++) {
+        struct HashTable* tmp;
+        HASH_FIND_INT(hashTable, &arr[i], tmp);
+        if (tmp != NULL) {
+            int idx = tmp->val;
+            int it = lower_bound(d, 0, dSize, idx);
+            if (it == dSize) {
+                d[dSize++] = idx;
+            } else {
+                d[it] = idx;
+            }
+        }
+    }
+    return targetSize - dSize;
+}
