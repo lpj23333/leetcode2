@@ -1,0 +1,34 @@
+typedef struct {
+    int key;                  
+    int val;
+    UT_hash_handle hh;         
+} HashEntry;
+
+int sumOfUnique(int* nums, int numsSize){
+    HashEntry * cnt = NULL; 
+    for (int i = 0; i < numsSize; ++i) {
+        HashEntry * pEntry = NULL;
+        HASH_FIND(hh, cnt, &nums[i], sizeof(int), pEntry);
+        if (NULL == pEntry) {
+            pEntry = (HashEntry *)malloc(sizeof(HashEntry));
+            pEntry->key = nums[i];
+            pEntry->val = 1;
+            HASH_ADD(hh, cnt, key, sizeof(int), pEntry);
+        } else {
+            ++pEntry->val;
+        }
+    }
+    int ans = 0;
+    HashEntry *curr, *next;
+    HASH_ITER(hh, cnt, curr, next) {
+        if (curr->val == 1) {
+            ans += curr->key;
+        } 
+    }
+    HASH_ITER(hh, cnt, curr, next)
+    {
+        HASH_DEL(cnt, curr);  
+        free(curr);      
+    }
+    return ans;
+}
