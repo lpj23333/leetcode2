@@ -1,0 +1,50 @@
+#define MOD 1000000007
+bool isValid(int m,int* inventory,int inventorySize,int orders)
+{
+    long long cnt =0;
+    for(int i=0;i<inventorySize;i++){
+        if(inventory[i] >= m){
+            cnt += inventory[i] - m +1;
+        }
+    }
+    if(cnt >= orders){
+        return true;
+    }
+    return false;
+}
+int getMinPrice(int* inventory, int inventorySize, int orders,int max)
+{
+    int r = max;
+    int l= 1;
+    while(l<r){
+        int m = (l+r)/2;
+        if(isValid(m,inventory,inventorySize,orders) == true){
+            l = m +1;
+        }
+        else{
+           r = m; 
+        }
+    }
+    return l-1;
+}   
+
+int maxProfit(int* inventory, int inventorySize, int orders){
+    int max = 0;
+    long long min;
+    long long ans = 0;
+    for(int i=0;i<inventorySize;i++){
+        max = fmax(max,inventory[i]);
+    }
+    min = getMinPrice(inventory, inventorySize, orders,max);
+    for(int j=0;j<inventorySize;j++){//高于允许的最低价格的全部统计
+        if(inventory[j] > min){
+            long long cnt = inventory[j]-min;
+            ans += cnt * inventory[j] - cnt*(cnt-1)/2;
+            ans %= MOD;
+            orders -= cnt;
+        }
+        printf("orders = %d\n",orders);
+    }
+    ans = (ans + orders*min) % MOD;//剩下的是使用最小价格卖出
+    return ans;
+}
