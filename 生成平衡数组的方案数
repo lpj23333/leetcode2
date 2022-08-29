@@ -1,0 +1,43 @@
+int waysToMakeFair(int *nums, int numsSize){
+    int delindex, i, count, sumeven, sumodd, temp;
+    count = 0;
+    sumeven = 0;
+    sumodd = 0;
+
+    if(((numsSize - 1)%2) == 0){
+        for(i = (numsSize - 1); i >= 2; i = i - 2){
+            sumeven = sumeven + nums[i];
+            sumodd = sumodd + nums[i-1];
+        }
+        sumeven = sumeven + nums[0];
+        }
+    else{
+        for(i = (numsSize - 1); i >= 1; i = i - 2){
+            sumodd = sumodd + nums[i];
+            sumeven = sumeven + nums[i-1];
+        }
+    }
+
+    temp = sumeven;
+    sumeven = sumodd;
+    sumodd = temp - nums[0];
+    if(sumeven == sumodd){
+        count++;
+    }
+
+    for(delindex = 1; delindex < numsSize; delindex++){
+        if(delindex%2 == 0){
+            sumeven = sumeven;
+            sumodd = sumodd - nums[delindex] + nums[delindex-1];
+        }
+        else{
+            sumeven = sumeven - nums[delindex] + nums[delindex-1];
+            sumodd = sumodd;
+        }
+        if(sumeven == sumodd){
+            count++;
+        }
+    }
+
+    return count;
+}
