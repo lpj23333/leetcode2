@@ -1,0 +1,21 @@
+static int cmp(const void* a, const void* b) {
+    int* aarry = *(int**)a;
+    int* barry = *(int**)b;
+    return barry[1] - aarry[1];
+}
+
+int min(int a, int b) {
+    return a < b ? a : b;
+}
+int maximumUnits(int** boxTypes, int boxTypesSize, int* boxTypesColSize, int truckSize){
+    qsort(boxTypes, boxTypesSize, sizeof(int*), cmp);
+
+    int res = 0;
+    int cnt = truckSize;
+    for (int i = 0; i < boxTypesSize; i++) {
+        cnt = min(boxTypes[i][0], truckSize);
+        truckSize -= cnt;
+        res += cnt*boxTypes[i][1];
+    }
+    return res;
+}
