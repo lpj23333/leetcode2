@@ -1,0 +1,80 @@
+#define MAX_BITS 0x20000
+#define MODULE_NUMBER 1000000007
+#define MIN_VAL(a, b) (((a) < (b)) ? (a) : (b))
+
+int createSortedArray(int *instructions, int instructionsSize)
+{
+    int x = 0, bits = 0, bigger = 0, smaller = 0, result = 0;
+    struct TreeNode *root = NULL, *node = NULL;
+
+    /* 二叉树的根节点默认存在，其中root->val的值不重要。 */
+    root = (struct TreeNode *)malloc(sizeof(struct TreeNode));
+    root->left = NULL;
+    root->right = NULL;
+
+    while(instructionsSize > x)
+    {
+        /* 大于自己的数，和小于自己的数，数量分别用bigger和smaller表示，然后从高位往低位开始执行。 */
+        bigger = 0;
+        smaller = 0;
+        node = root;
+        bits = MAX_BITS;
+        while(0 != bits)
+        {
+            /* 当前位是1。 */
+            if(instructions[x] & bits)
+            {
+                /* 当前位是0的一定小于自己。 */
+                if(NULL != node->left)
+                {
+                    smaller += node->left->val;
+                }
+                /* 往右分支走，并计数加一。如果右分支为空，先创建右分支。 */
+                if(NULL == node->right)
+                {
+                    node->right = (struct TreeNode *)malloc(sizeof(struct TreeNode));
+                    node->right->val = 1;
+                    node->right->left = NULL;
+                    node->right->right = NULL;
+                }
+                else
+                {
+                    node->right->val++;
+                }
+                node = node->right;
+            }
+            /* 当前位是0。 */
+            else
+            {
+                /* 当前位是1的一定大于自己。 */
+                if(NULL != node->right)
+                {
+                    bigger += node->right->val;
+                }
+                /* 往左分支走，并计数加一。如果左分支为空，先创建左分支。 */
+                if(NULL == node->left)
+                {
+                    node->left = (struct TreeNode *)malloc(sizeof(struct TreeNode));
+                    node->left->val = 1;
+                    node->left->left = NULL;
+                    node->left->right = NULL;
+                }
+                else
+                {
+                    node->left->val++;
+                }
+                node = node->left;
+            }
+            bits = bits >> 1;
+        }
+        /* 把bigger和smaller的较小值加入到结果中，并根据题意，对1e9 + 7取模。 */
+        result += MIN_VAL(bigger, smaller);
+        if(MODULE_NUMBER <= result)
+        {
+            result -= MODULE_NUMBER;
+        }
+        x++;
+    }
+
+    return result;
+}
