@@ -1,0 +1,46 @@
+#define MAX(a, b) ((a) < (b) ? (b) : (a))
+#define MIN(a, b) ((a) > (b) ? (b) : (a))
+// 转换为剪掉x 后连续子数组和最大
+
+int minOperations(int *nums, int numsSize, int x)
+{
+    int sum = 0;
+    for (int i = 0; i < numsSize; i++)
+    {
+        sum += nums[i];
+    }
+
+    int target = sum - x;
+        if (target < 0)
+    {
+        return -1;
+    }
+
+    int left = 0;
+    int right = 0;
+    sum = 0;
+    int len = 0;
+    int maxlen = 0;
+    int cnt=0;
+    while (right < numsSize)
+    {
+        sum += nums[right];
+        right++;
+        printf("window %d %d\n", left, right);
+        while (sum > target)
+        {
+            sum -= nums[left];
+            left++;
+        }
+        if (sum == target)
+        {
+            len = right - left;
+            maxlen = MAX(maxlen, len);
+            if (maxlen == 0)
+            return numsSize;
+            cnt = numsSize - maxlen;
+        }
+    }
+
+    return cnt == 0 ? -1 : cnt;
+}
