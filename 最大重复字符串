@@ -1,0 +1,15 @@
+int maxRepeating(char * sequence, char * word)
+{
+    char a[101]={0};
+    int i;
+    for(i=0;i<100;i++)
+    {
+        strcat(a,word);
+        if(strstr(sequence,a)==NULL)
+        {
+            return i;
+        }
+    }
+    
+    return NULL;
+}
