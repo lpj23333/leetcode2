@@ -1,0 +1,47 @@
+typedef struct hashnode
+{
+    int val;
+    int count;
+    UT_hash_handle hh;
+} Hash;
+
+int tupleSameProduct(int *nums, int numsSize)
+{
+    Hash *map = NULL;
+    int a, b, mul;
+    Hash *entry = NULL;
+    for (int i = 0; i < numsSize - 1; i++)
+    {
+        a = nums[i];
+        for (int j = i + 1; j < numsSize; j++)
+        {// 遍历排列组合的乘积，将乘积出现的次数存储到 hashmap 的 value 中
+            b = nums[j];
+            mul = a * b;
+            HASH_FIND_INT(map, &mul, entry);
+            if (entry != NULL)
+            {
+                entry->count += 1;
+            }
+            else
+            {
+                entry = (Hash *)malloc(sizeof(Hash));
+                entry->val = mul;
+                entry->count = 1;
+                HASH_ADD_INT(map, val, entry);
+            }
+        }
+    }
+    Hash *cur, *next;
+    int ans = 0;
+    HASH_ITER(hh, map, cur, next)
+    {
+        int c = cur->count;
+        if (c > 1)
+        {
+            ans += (c * (c - 1)) * 4;
+        }
+        HASH_DEL(map, cur);
+        free(cur);
+    }
+    return ans;
+}
