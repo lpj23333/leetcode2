@@ -1,0 +1,34 @@
+int maxResult(int *nums, int numsSize, int k)
+{
+    int x = 1, y = 0, maxIndex = 0;
+    int record[numsSize];
+
+    record[0] = nums[0];
+    while(numsSize > x)
+    {
+        record[x] = nums[x] + record[maxIndex];
+        /* 如果record[x]自己就是最大值的下标位置，则直接把maxIndex挪到x来。 */
+        if(record[x] >= record[maxIndex])
+        {
+            maxIndex = x;
+        }
+        /* 如果maxIndex要移出窗口左边缘，则更新maxIndex的位置。 */
+        if(k == x - maxIndex)
+        {
+            maxIndex++;
+            y = maxIndex;
+            while(x >= y)
+            {
+                /* 注意，这里要用大于等于，不要用大于。即尽量使maxIndex移动得更右边一点。一字之差，运行耗时天壤之别。 */
+                if(record[y] >= record[maxIndex])
+                {
+                    maxIndex = y;
+                }
+                y++;
+            }
+        }
+        x++;
+    }
+
+    return record[numsSize - 1];
+}
