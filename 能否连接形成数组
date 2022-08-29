@@ -1,0 +1,23 @@
+bool canFormArray(int* arr, int arrSize, int** pieces, int piecesSize, int* piecesColSize){
+    int i, j, k, index = -1, col = -1, flag = 0;
+
+    for(i = 0; i < arrSize; i++){
+        for(j = 0; j < piecesSize; j++){
+            for(k = 0; k < piecesColSize[j]; k++){
+                if (arr[i] == pieces[j][k]){
+                    flag = 1;
+                    if (index == j && col != k - 1) return false;
+                    if (index != j && k > 0) return false;
+                    else {
+                        index = j;
+                        col = k;
+                    }
+                }
+            }
+        }
+        if (flag == 0) return false;
+        flag = 0;
+    }
+
+    return true;
+}
