@@ -1,0 +1,28 @@
+int* getSumAbsoluteDifferences(int* nums, int numsSize, int* returnSize){
+int *result = (int*)malloc(sizeof(int)*numsSize);
+memset(result,0,sizeof(int)*numsSize);
+*returnSize = numsSize;
+
+int sums[numsSize];
+memset(sums,0,sizeof(sums));
+sums[0] = nums[0];
+for(int i =1;i<numsSize;i++)
+{
+    sums[i] = sums[i-1]+nums[i];
+}
+
+for(int i =0;i<numsSize;i++)
+{
+    if(i==0)
+    {
+        result[i] = sums[numsSize-1]-sums[i]-nums[i]*(numsSize-1-i);
+    }
+    else{
+        result[i] = nums[i]*i-sums[i-1]+sums[numsSize-1]-sums[i]-nums[i]*(numsSize-1-i);
+    }
+    
+
+}
+return result;
+
+}
