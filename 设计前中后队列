@@ -1,0 +1,88 @@
+typedef struct {
+    //left保留队列的前一半元素，right保留后一半元素，且right的元素个数不小于left的元素个数
+    int left[2000]; 
+    int llo;
+    int lhi;
+    int right[2000];
+    int rlo;
+    int rhi;
+} FrontMiddleBackQueue, FQ;
+
+
+FrontMiddleBackQueue* frontMiddleBackQueueCreate() {
+    FQ *obj = malloc(sizeof(FQ));
+    obj->llo = obj->lhi = obj->rlo = obj->rhi = 1000;
+    return obj;
+}
+
+void adjust(FQ *obj) {
+    int lsize = obj->lhi - obj->llo;
+    int rsize = obj->rhi - obj->rlo;
+    if (lsize > rsize) {
+        //left元素过多
+        obj->right[--(obj->rlo)] = obj->left[--(obj->lhi)];
+    } else if (lsize+1 < rsize) {
+        //right元素过多
+        obj->left[(obj->lhi)++] = obj->right[(obj->rlo)++];
+    }
+}
+
+void frontMiddleBackQueuePushFront(FrontMiddleBackQueue* obj, int val) {
+    obj->left[--(obj->llo)] = val;
+    adjust(obj);
+}
+
+void frontMiddleBackQueuePushMiddle(FrontMiddleBackQueue* obj, int val) {
+    obj->left[obj->lhi++] = val;
+    adjust(obj);
+}
+
+void frontMiddleBackQueuePushBack(FrontMiddleBackQueue* obj, int val) {
+    obj->right[obj->rhi++] = val;
+    adjust(obj);
+}
+
+int frontMiddleBackQueuePopFront(FrontMiddleBackQueue* obj) {
+    if (obj->llo == obj->lhi) { 
+        if (obj->rlo == obj->rhi) {
+            return -1;
+        } else {
+            int val = obj->right[obj->rlo];
+            ++obj->rlo;
+            return val;
+        }
+    } else {
+        int val = obj->left[obj->llo];
+        ++obj->llo;
+        adjust(obj);
+        return val;
+    }
+}
+
+int frontMiddleBackQueuePopMiddle(FrontMiddleBackQueue* obj) {
+    if (obj->rlo == obj->rhi) return -1;
+    int lsize = obj->lhi - obj->llo;
+    int rsize = obj->rhi - obj->rlo;
+    int val;
+    if (lsize == rsize) {
+        val = obj->left[--(obj->lhi)];
+    } else {
+        val = obj->right[obj->rlo++];
+    }
+    adjust(obj);
+    return val;
+}
+
+int frontMiddleBackQueuePopBack(FrontMiddleBackQueue* obj) {
+    if (obj->rlo == obj->rhi) {
+        return -1;
+    } else {
+        int val = obj->right[--obj->rhi];
+        adjust(obj);
+        return val;
+    }
+}
+
+void frontMiddleBackQueueFree(FrontMiddleBackQueue* obj) {
+    free(obj);
+}
