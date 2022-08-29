@@ -1,0 +1,37 @@
+int change(char *a,char *b,int asize,int bsize){
+    int ans = INT_MAX;
+    for(char x = 'a';x<'z';++x){
+        int sum = 0;
+        for(int i = 0;i<asize;++i){
+            sum += (a[i]<=x?0:1);
+        }
+        for(int i = 0;i<bsize;++i){
+            sum += (b[i]>x?0:1);
+        }
+        ans = ans<sum?ans:sum;
+    }
+    return ans;
+}
+
+int minmend(char *a,char *b,int asize,int bsize){
+    int hash[26]={0};
+    int i;
+    int max = 0;
+    for(i = 0;i<asize;++i){
+        hash[(a[i]-'a')]++;
+    }
+    for(i = 0;i<bsize;++i){
+        hash[(b[i]-'a')]++;
+    }
+    for(i = 0;i<26;++i){
+        max = max>hash[i]?max:hash[i];
+    }
+    return asize+bsize-max;
+}
+
+int minCharacters(char * a, char * b){
+    int asize = strlen(a);
+    int bsize = strlen(b);
+    int tmp = change(a,b,asize,bsize)<change(b,a,bsize,asize)?change(a,b,asize,bsize):change(b,a,bsize,asize);
+    return tmp<minmend(a,b,asize,bsize)?tmp:minmend(a,b,asize,bsize);
+}
