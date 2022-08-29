@@ -1,0 +1,17 @@
+int countBits(int n)//计算n的二进制位数
+{
+    int count=0;
+    while(n)
+    {
+        n/=2;
+        count++;
+    }
+    return count;
+}
+
+int concatenatedBinary(int n){
+    long long res=0;
+    for(int i=1;i<=n;i++)
+        res=((res<<countBits(i))+i)%1000000007;
+    return (int)res;
+}
