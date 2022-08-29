@@ -1,0 +1,6 @@
+int minimumBoxes(int n){
+    long long l = 1, volume = 0, offset = 0;
+    for (; (volume = l * (l + 1) * (l + 2) / 6) < n; ++ l) ;
+    for (; volume - (l - offset) >= n; ++ offset) volume -= (l - offset);
+    return l * (l + 1) / 2 - offset;
+}
