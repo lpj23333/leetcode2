@@ -1,0 +1,16 @@
+char get(int n,int k){
+    int temp=26*(n-1)+1;
+    if(k-temp<=0) return 'a';
+    return 'a'+(k-temp);
+}
+char * getSmallestString(int n, int k){
+    char *res=malloc(sizeof(char)*(n+1));
+    int i=0,temp=n;
+    while(i<temp){
+        res[i++]=get(n,k);
+        k-=(get(n,k)-'a'+1);
+        n--;
+    }
+    res[i]='\0';
+    return res;
+}
