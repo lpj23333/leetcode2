@@ -1,0 +1,39 @@
+int cmp(const void* x, const void* y){
+    return *(int*)x - *(int*)y;
+}
+int cmp2(const void* x, const void* y){
+    int* a = *(int**)x;
+    int* b = *(int**)y;
+    return a[0]+a[1]+a[2]-b[0]-b[1]-b[2];
+}
+#define MAXSIZE 105
+
+int maxHeight(int** cuboids, int cuboidsSize, int* cuboidsColSize){
+    for(int i = 0; i < cuboidsSize; i++){
+        qsort(cuboids[i], 3, sizeof(int), cmp);
+    }
+    qsort(cuboids, cuboidsSize, sizeof(cuboids[0]), cmp2);
+    int ct[MAXSIZE][MAXSIZE] = {0};
+    for(int i = 0; i < cuboidsSize; i++){
+        for(int j = i; j < cuboidsSize; j++){
+            if(cuboids[i][0] <= cuboids[j][0] && cuboids[i][1] <= cuboids[j][1] && cuboids[i][2] <= cuboids[j][2])
+                ct[i][j] = cuboids[j][2] + ct[i][i];
+        }
+    }
+    for(int i = 0; i < cuboidsSize; i++){
+        for(int j = i + 2; j < cuboidsSize; j++){
+            for(int k = i + 1; k < j; k++){
+                if(ct[i][j] && ct[k][j])
+                    ct[i][j] = fmax(ct[i][j], ct[i][k] + ct[k][j] - ct[k][k]);
+            }
+        }
+    }
+
+    int ans = 0;
+    for(int i = 0; i < cuboidsSize; i++){
+        for(int j = 0; j < cuboidsSize; j++){
+            ans = fmax(ct[i][j], ans);
+        }
+    }
+    return ans;
+}
