@@ -1,0 +1,31 @@
+int minimumMountainRemovals(int* nums, int numsSize){
+    int i,j,mid,dp[numsSize],right=-1,res=0;
+    int leftlen[numsSize],rightlen[numsSize]; 
+
+    for(i=0;i<numsSize;i++){
+        if(right==-1||nums[i]>=dp[right]){
+            if(right==-1||nums[i]>dp[right])++right;
+            dp[right]=nums[i]; leftlen[i]=right+1;
+        }else{
+            for(j=0;j<=right;j++)if(nums[i]<=dp[j]){dp[j]=nums[i]; leftlen[i]=j+1; break; }
+            if(j==right+1)leftlen[i]=1;
+        }
+    }right=-1;
+    for(i=numsSize-1;i>=0;i--){
+        if(right==-1||nums[i]>=dp[right]){
+            if(right==-1||nums[i]>dp[right])++right;
+            dp[right]=nums[i]; rightlen[i]=right+1;
+        }else{
+            for(j=0;j<=right;j++)if(nums[i]<=dp[j]){dp[j]=nums[i]; rightlen[i]=j+1; break; }
+            if(j==right+1)rightlen[i]=1;
+        }
+    }
+    int max=0;
+    for(i=1;i<numsSize-1;i++){
+        if(leftlen[i]>=2&&rightlen[i]>=2)
+        max=fmax(max,leftlen[i]+rightlen[i]-1);
+    }
+
+
+    return numsSize-max;
+}
