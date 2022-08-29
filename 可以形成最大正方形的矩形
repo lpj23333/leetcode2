@@ -1,0 +1,16 @@
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+
+int countGoodRectangles(int** rectangles, int rectanglesSize, int* rectanglesColSize){
+    int res = 0, maxLen = 0;
+    for (int i = 0; i < rectanglesSize; ++i) {
+        int l = rectangles[i][0], w = rectangles[i][1];
+        int k = MIN(l, w);
+        if (k == maxLen) {
+            ++res;
+        } else if (k > maxLen) {
+            res = 1;
+            maxLen = k;
+        }
+    }
+    return res;
+}
