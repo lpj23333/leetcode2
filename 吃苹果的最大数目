@@ -1,0 +1,91 @@
+typedef struct{
+    int apples;
+    int days;
+}Heap;
+
+Heap** heap;
+int heapSize;
+
+void swap(int a, int  b){
+    Heap* tmp = heap[a];
+    heap[a] = heap[b];
+    heap[b] = tmp;
+}
+
+void Adjustdown_heap(){
+    int parents = 1;        //下滤。 parents为1
+    int child = 2*parents;
+    while ( child < heapSize ){
+        if ( child+1<heapSize && heap[child+1]->days < heap[child]->days){
+            child++;
+        }
+        if ( heap[child]->days > heap[parents]->days ) break;
+        swap(child,parents);
+        parents = child;
+        child = 2*parents;
+    }
+}
+
+void Adjustup_heap(){
+    int child = heapSize-1;
+    int parents = child/2;
+    while ( parents > 0 ){
+        if ( heap[child]->days > heap[parents]->days ) break;
+        swap(child,parents);
+        child = parents;
+        parents = child/2;
+    }
+
+}
+
+void pop_heap(){
+    heap[1] = heap[heapSize-1];
+    heapSize--;
+    Adjustdown_heap();
+}
+
+void add_heap(int apples, int days){
+    Heap* new = malloc(sizeof(Heap));
+    new->apples = apples;
+    new->days = days;
+    heap[heapSize++] = new;
+    Adjustup_heap();
+}
+
+bool empty_heap(){
+    return heapSize <= 1;
+}
+
+Heap* getTop_heap(){
+    return heap[1];
+}
+
+
+int eatenApples(int* apples, int applesSize, int* days, int daysSize){
+    //用产生的苹果和天数的取小值来表示未来的n天中你都有苹果可以吃。
+    //维护这个n值就可以了，最后再把剩余的n给加上去
+    //上述思路有个bug:那就是吃的苹果是按照顺序过来的。而不考虑腐烂时间。所以导致后来的苹果快腐烂而没吃到
+
+    //所以这个题目就必须得用贪心思想了。首先要改变一下day数组。将其含义表示成在第i天开始腐烂。
+    int ans = 0;
+    int i = 0;
+    for(int k = 0; k<daysSize; k++){
+        days[k] += k;
+    }
+
+    heap = malloc(sizeof(Heap*)*(applesSize+1));
+    heapSize = 1;
+
+    //模拟过程.每天加入一批苹果.过了腐烂天数的就置零.没有腐烂的就从快要腐烂的中挑出一个苹果吃掉.
+    while( i < daysSize || !empty_heap() ){         //天数未到或者堆不空.
+        if ( i < daysSize ) add_heap(apples[i],days[i]);       //加入新的一批苹果.
+        while ( !empty_heap() && ( getTop_heap()->days <= i || getTop_heap()->apples <= 0) ){
+            pop_heap();                               //清理堆中腐烂的水果和没有水果的批次
+        }
+        i++;
+        if ( empty_heap() ) continue;
+        (getTop_heap()->apples)--;
+        ans++;
+    }   
+    return ans;
+}
