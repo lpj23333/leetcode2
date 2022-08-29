@@ -1,0 +1,210 @@
+/* 标记未访问 */
+#define UN_USED 0
+/* 标记已访问 */
+#define USED 1
+
+/**
+ * 对 val 的第 bit 位置1
+ * @param val :
+ * @param bit :
+ * Return :
+ */
+#define setBit( val , bit ) ( ( val ) |= ( 0x01 << ( bit ) ) )
+
+/**
+ * 获取 val 的第 bit 位值
+ * @param val :
+ * @param bit :
+ * Return :
+ */
+#define getBit( val , bit ) ( 0x01 & ( ( val ) >> ( bit ) ) )
+
+/**
+ * 对 val 的第 bit 位清0
+ * @param val :
+ * @param bit :
+ * Return :
+ */
+#define clearBit( val , bit ) ( ( val ) &= ( ~( 0x01 << ( bit ) ) ) )
+
+/* 用于暂存路径 */
+int * buf;
+/* 用于标记 [ 1, n ] 中已经被访问的整数 */
+int mask;
+
+
+typedef char ELEMENT;
+#define ELEMENT_SIZE 3
+#define ELEMENT_ 7
+#define MAX_HASH_SIZE 10
+
+/* 定义函数指针，用于操作哈希表 */
+typedef int( * Put )( int key , int val );
+typedef int( * Get )( int key );
+typedef int( * Del )( int key );
+
+
+/* 哈希表对象，包括哈希表内存位置指针，增删查函数API接口 */
+typedef struct {
+
+    ELEMENT * table;
+    Put put;
+    Get get;
+    Del del;
+
+} Hash;
+
+Hash hash;
+
+/**
+ * 根据 key 添加哈希表的值 val
+ * @param int key :
+ * @param int val : 0 或 1，用于标记是否存在
+ * Return int : 0 , 不存在 ; 1 , 存在
+ */
+int put( int key , int val ) {
+
+    int index = key >> ELEMENT_SIZE;
+    int bit = key & ELEMENT_;
+
+    setBit( hash.table[ index ] , bit );
+    
+    return USED;
+
+}
+
+/**
+ * 根据 key 查找哈希表的值
+ * @param int key :
+ * Return int : 0 , 不存在 ; 1 , 存在
+ */
+int get( int key ) {
+
+    int index = key >> ELEMENT_SIZE;
+    int bit = key & ELEMENT_;
+    
+    return getBit( hash.table[ index ] , bit );
+
+}
+
+/**
+ * 根据 key 删除哈希表的值，即从哈希表中标记 key 不存在
+ * @param int key :
+ * Return int : 0 , 不存在 ; 1 , 存在
+ */
+int del( int key ) {
+
+    int index = key >> ELEMENT_SIZE;
+    int bit = key & ELEMENT_;
+
+    clearBit( hash.table[ index ] , bit );
+    
+    return UN_USED;
+
+}
+
+/**
+ * 功能：
+ * @param int index : buf 的当前位置
+ * @param int len : buf 最长长度
+ * @param int n : 
+ * Return bool : true , 找到满足条件的 buf 数组； false, 未找到
+ */
+bool backtrack( int index , int len , int n ) {
+
+    /* 结束条件 */
+    if( index == len ) {
+        
+        /* 将当前路径添加至结果数组中 */
+        return true;
+
+    }
+
+
+    /* 遍历可操作列表 */
+    for( int i = n ; i > 1 ; --i ) {
+        
+        /* 剪枝 */
+        /* 当前 index 已经被填充数据，证明 [ 0, index ] 区间已经被填充完毕, 进入下一个元素 index + 1 */
+        if( hash.get( index ) == USED ) {
+
+            return backtrack( index + 1 , len , n );
+
+        /* 如果 index + i 已经被填充数据了，证明当前 i 不可用，但是 [ 0, index + i ] 区间填充完毕与否是无法知道的，因此只能尝试 i + 1 来进行下一轮填充 */
+        } else if( hash.get( index + i ) == USED || getBit( mask , i ) == USED ) {
+
+            continue;
+
+        }
+
+        /* 做选择 */
+        /* 标记当前 i 已经被使用 */
+        setBit( mask , i );
+        /* 标记 index + i 已经被填充 */
+        hash.put( index + i , USED );
+        buf[ index ] = buf[ index + i ] = i;
+
+        /* 如果已经找到答案，结束回溯 */
+        if( backtrack( index + 1 , len , n ) ) {
+
+            return true;
+
+        }
+
+        /* 撤销选择 */
+        hash.del( index + i );
+        clearBit( mask , i );
+
+    }
+
+    /* 由于 1 只在 buf 数组中出现一次，因此，只需进行 buf[ index ] = 1 选择即可 */
+    if( hash.get( index ) == UN_USED && getBit( mask , 1 ) == UN_USED ) {
+
+        hash.put( index , USED );
+        setBit( mask , 1 );
+        buf[ index ] = 1;
+        
+        /* 如果已经找到答案，结束回溯 */
+        if( backtrack( index + 1 , len , n ) ) {
+
+            return true;
+
+        }
+
+        clearBit( mask , 1 );
+        hash.del( index );
+
+    }
+
+    return false;
+
+}
+
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+int * constructDistancedSequence( int n , int * returnSize ) {
+
+    /* len = 2 * n - 1 */
+    int len = ( n << 1 ) - 1;
+    buf = ( int * )malloc( sizeof( int ) * len * 2 );
+    /* 初始化哈希表 */
+    hash.table = ( ELEMENT * )malloc( sizeof( ELEMENT ) * MAX_HASH_SIZE );
+    
+    /* 实例化 API 接口 */
+    hash.put = put;
+    hash.get = get;
+    hash.del = del;
+
+    /* 初始化 buf 和 hash 哈希表 */
+    memset( hash.table , 0 , sizeof( ELEMENT ) * MAX_HASH_SIZE );
+    memset( buf , 0 , sizeof( int ) * len * 2 );
+    /* 初始化掩码 */
+    mask = 0;
+
+    backtrack( 0 , len , n );
+    *returnSize = len;
+    free( hash.table );
+    return buf;
+
+}
