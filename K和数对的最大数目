@@ -1,0 +1,24 @@
+int cmp(const void*a,const void*b)
+{
+    return *(int*)a-*(int*)b;
+}
+
+int maxOperations(int* nums, int numsSize, int k){
+    int left=0,right=numsSize-1;
+    qsort(nums,numsSize,sizeof(int),cmp);//先排个序
+    int count=0;
+    while(left<right)//由于left和right必须不相等，所以这里使用小于号
+    {
+        if(nums[left]+nums[right]==k)
+        {
+            count++;//计数器加1
+            left++;
+            right--;
+        }
+        else if(nums[left]+nums[right]<k)//如果比目标值小则左指针右移，否则右指针左移
+            left++;
+        else
+            right--;
+    }
+    return count;
+}
