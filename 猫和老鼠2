@@ -1,0 +1,211 @@
+static const int MOUSE_TURN = 0, CAT_TURN = 1;
+static const int UNKNOWN = 0, MOUSE_WIN = 1, CAT_WIN = 2;
+static const int MAX_MOVES = 1000;
+
+#define MAX_QUEUE_SIZE 10000
+
+int dirs[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+int g_rows, g_cols;
+char **g_grid;
+int g_catJump, g_mouseJump;
+int g_food;
+int g_degrees[64][64][2];
+int g_results[64][64][2][2];
+
+int getPos(int row, int col) {
+    return row * g_cols + col;
+}
+
+typedef struct State {
+    int mouse;
+    int cat;
+    int turn;
+} State;
+
+typedef struct Node {
+    State currState;
+    struct Node * next;
+} Node;
+
+Node * getPrevStates(int mouse, int cat, int turn) {
+    Node * prevStates = NULL;
+    Node * tail = NULL;
+    int mouseRow = mouse / g_cols, mouseCol = mouse % g_cols;
+    int catRow = cat / g_cols, catCol = cat % g_cols;
+    int prevTurn = turn == MOUSE_TURN ? CAT_TURN : MOUSE_TURN;
+    int maxJump = prevTurn == MOUSE_TURN ? g_mouseJump : g_catJump;
+    int startRow = prevTurn == MOUSE_TURN ? mouseRow : catRow;
+    int startCol = prevTurn == MOUSE_TURN ? mouseCol : catCol;
+    prevStates = (Node *)malloc(sizeof(Node));
+    tail = prevStates;
+    tail->currState.mouse = mouse;
+    tail->currState.cat = cat;
+    tail->currState.turn = prevTurn;
+    tail->next = NULL;
+    for (int k = 0; k < 4; k++) {
+        int *dir = dirs[k];
+        for (int i = startRow + dir[0], j = startCol + dir[1], jump = 1; i >= 0 && i < g_rows && j >= 0 && j < g_cols && g_grid[i][j] != '#' && jump <= maxJump; i += dir[0], j += dir[1], jump++) {
+            int prevMouseRow = prevTurn == MOUSE_TURN ? i : mouseRow;
+            int prevMouseCol = prevTurn == MOUSE_TURN ? j : mouseCol;
+            int prevCatRow = prevTurn == MOUSE_TURN ? catRow : i;
+            int prevCatCol = prevTurn == MOUSE_TURN ? catCol : j;
+            int prevMouse = getPos(prevMouseRow, prevMouseCol);
+            int prevCat = getPos(prevCatRow, prevCatCol);
+            tail->next = (Node *)malloc(sizeof(Node));
+            tail = tail->next;
+            tail->currState.mouse = prevMouse;
+            tail->currState.cat = prevCat;
+            tail->currState.turn = prevTurn;
+            tail->next = NULL;
+        }
+    }
+    return prevStates;
+}
+
+bool canMouseWin(char ** grid, int gridSize, int catJump, int mouseJump){
+    g_rows = gridSize;
+    g_cols = strlen(grid[0]);
+    g_grid = grid;
+    g_catJump = catJump;
+    g_mouseJump = mouseJump;
+    int startMouse = -1, startCat = -1;
+    for (int i = 0; i < g_rows; i++) {
+        for (int j = 0; j < g_cols; j++) {
+            char c = grid[i][j];
+            if (c == 'M') {
+                startMouse = getPos(i, j);
+            } else if (c == 'C') {
+                startCat = getPos(i, j);
+            } else if (c == 'F') {
+                g_food = getPos(i, j);
+            }
+        }
+    }
+    int total = g_rows * g_cols;
+    memset(g_degrees, 0, sizeof(g_degrees));
+    memset(g_results, 0, sizeof(g_results));
+    State * queue = (State *)malloc(sizeof(State) * MAX_QUEUE_SIZE);
+    int head = 0, tail = 0;
+    // 计算每个状态的度
+    for (int mouse = 0; mouse < total; mouse++) {
+        int mouseRow = mouse / g_cols, mouseCol = mouse % g_cols;
+        if (grid[mouseRow][mouseCol] == '#') {
+            continue;
+        }
+        for (int cat = 0; cat < total; cat++) {
+            int catRow = cat / g_cols, catCol = cat % g_cols;
+            if (grid[catRow][catCol] == '#') {
+                continue;
+            }
+            g_degrees[mouse][cat][MOUSE_TURN]++;
+            g_degrees[mouse][cat][CAT_TURN]++;
+            for (int i = 0; i < 4; i++) {
+                int * dir = dirs[i];
+                for (int row = mouseRow + dir[0], col = mouseCol + dir[1], jump = 1; row >= 0 && row < g_rows && col >= 0 && col < g_cols && grid[row][col] != '#' && jump <= mouseJump; row += dir[0], col += dir[1], jump++) {
+                    int nextMouse = getPos(row, col), nextCat = getPos(catRow, catCol);
+                    g_degrees[nextMouse][nextCat][MOUSE_TURN]++;
+                }
+                for (int row = catRow + dir[0], col = catCol + dir[1], jump = 1; row >= 0 && row < g_rows && col >= 0 && col < g_cols && grid[row][col] != '#' && jump <= catJump; row += dir[0], col += dir[1], jump++) {
+                    int nextMouse = getPos(mouseRow, mouseCol), nextCat = getPos(row, col);
+                    g_degrees[nextMouse][nextCat][CAT_TURN]++;
+                }
+            }
+        }
+    }
+    // 猫和老鼠在同一个单元格，猫获胜
+    for (int pos = 0; pos < total; pos++) {
+        int row = pos / g_cols, col = pos % g_cols;
+        if (grid[row][col] == '#') {
+            continue;
+        }
+        g_results[pos][pos][MOUSE_TURN][0] = CAT_WIN;
+        g_results[pos][pos][MOUSE_TURN][1] = 0;
+        g_results[pos][pos][CAT_TURN][0] = CAT_WIN;
+        g_results[pos][pos][CAT_TURN][1] = 0;
+        queue[tail].mouse = pos;
+        queue[tail].cat = pos;
+        queue[tail].turn = MOUSE_TURN;
+        tail++;
+        queue[tail].mouse = pos;
+        queue[tail].cat = pos;
+        queue[tail].turn = CAT_TURN;
+        tail++;
+    }
+    // 猫和食物在同一个单元格，猫获胜
+    for (int mouse = 0; mouse < total; mouse++) {
+        int mouseRow = mouse / g_cols, mouseCol = mouse % g_cols;
+        if (grid[mouseRow][mouseCol] == '#' || mouse == g_food) {
+            continue;
+        }
+        g_results[mouse][g_food][MOUSE_TURN][0] = CAT_WIN;
+        g_results[mouse][g_food][MOUSE_TURN][1] = 0;
+        g_results[mouse][g_food][CAT_TURN][0] = CAT_WIN;
+        g_results[mouse][g_food][CAT_TURN][1] = 0;
+        queue[tail].mouse = mouse;
+        queue[tail].cat = g_food;
+        queue[tail].turn = MOUSE_TURN;
+        tail++;
+        queue[tail].mouse = mouse;
+        queue[tail].cat = g_food;
+        queue[tail].turn = CAT_TURN;
+        tail++;
+    }
+    // 老鼠和食物在同一个单元格且猫和食物不在同一个单元格，老鼠获胜
+    for (int cat = 0; cat < total; cat++) {
+        int catRow = cat / g_cols, catCol = cat % g_cols;
+        if (grid[catRow][catCol] == '#' || cat == g_food) {
+            continue;
+        }
+        g_results[g_food][cat][MOUSE_TURN][0] = MOUSE_WIN;
+        g_results[g_food][cat][MOUSE_TURN][1] = 0;
+        g_results[g_food][cat][CAT_TURN][0] = MOUSE_WIN;
+        g_results[g_food][cat][CAT_TURN][1] = 0;
+        queue[tail].mouse = g_food;
+        queue[tail].cat = cat;
+        queue[tail].turn = MOUSE_TURN;
+        tail++;
+        queue[tail].mouse = g_food;
+        queue[tail].cat = cat;
+        queue[tail].turn = CAT_TURN;
+        tail++;
+    }
+    // 拓扑排序
+    while (head != tail) {
+        int mouse = queue[head].mouse;
+        int cat = queue[head].cat;
+        int turn = queue[head].turn;
+        head++;
+        int result = g_results[mouse][cat][turn][0];
+        int moves = g_results[mouse][cat][turn][1];
+        Node * prevStates = getPrevStates(mouse, cat, turn);
+        for (Node * curr = prevStates; curr; curr = curr->next) {
+            int prevMouse = curr->currState.mouse;
+            int prevCat = curr->currState.cat;
+            int prevTurn = curr->currState.turn;
+            if (g_results[prevMouse][prevCat][prevTurn][0] == UNKNOWN) {
+                bool canWin = (result == MOUSE_WIN && prevTurn == MOUSE_TURN) || (result == CAT_WIN && prevTurn == CAT_TURN);
+                if (canWin) {
+                    g_results[prevMouse][prevCat][prevTurn][0] = result;
+                    g_results[prevMouse][prevCat][prevTurn][1] = moves + 1;
+                    queue[tail].mouse = prevMouse;
+                    queue[tail].cat = prevCat;
+                    queue[tail].turn = prevTurn;
+                    tail++;
+                } else {
+                    g_degrees[prevMouse][prevCat][prevTurn]--;
+                    if (g_degrees[prevMouse][prevCat][prevTurn] == 0) {
+                        int loseResult = prevTurn == MOUSE_TURN ? CAT_WIN : MOUSE_WIN;
+                        g_results[prevMouse][prevCat][prevTurn][0] = loseResult;
+                        g_results[prevMouse][prevCat][prevTurn][1] = moves + 1;
+                        queue[tail].mouse = prevMouse;
+                        queue[tail].cat = prevCat;
+                        queue[tail].turn = prevTurn;
+                        tail++;
+                    }
+                }
+            }
+        }
+    }
+    free(queue);
+    return g_results[startMouse][startCat][MOUSE_TURN][0] == MOUSE_WIN && g_results[startMouse][startCat][MOUSE_TURN][1] <= MAX_MOVES;
+}
