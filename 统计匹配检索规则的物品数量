@@ -1,0 +1,19 @@
+int countMatches(char *** items, int itemsSize, int* itemsColSize, char * ruleKey, char * ruleValue){
+    int idx = 0;
+    int cnt = 0;
+    int i;
+    /* 先找出匹配规则"type"或"color"或"name" */
+    if (ruleKey[0] == 'c') {
+        idx = 1;
+    } else if (ruleKey[0] == 'n') {
+        idx = 2;
+    }
+
+    /* 根据匹配规则, value匹配时, cnt++ */
+    for (i = 0; i < itemsSize; i++) {
+        if (strcmp(items[i][idx], ruleValue) == 0) {
+            cnt++;
+        }
+    }
+    return cnt;
+}
