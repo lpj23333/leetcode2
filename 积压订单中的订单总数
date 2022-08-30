@@ -1,0 +1,280 @@
+//代码示例   标准堆 存储数据
+typedef struct Heap
+{
+    long long * array;   //存放堆的数组
+    long long * num;
+    int  capacity;//数组的容量
+    int  len;     //已存数组的大小
+}Heap;
+//#define maxHeap                                         /*大小根堆切换开关*/
+int  HeapLen(Heap* hp);                                 //heap获取当前的堆大小
+void HeapSwap(long long * pLeft, long long * pRight);                 //heap交换父子结点的数值
+bool HeapEmpty(Heap* hp);                               //heap判空
+bool HeapFull(Heap* hp);                                //heap判满
+long long   HeapGetTop(Heap* hp);                              //heap获取堆顶
+void HeapInsert(Heap* hp, long long   dat,long long  num);            //heap向堆的尾部插入1个元素
+void HeapDelete(Heap* hp);                              //heap删除堆顶
+void HeapAdjustDown(Heap* hp, int parent);              //heap向下调整
+void HeapAdjustUp(Heap* hp, int child);                 //heap向上调整
+Heap* CreateHeap( int size);                            //heap创建
+void heapFree(Heap* hp);                                //heap释放空间
+bool maxHeap;
+
+int HeapLen(Heap* hp)
+{
+    return hp->len;
+}
+
+
+
+bool HeapEmpty(Heap* hp)          //判空
+{
+    if (HeapLen(hp) == 1)
+    {
+        return true;
+    }
+    return false;
+}
+
+bool HeapFull(Heap* hp)          //判满
+{
+    if (hp->capacity == hp->len)
+    {
+        return true;
+    }
+    return false;
+}
+
+
+void HeapSwap(long long * pLeft, long long * pRight)//交换数值
+{
+    //交换堆中的父子结点
+    long long   temp;
+    temp = *pLeft;
+    *pLeft = *pRight;
+    *pRight = temp;
+}
+
+long long  HeapGetTop(Heap* hp)
+{
+    return hp->array[1];
+}
+
+void HeapDelete(Heap* hp)//删除堆顶
+{
+    if (HeapEmpty(hp))
+        return;
+
+    //用最后一个元素覆盖堆顶，相当于删除堆顶
+    hp->array[1] = hp->array[hp->len - 1];
+    hp->num[1]   = hp->num[hp->len - 1];
+    hp->len--;//删除最后一个元素 heap长度变短
+    HeapAdjustDown(hp, 1);//对第一个元素进行调整
+}
+
+
+
+void HeapInsert(Heap* hp, long long   dat,long long  num)
+{
+    if (HeapFull(hp))
+        return;
+    int child = 0;
+    int parent = 0;
+    //插入到最后一个元素的下一个位置
+    hp->array[hp->len] = dat;
+    hp->num[hp->len] = num;
+    hp->len++;
+    //调整刚插入元素，
+    //因为插入的是堆的尾部，需要堆向上调整
+    HeapAdjustUp(hp, hp->len - 1);
+}
+
+
+
+Heap* CreateHeap( int size)//创建
+{
+    Heap* heap = (Heap*)malloc(sizeof(Heap));
+    int   heapLen = size + 1;//长度比size的长度大1才行
+    //给堆申请空间,初始化
+    heap->array = (long long *)malloc(sizeof(long long ) * heapLen);
+    heap->num = (long long *)malloc(sizeof(long long ) * heapLen);
+
+    heap->capacity = heapLen;     //容量
+    heap->len = 1;     //当前大小
+    return heap;
+}
+
+void HeapAdjustDown(Heap* hp, int parent)//向下调整
+{
+    //标记左右孩子中最小孩子
+    int child = 2 * parent;            //左孩子为2*parent  右孩子为 2*parent +1
+    int len = hp->len;
+
+    while (child < len)
+    {
+        if( maxHeap)      
+        {
+            //大根堆 选最大的
+            //有右子树时 ，找左右孩子中最大的孩子 
+            if ((child + 1 < len) && hp->array[child] < hp->array[child + 1])
+                child = child + 1;
+
+            //最大孩子大于双亲时 ，孩子与双亲数值交换，否则说明已经调好，不用继续
+            if (hp->array[child] > hp->array[parent])
+            {
+                HeapSwap(&hp->array[child], &hp->array[parent]);
+                HeapSwap(&hp->num[child], &hp->num[parent]);
+                parent = child;
+                child = parent << 1;
+            }
+            else
+            {
+                return;
+            }
+        }
+        else
+        {
+            //小根堆  选最小的
+            //有右子树时 ，找左右孩子中最小的孩子 
+            if ((child + 1 < len) && hp->array[child] > hp->array[child + 1])
+                child = child + 1;
+
+            //最小孩子小于双亲时 ，孩子与双亲数值交换，否则说明已经调好，不用继续
+            if (hp->array[child] < hp->array[parent])
+            {
+                HeapSwap(&hp->array[child], &hp->array[parent]);
+                HeapSwap(&hp->num[child], &hp->num[parent]);
+                parent = child;
+                child = parent << 1;
+            }
+            else
+                return;
+        }
+    }
+}
+
+
+
+
+void HeapAdjustUp(Heap* hp, int child)//向上调整
+{
+    //得到父母结点的位置
+    int parent = child / 2;
+    
+    if( maxHeap)    
+    {
+        //大根堆选择大的
+        //循环迭代从child当前位置一直迭代到0位置即对顶
+        while (child > 1)
+        {
+            if (hp->array[child] > hp->array[parent])
+            {
+                HeapSwap(&hp->array[child], &hp->array[parent]);
+                HeapSwap(&hp->num[child], &hp->num[parent]);
+                child = parent;
+                parent = child/2;
+            }
+            else
+                return;
+        }
+    }
+    else
+    {
+        //小根堆选择小的
+        //循环迭代从child当前位置一直迭代到0位置即对顶
+        while (child > 1)
+        {
+            if (hp->array[child] < hp->array[parent])
+            {
+                HeapSwap(&hp->array[child], &hp->array[parent]);
+                HeapSwap(&hp->num[child], &hp->num[parent]);
+                child = parent;
+                parent = child/2;
+            }
+            else
+                return;
+        }
+    }
+}
+
+void heapFree(Heap* hp)
+{
+    free(hp->array);
+    free(hp);
+}
+
+int getNumberOfBacklogOrders(int** orders, int ordersSize, int* ordersColSize)
+{
+    //买最大堆
+    //卖最小堆
+    Heap * buyHeap  = CreateHeap(ordersSize);
+    Heap * sellHeap = CreateHeap(ordersSize);
+    for(int i = 0; i<ordersSize; i++)
+    {
+        if(orders[i][2] == 1)
+        {
+            //卖 最小堆
+            maxHeap = false;
+            HeapInsert(sellHeap, (long long )orders[i][0], (long long )orders[i][1]);
+        }
+        else
+        {
+            //买 最大堆
+            maxHeap = true;
+            HeapInsert(buyHeap, (long long )orders[i][0], (long long )orders[i][1]);
+        }
+
+
+        //买和卖都不为空
+        //检查买的最大值，大于卖的最小值
+        while(!HeapEmpty(sellHeap) && !HeapEmpty(buyHeap) && HeapGetTop(buyHeap)  >= HeapGetTop(sellHeap) )
+        {
+            int BuyNum  = buyHeap->num[1];
+            int SellNum = sellHeap->num[1];
+
+            if(BuyNum ==  SellNum)
+            {
+                //删掉卖的订单
+                maxHeap = false;
+                HeapDelete(sellHeap);
+
+                //删掉买的订单
+                maxHeap = true;
+                HeapDelete(buyHeap);
+            }
+            else if(BuyNum > SellNum)
+            {
+                //删掉卖的订单
+                maxHeap = false;
+                HeapDelete(sellHeap);
+
+                //买的订单放回去
+                buyHeap->num[1] -= SellNum;
+            }
+            else
+            {
+                //卖的订单放回去
+                sellHeap->num[1] -= BuyNum;
+
+                 //删掉买的订单
+                maxHeap = true;
+                HeapDelete(buyHeap);
+            }
+        }
+    }
+
+    long long count = 0;
+    while(!HeapEmpty(sellHeap))
+    {
+        count =  (count + sellHeap->num[1])%1000000007;
+        HeapDelete(sellHeap);
+    }
+
+    while(!HeapEmpty(buyHeap))
+    {
+        count =  (count + buyHeap->num[1])%1000000007;
+        HeapDelete(buyHeap);
+    }
+
+    return count%1000000007;
+}
