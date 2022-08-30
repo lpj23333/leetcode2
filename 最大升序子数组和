@@ -1,0 +1,30 @@
+int maxAscendingSum(int* nums, int numsSize){
+    int left = 0;
+    int right = 1;
+    int maxSum = 0;
+    int tempSum = 0;
+    bool posUpdate = true;
+
+    while(left < numsSize) {
+        // 首先加上起始位置值
+        if (posUpdate == true) {
+            tempSum = 0;
+            tempSum += nums[left];
+        }
+        // 条件判断
+        if (right < numsSize && nums[left] < nums[right]) {
+            tempSum += nums[right];
+            posUpdate = false; // 标志更新
+           
+        } else {
+            posUpdate = true; // 标志更新
+        }
+        // 更新最大值
+        if (tempSum > maxSum) {
+            maxSum = tempSum;
+        }
+        left = right;
+        right++;
+    }
+    return maxSum;
+}
