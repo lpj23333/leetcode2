@@ -1,0 +1,134 @@
+struct graph{
+	struct graph* next;
+	int node;
+	int d;
+};
+
+#define N 20001
+int heap[20000][2]; //heap[i][0] 表示 dist，heap[i][1]表示当前点
+int dist[N]; //距离
+bool v[N];
+//堆优化模板
+void push(int d, int end, int* hSize)
+{
+	int i = ++(*hSize);
+	for (; heap[i / 2][0] > d; i /= 2)
+	{
+		heap[i][0] = heap[i / 2][0], heap[i][1] = heap[i / 2][1];
+	}
+	heap[i][0] = d, heap[i][1] = end;
+}
+
+void pop(int* d, int* end, int* hSize)
+{
+	*d = heap[1][0], * end = heap[1][1];
+	int last = (*hSize);
+	int lastD = heap[last][0], lastEnd = heap[last][1];
+	(*hSize)--;
+	int i, child;
+	for (i = 1; i * 2 <= (*hSize); i = child)
+	{
+		child = i * 2;
+		if (child != (*hSize) && heap[child][0] > heap[child + 1][0])
+		{
+			child++;
+		}
+		if (lastD > heap[child][0])
+		{
+			heap[i][0] = heap[child][0], heap[i][1] = heap[child][1];
+		}
+		else break;
+	}
+	heap[i][0] = lastD, heap[i][1] = lastEnd;
+}
+
+void Dijkstra(int n, int** edges, int edgesSize, int* hSize, struct graph** Graph)
+{
+	heap[0][0] = -1; //哨兵结点
+	dist[n] = 0;
+	push(0, n, hSize);
+	int d, end;
+	while ((*hSize) > 0)
+	{
+		pop(&d, &end, hSize);
+		if (v[end]) continue;
+		v[end] = true;
+		struct graph* t = Graph[end]->next;
+		while(t)
+		{
+			if (v[t->node])
+			{
+				t = t->next;
+			}
+			else
+			{
+				int cost = dist[end] + t->d;
+				if (cost < dist[t->node])
+				{
+					dist[t->node] = cost;
+					push(cost, t->node, hSize);
+				}
+				t = t->next;
+			}
+			
+		}
+	}
+}
+
+//记忆化深搜
+int dfs(struct graph** Graph, int end, int n, int* cache)
+{
+	if (end == n)
+	{
+		return 1;
+	}
+	if (cache[end] != -1)
+	{
+		return cache[end];
+	}
+	long long ret = 0;
+	struct graph* t = Graph[end]->next;
+	while (t)
+	{
+		if (dist[end] <= dist[t->node])
+		{
+			t = t->next;
+		}
+		else
+		{
+			ret += dfs(Graph, t->node, n, cache);
+			t = t->next;
+		}
+	}
+	return cache[end] = ret % (int)(1e9 + 7);
+}
+
+
+int countRestrictedPaths(int n, int** edges, int edgesSize, int* edgesColSize) 
+{
+	memset(dist, 0x3f * 2, sizeof(dist)); //一开始的 inf 得开的大一些，用 03xf 和 0x3f3f3f3f 最后一个测试点通不过
+	memset(v, 0, sizeof(v));
+	//邻接表,链表储存
+	struct graph** Graph = (struct graph**)calloc(n + 1, sizeof(struct graph*));
+	for (int i = 0; i <= n; i++)
+	{
+		Graph[i] = (struct graph*)calloc(1, sizeof(struct graph));
+	}
+	for (int i = 0; i < edgesSize; i++)
+	{
+		int node1 = edges[i][0], node2 = edges[i][1], di = edges[i][2];
+		struct graph* tmp1 = (struct graph*)calloc(1, sizeof(struct graph));
+		struct graph* tmp2 = (struct graph*)calloc(1, sizeof(struct graph));
+		tmp1->d = di, tmp1->node = node2, tmp1->next = Graph[node1]->next, Graph[node1]->next = tmp1;
+		tmp2->d = di, tmp2->node = node1, tmp2->next = Graph[node2]->next, Graph[node2]->next = tmp2;
+	}
+	int hSize = 0;
+	Dijkstra(n, edges, edgesSize, &hSize, Graph);
+	int* cache = (int*)calloc(n + 1, sizeof(int));
+	for (int i = 0; i <= n; i++)
+	{
+		cache[i] = -1;
+	}
+	int ret = dfs(Graph, 1, n, cache);
+	return ret;
+}
