@@ -1,0 +1,15 @@
+bool checkOnesSegment(char * s){
+    int flag = 0;
+
+    while (*s) {
+        printf("*s = %c, flag = %d\r\n", *s, flag);
+        if ((*s == '1') && flag){
+            return false;
+        } else if (*s == '0') {
+            flag = 1;
+        }
+
+        s++;
+    }
+    return true;    
+}
