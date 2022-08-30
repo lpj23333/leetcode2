@@ -1,0 +1,30 @@
+int calcDiff(int *cnt) {
+    int max = INT_MIN;
+    int min = INT_MAX;
+    int i;
+    for (i = 0; i < 26; i++) {
+        if (cnt[i] == 0) {
+            continue;
+        }
+        max = fmax(max, cnt[i]);
+        min = fmin(min, cnt[i]);
+    }
+    return max - min;
+}
+
+int beautySum(char * s) {
+    int len = strlen(s);
+    int i, j;
+    int res = 0;
+    int cnt[26];
+    
+    /* 枚举所有子串, 计算其字母出现次数, 计算美丽值 */
+    for (i = 0; i < len; i++) {
+        memset(cnt, 0, sizeof(cnt));
+        for (j = i; j < len; j++) {
+            cnt[s[j] - 'a']++;
+            res += calcDiff(cnt);
+        }
+    }
+    return res;
+}
