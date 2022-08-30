@@ -1,0 +1,94 @@
+#define MAX_BIT 32768
+
+extern int countSmallNumber(int *nums, int numsSize, int upper);
+
+int countPairs(int *nums, int numsSize, int low, int high)
+{
+    int higher = 0, lower = 0;
+
+    /* 异或值小于high + 1的数对数量。 */
+    higher = countSmallNumber(nums, numsSize, high + 1);
+    /* 异或值小于low的数对数量。 */
+    lower = countSmallNumber(nums, numsSize, low);
+
+    /* 两者的差值就是返回的结果。 */
+    return higher - lower;
+}
+
+int countSmallNumber(int *nums, int numsSize, int upper)
+{
+    int x = 0, bits = 0, result = 0;
+    struct TreeNode *root = NULL, *node = NULL;
+
+    /* 二叉树的根节点默认存在，它本身对应的val值是多少不重要。 */
+    root = (struct TreeNode *)malloc(sizeof(struct TreeNode));
+    root->left = NULL;
+    root->right = NULL;
+
+    while(numsSize > x)
+    {
+        /* 先判断[0, x - 1]范围内有多少数和nums[x]的异或值小于upper。 */
+        node = root;
+        bits = MAX_BIT;
+        while(NULL != node && 0 != bits)
+        {
+            /* upper的该位是1，要把该位小于它的数对数量加入到结果中。 */
+            if(bits & upper)
+            {
+                if(0 != (bits & nums[x]) && NULL != node->right)
+                {
+                    result += node->right->val;
+                }
+                else if(0 == (bits & nums[x]) && NULL != node->left)
+                {
+                    result += node->left->val;
+                }
+                /* 往“和nums[x]该位异或等于1”的方向走。 */
+                node = (bits & nums[x]) ? node->left : node->right;
+            }
+            /* upper的该位是0，则不需要加。 */
+            else
+            {
+                /* 往“跟nums[x]该位异或等于0”的方向走。 */
+                node = (bits & nums[x]) ? node->right : node->left;
+            }
+            bits = bits >> 1;
+        }
+        /* 把nums[x]本身加入二叉树。 */
+        node = root;
+        bits = MAX_BIT;
+        while(0 != bits)
+        {
+            if(bits & nums[x])
+            {
+                /* 如果右分支还为空，则新建右分支。 */
+                if(NULL == node->right)
+                {
+                    node->right = (struct TreeNode *)malloc(sizeof(struct TreeNode));
+                    node->right->val = 0;
+                    node->right->left = NULL;
+                    node->right->right = NULL;
+                }
+                node->right->val++;
+                node = node->right;
+            }
+            else
+            {
+                /* 如果左分支还为空，则新建左分支。 */
+                if(NULL == node->left)
+                {
+                    node->left = (struct TreeNode *)malloc(sizeof(struct TreeNode));
+                    node->left->val = 0;
+                    node->left->left = NULL;
+                    node->left->right = NULL;
+                }
+                node->left->val++;
+                node = node->left;
+            }
+            bits = bits >> 1;
+        }
+        x++;
+    }
+
+    return result;
+}
