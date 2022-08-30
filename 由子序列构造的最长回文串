@@ -1,0 +1,86 @@
+#define MAX_VALUE(x, y) (((x) > (y)) ? (x) : (y))
+#define CHARS_NUMBER 26
+
+extern int recursion(char *word, int starting, int ending, int **record);
+
+int longestPalindrome(char *word1, char *word2)
+{
+    const int l1 = strlen(word1), l2 = strlen(word2), len = l1 + l2;
+    char word[len];
+    int x = 0, y = 0, t = 0, result = 0;
+    int index[CHARS_NUMBER];
+    int record[len][len];
+    int *pRecord[len];
+
+    /* 初始化record为无效数值-1。 */
+    memset(record, -1, sizeof(record));
+
+    while(len > x)
+    {
+        /* 下标小于l1时，即为word1的内容，大于等于l1时，即为word2的内容。 */
+        word[x] = (l1 > x) ? word1[x] : word2[x - l1];
+        /* 记录每个字符在新的word字符串中，最后出现的位置。 */
+        y = word[x] - 'a';
+        index[y] = x;
+        /* 二维数组的数组名，不能直接当入参给子函数使用，须采用指针形式代入，然后子函数中可以直接使用。 */
+        pRecord[x] = &record[x][0];
+        x++;
+    }
+
+    x = 0;
+    while(l1 > x)
+    {
+        /* 原来的word1和word2中必须至少各取一个字符，然后这两个字符中间的子序列，就不再要求必须两边都取非空了。 */
+        y = word[x] - 'a';
+        if(l1 <= index[y])
+        {
+            t = recursion(word, x + 1, index[y] - 1, pRecord);
+            /* 注意，这里的t + 2，表示把上面两端的端点加进来。 */
+            result = MAX_VALUE(t + 2, result);
+        }
+        x++;
+    }
+
+    return result;
+}
+
+/* 递归函数。 */
+int recursion(char *word, int starting, int ending, int **record)
+{
+    int x = 0, y = 0, result = 0;
+
+    /* 左端点必须不大于右端点，否则无意义，直接返回0。 */
+    if(starting > ending)
+    {
+        return result;
+    }
+
+    /* 如果已经不是初始化的-1，则直接返回其数值，避免重复的计算。 */
+    if(-1 != record[starting][ending])
+    {
+        return record[starting][ending];
+    }
+
+    /* 单个字符，直接就是长度为1的回文子序列。 */
+    if(starting == ending)
+    {
+        result = 1;
+    }
+    /* 左右端点相等时，把两个端点当作回文子序列的两端，往内部继续查看。 */
+    else if(word[starting] == word[ending])
+    {
+        result = recursion(word, starting + 1, ending - 1, record);
+        result += 2;
+    }
+    /* 否则左端点进一位，或者右端点退一位，查看两者的较大值。 */
+    else
+    {
+        x = recursion(word, starting + 1, ending, record);
+        y = recursion(word, starting, ending - 1, record);
+        result = MAX_VALUE(x, y);
+    }
+
+    /* 计算的结果存储到数组中，方便后来者可以直接调用。 */
+    record[starting][ending] = result;
+    return result;
+}
