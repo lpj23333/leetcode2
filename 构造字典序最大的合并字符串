@@ -1,0 +1,26 @@
+char * largestMerge(char * word1, char * word2){
+    int len1 = strlen(word1);
+    int len2 = strlen(word2);
+    int i = 0;
+    int j = 0;
+    int k = 0;
+    char *res = (char*)malloc(sizeof(char) * (len1 + len2 + 1));
+    /* 字符串比较, 字符串大的先取 */
+    while (i < len1 && j < len2) {
+        if (strcmp(word1 + i, word2 + j) >= 0) {
+            res[k++] = word1[i++];
+        } else {
+            res[k++] = word2[j++];
+        }
+    }
+
+    /* 将剩余字符串拼接到res */
+    while (i < len1) {
+        res[k++] = word1[i++];
+    }
+    while (j < len2) {
+        res[k++] = word2[j++];
+    }
+    res[k++] = '\0';
+    return res;
+}
