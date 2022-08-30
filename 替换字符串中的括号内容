@@ -1,0 +1,38 @@
+char * evaluate(char * s, char *** knowledge, int knowledgeSize, int* knowledgeColSize) {
+    typedef struct _SRC_DST_NODE_ {
+        char *src;
+        char *dst;
+        UT_hash_handle hh;
+    }SRC_DST_NODE;
+    SRC_DST_NODE *map = NULL;
+    SRC_DST_NODE *node = NULL;
+    for (int i = 0; i < knowledgeSize; i++) {
+        node = (SRC_DST_NODE *)calloc(1, sizeof(SRC_DST_NODE));
+        node->src = knowledge[i][0];
+        node->dst = knowledge[i][1];
+        HASH_ADD_KEYPTR(hh, map, node->src, strlen(node->src), node);
+    }
+    int iSLen = strlen(s);
+    char *d = (char*)calloc((iSLen/3 + 1) * 10 + 1, sizeof(char)); 
+    char *ps = s;
+    char *pd = d;
+    while (*ps != '\0') {
+        if (*ps == '(') {
+            char *q = strstr(ps + 1, ")");
+            *q = '\0';
+            HASH_FIND_STR(map, ps + 1, node);
+            if (node != NULL) {
+                strcpy(pd, node->dst);
+                pd += strlen(node->dst);
+            }
+            else {
+                *pd++ = '?';
+            }
+            ps = q + 1;
+        }
+        else {
+            *pd++ = *ps++;
+        }
+    }
+    return d;
+}
