@@ -1,0 +1,46 @@
+typedef struct {
+    int x;
+    int y;
+} Pair; 
+
+int dirs[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+int** highestPeak(int** isWater, int isWaterSize, int* isWaterColSize, int* returnSize, int** returnColumnSizes){
+    int m = isWaterSize, n = isWaterColSize[0];
+    int ** ans = (int **)malloc(sizeof(int *) * m);
+    for (int i = 0; i < m; ++i) {
+        ans[i] = (int *)malloc(sizeof(int) * n);
+        memset(ans[i], -1, sizeof(int) * n);
+    }
+    Pair * queue = (Pair *)malloc(sizeof(Pair) * m * n);
+    int head = 0;
+    int tail = 0;
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < n; ++j) {
+            if (isWater[i][j]) {
+                ans[i][j] = 0;
+                queue[tail].x = i; // 将所有水域入队
+                queue[tail].y = j;
+                ++tail; 
+            }
+        }
+    }
+    while (head != tail) {
+        int px = queue[head].x, py = queue[head].y;
+        for (int i = 0; i < 4; ++i) {
+            int x = px + dirs[i][0], y = py + dirs[i][1];
+            if (0 <= x && x < m && 0 <= y && y < n && ans[x][y] == -1) {
+                ans[x][y] = ans[px][py] + 1;
+                queue[tail].x = x;
+                queue[tail].y = y;
+                ++tail;
+            }
+        }
+        ++head;
+    }
+    free(queue);
+    *returnSize = m;
+    *returnColumnSizes = (int *)malloc(sizeof(int) * m);
+    memcpy(*returnColumnSizes, isWaterColSize, sizeof(int) * m);
+    return ans;
+}
