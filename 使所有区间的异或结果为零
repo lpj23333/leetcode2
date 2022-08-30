@@ -1,0 +1,74 @@
+// x 的范围为 [0, 2^10)
+const int MAXX = 1 << 10;
+// 极大值，为了防止整数溢出选择 INT_MAX / 2
+const int INFTY = INT_MAX / 2;
+
+struct HashTable {
+    int key, val;
+    UT_hash_handle hh;
+};
+
+int min_element(int* arr, int arrSize) {
+    int ret = arr[0];
+    for (int i = 1; i < arrSize; ++i) {
+        ret = fmin(ret, arr[i]);
+    }
+    return ret;
+}
+
+int minChanges(int* nums, int numsSize, int k) {
+    int f[MAXX];
+    for (int i = 0; i < MAXX; ++i) {
+        f[i] = INFTY;
+    }
+    // 边界条件 f(-1,0)=0
+    f[0] = 0;
+
+    for (int i = 0; i < k; ++i) {
+        // 第 i 个组的哈希映射
+        struct HashTable* cnt = NULL;
+        int size = 0;
+        for (int j = i; j < numsSize; j += k) {
+            struct HashTable* tmp;
+            HASH_FIND_INT(cnt, &nums[j], tmp);
+            if (tmp == NULL) {
+                tmp = malloc(sizeof(struct HashTable));
+                tmp->key = nums[j];
+                tmp->val = 1;
+                HASH_ADD_INT(cnt, key, tmp);
+            } else {
+                tmp->val++;
+            }
+            ++size;
+        }
+
+        // 求出 t2
+        int t2min = min_element(f, MAXX);
+
+        int g[MAXX];
+        for (int i = 0; i < MAXX; ++i) {
+            g[i] = t2min;
+        }
+        for (int mask = 0; mask < MAXX; ++mask) {
+            // t1 则需要枚举 x 才能求出
+            struct HashTable *iter, *tmp;
+            HASH_ITER(hh, cnt, iter, tmp) {
+                int x = iter->key, countx = iter->val;
+                g[mask] = fmin(g[mask], f[mask ^ x] - countx);
+            }
+        }
+        struct HashTable *iter, *tmp;
+        HASH_ITER(hh, cnt, iter, tmp) {
+            HASH_DEL(cnt, iter);
+            free(iter);
+        }
+
+        // 别忘了加上 size
+        for (int i = 0; i < MAXX; ++i) {
+            g[i] += size;
+        }
+        memcpy(f, g, sizeof(g));
+    }
+
+    return f[0];
+}
