@@ -1,0 +1,79 @@
+int dfs(int base,int sum,int* toppingCosts, int toppingCostsSize,int i)
+{
+    if(sum >= base || i == toppingCostsSize)
+    {
+        return sum;
+    }
+    int c1=dfs(base,sum,toppingCosts,toppingCostsSize,i+1);
+    int c2=dfs(base,sum+toppingCosts[i],toppingCosts,toppingCostsSize,i+1);
+    int c3=dfs(base,sum+2*toppingCosts[i],toppingCosts,toppingCostsSize,i+1);
+    int min=c1;
+    if(abs(min) > abs(c2))
+    {
+        min = c2;
+        if(abs(min) > abs(c3))
+        {
+            min = c3;
+        }
+        else
+        {
+            if(abs(min) == abs(c3))
+            {
+                min = min < c3 ? min : c3;
+            }
+        }
+    }
+    else
+    {
+        if(abs(min) == abs(c2))
+        {
+            min = min < c2 ? min : c2;
+        }
+        if(abs(min) > abs(c3))
+        {
+            min = c3;
+        }
+        else
+        {
+            if(abs(min) == abs(c3))
+            {
+                min = min < c3 ? min : c3;
+            }
+        }
+    }
+    return min;
+
+}
+
+
+int closestCost(int* baseCosts, int baseCostsSize, int* toppingCosts, int toppingCostsSize, int target)
+{
+    int ans=10000;
+    int base=10000;
+    for(int i=0;i<baseCostsSize;i++)
+    {
+        baseCosts[i] -= target;
+        if(baseCosts[i] == 0)
+        {
+            return target;
+        }
+        int topping = dfs(base,baseCosts[i],toppingCosts,toppingCostsSize,0);
+        if(topping == 0)
+        {
+            return target;
+        }
+        if(base > abs(topping))
+        {
+            ans = topping + target;
+            base = abs(topping);
+        }
+        else
+        {
+            if(base == abs(topping))
+            {
+                ans = ans < (topping + target) ? ans : (topping + target);
+            }
+        }
+    }
+    return ans;
+}
