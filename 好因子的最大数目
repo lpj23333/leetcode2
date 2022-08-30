@@ -1,0 +1,39 @@
+int maxNiceDivisors(int primeFactors) {
+	// 如果不超过4就直接返回参数值
+	if (primeFactors <= 4)
+		return primeFactors;
+	// 快速计算除以3的商和余数
+    int quotient = primeFactors * 715827883L >> 31;
+	int reminder = primeFactors - (quotient << 1) - quotient;
+	switch (reminder) {
+		case 1:
+			--quotient;
+			reminder = 2;
+			break;
+		case 2:
+			reminder = 1;
+			break;
+	}
+	// mask为比quotient最高为1的二进制位低一位的掩码，减少迭代次数
+	int mask = quotient | quotient >> 1;
+	mask = mask | mask >> 2;
+	mask = mask | mask >> 4;
+	mask = mask | mask >> 8;
+	mask = mask | mask >> 16;
+	mask = mask + 1 >> 2;
+	long long result = 3;
+	while (mask) {
+		result = result * result;
+		// result比较小的时候平方后小于1000000007，因为模除比较慢所以优化下
+		result = result >= 1000000007 ? result % 1000000007 : result;
+		if (quotient & mask) {
+			result += result << 1;
+			// 乘3以后不会太大，就不用模除了
+			result = result >= 2000000014 ? result - 2000000014 : result >= 1000000007 ? result - 1000000007 : result;
+		}
+		mask >>= 1;
+	}
+	result <<= reminder;
+	// 乘4以后不会太大，就不用模除了
+	return result >= 2000000014 ? result >= 3000000021 ? result - 3000000021 : result - 2000000014 : result >= 1000000007 ? result - 1000000007 : result;
+}
