@@ -1,0 +1,11 @@
+bool check(int* nums, int numsSize){
+    int i;
+    int cnt = 0;
+    /* 遍历整个数组, 后一个数小于前一个数的次数不能超过1 */
+    for (i = 1; i <= numsSize; i++) {
+        if (nums[i % numsSize] < nums[i - 1] && ++cnt > 1) {
+            return false;
+        }
+    }
+    return true;
+}
