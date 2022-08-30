@@ -1,0 +1,59 @@
+#define MAX_WORD_LEN 30
+int StrToWord(char *sentence, char *word)
+{
+    int i;
+    int len = 0;
+    int wordStartIdx = 0;
+    for (i = 0; i < strlen(sentence) + 1; i++) {
+        if ((sentence[i] == ' ') || (sentence[i] == '\0')) {
+            memcpy((void *)&word[len * MAX_WORD_LEN], (void *)&sentence[wordStartIdx], i - wordStartIdx);
+            word[len * MAX_WORD_LEN + i - wordStartIdx] = '\0';
+            wordStartIdx = i + 1;
+            len++;
+        }
+    }
+    return len;
+}
+bool areSentencesSimilar(char * sentence1, char * sentence2){
+    int i, j;
+
+    int diffNum = 0;
+    int word1;
+    int word2;
+    int wordTemp;
+    char word1Grp[100][MAX_WORD_LEN];
+    char word2Grp[100][MAX_WORD_LEN];
+    char wordGrpTemp[100][MAX_WORD_LEN];
+
+    word1 = StrToWord(sentence1, &word1Grp[0][0]);
+    word2 = StrToWord(sentence2, &word2Grp[0][0]);
+    // 保证word2为单词个数少的那个
+    if (word2 > word1) {
+        wordTemp = word2;
+        word2 = word1;
+        word1 = wordTemp;
+
+        memcpy(wordGrpTemp, word1Grp, 100 * MAX_WORD_LEN);
+        memcpy(word1Grp, word2Grp, 100 * MAX_WORD_LEN);
+        memcpy(word2Grp, wordGrpTemp, 100 * MAX_WORD_LEN);
+
+    }
+    for (i = 0; i < word2; i++) {
+        if (strcmp(&word1Grp[i][0], &word2Grp[i][0]) != 0) {
+            printf("%d\r\n", i);
+            break;
+        }
+    }
+
+    for (j = 0; j < word2; j++) {
+        if (strcmp(&word1Grp[word1 - j - 1][0], &word2Grp[word2 - j - 1][0]) != 0) {
+            printf("%d\r\n", j);
+            break;
+        }
+    }
+
+    if (i + j >= word2) {
+        return true;
+    }
+    return false;
+}
