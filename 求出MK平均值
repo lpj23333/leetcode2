@@ -1,0 +1,292 @@
+#define INVALID_VALUE -1
+#define HIGHEST_BIT 65536
+#define INDEX_PLUS(index, offset, m) (((index) + (offset) < (m)) ? ((index) + (offset)) : ((index) + (offset) - (m)))
+
+/*
+二叉树节点定义。
+counter:    该分支所有数值的个数。
+sum:        该分支所有数值的和，根据题目取值范围，可能越界int类型，需要long int。
+*/
+typedef struct BinaryNode_s
+{
+    int counter;
+    long int sum;
+    struct BinaryNode_s *left;
+    struct BinaryNode_s *right;
+}
+BinaryNode;
+
+/*
+操作对象的定义。
+m:          循环队列的长度上限。
+k:          MK平均值定义中的k值。
+sum:        队列中已有所有数值的和，根据题目取值范围，可能越界int类型，需要long int。
+front:      队列的队首下标位置。
+queueSize:  队列已有数值的数量。
+queue:      循环队列的数组，长度等于m。
+tree：      二进制树的根节点。
+*/
+typedef struct
+{
+    int m;
+    int k;
+    long int sum;
+    int front;
+    int queueSize;
+    int *queue;
+    BinaryNode *tree;
+}
+MKAverage;
+
+extern void deleteTree(BinaryNode *tree);
+extern void insertIntoBinary(MKAverage *obj, int num);
+extern void removeFromBinary(MKAverage *obj, int num);
+extern long int calcSmallSum(MKAverage *obj);
+extern long int calcBigSum(MKAverage *obj);
+
+/* 创建对象，并初始化。 */
+MKAverage *mKAverageCreate(int m, int k)
+{
+    MKAverage *obj = (MKAverage *)malloc(sizeof(MKAverage));
+    obj->m = m;
+    obj->k = k;
+    obj->sum = 0;
+    obj->front = 0;
+    obj->queueSize = 0;
+    /* 循环队列长度上限为m。 */
+    obj->queue = (int *)malloc(sizeof(int) * m);
+    /* 二进制树节点的空间申请都用calloc，暗含了初始化counter、sum为0，左右分支为空。 */
+    obj->tree = (BinaryNode *)calloc(1, sizeof(BinaryNode));
+    return obj;
+}
+
+/* 数据流新的数值插入队列和二进制树。 */
+void mKAverageAddElement(MKAverage *obj, int num)
+{
+    int tail = INDEX_PLUS(obj->front, obj->queueSize, obj->m);
+    /* 如果队列已满，则先弹出队首值，再插入新的值到队尾。 */
+    if(obj->m == obj->queueSize)
+    {
+        /* 新插入的值和弹出的值只有在不相等时，队列和二进制树才发生变化。 */
+        if(num != obj->queue[obj->front])
+        {
+            /* 队列中的数值总和发生变化。 */
+            obj->sum += (num - obj->queue[obj->front]);
+            /* 把队首要弹出的数值，同时也从二进制树中移除。 */
+            removeFromBinary(obj, obj->queue[obj->front]);
+            /* 把要插入队列的数值，同时也插入到二进制树中。 */
+            insertIntoBinary(obj, num);
+            /* 放到队列的队尾，即等同于直接覆盖掉队首。 */
+            obj->queue[obj->front] = num;
+        }
+        /* 队首往右移动一位。 */
+        obj->front = INDEX_PLUS(obj->front, 1, obj->m);
+    }
+    /* 队列未满，则直接插入队尾即可。 */
+    else
+    {
+        /* 队列中的数值总和发生变化。 */
+        obj->sum += num;
+        /* 把要插入队列的数值，同时也插入到二进制树中。 */
+        insertIntoBinary(obj, num);
+        /* 插入的数值放到队尾，并且总数量加一。 */
+        obj->queue[tail] = num;
+        obj->queueSize++;
+    }
+    return;
+}
+
+/* 计算当前的MK平均值。 */
+int mKAverageCalculateMKAverage(MKAverage *obj)
+{
+    long int smallSum = 0, bigSum = 0;
+    /* 如果当前总数量不满m个，按题意要求，直接返回-1即可。 */
+    if(obj->m > obj->queueSize)
+    {
+        return INVALID_VALUE;
+    }
+    /* 较小的k个数值的和。 */
+    smallSum = calcSmallSum(obj);
+    /* 较大的k个数值的和。 */
+    bigSum = calcBigSum(obj);
+    /* 总和减去上面两个数值，再除以m - 2k，就是定义的MK平均值。 */
+    return (int)((obj->sum - smallSum - bigSum) / (obj->m - obj->k * 2));
+}
+
+/* 释放对象。 */
+void mKAverageFree(MKAverage *obj)
+{
+    deleteTree(obj->tree);
+    free(obj->queue);
+    free(obj);
+    return;
+}
+
+/* 删除二叉树。 */
+void deleteTree(BinaryNode *tree)
+{
+    /* 删除左分支。 */
+    if(NULL != tree->left)
+    {
+        deleteTree(tree->left);
+    }
+    /* 删除右分支。 */
+    if(NULL != tree->right)
+    {
+        deleteTree(tree->right);
+    }
+    /* 删除当前节点。 */
+    free(tree);
+    return;
+}
+
+/* 将新的数值插入二进制树。 */
+void insertIntoBinary(MKAverage *obj, int num)
+{
+    int bits = HIGHEST_BIT;
+    BinaryNode *node = obj->tree;
+    while(0 != bits)
+    {
+        /* 如果该比特为1，则往右分支走。 */
+        if(bits & num)
+        {
+            /* 如果右分支为空，则新建一个。同上，用calloc，暗含初始化为0。 */
+            if(NULL == node->right)
+            {
+                node->right = (BinaryNode *)calloc(1, sizeof(BinaryNode));
+            }
+            /* counter和sum分别累计。 */
+            node->right->counter++;
+            node->right->sum += num;
+            node = node->right;
+        }
+        /* 如果该比特为0，则往左分支走。 */
+        else
+        {
+            /* 如果左分支为空，则新建一个。同上，用calloc，暗含初始化为0。 */
+            if(NULL == node->left)
+            {
+                node->left = (BinaryNode *)calloc(1, sizeof(BinaryNode));
+            }
+            /* counter和sum分别累计。 */
+            node->left->counter++;
+            node->left->sum += num;
+            node = node->left;
+        }
+        bits = bits >> 1;
+    }
+    return;
+}
+
+/* 把一个数值从二进制树中移除。
+大致过程和上面的插入是逆过程。 */
+void removeFromBinary(MKAverage *obj, int num)
+{
+    int bits = HIGHEST_BIT;
+    BinaryNode *node = obj->tree;
+    while(0 != bits && NULL != node)
+    {
+        /* 该比特为1，则在右分支移除对应数量。 */
+        if(bits & num)
+        {
+            /* counter和sum减去对应值。 */
+            node->right->counter--;
+            node->right->sum -= num;
+            /* 如果该分支的数量减光了，则这个分支直接删除。 */
+            if(0 == node->right->counter)
+            {
+                deleteTree(node->right);
+                node->right = NULL;
+            }
+            node = node->right;
+        }
+        /* 该比特为0，则在左分支移除对应数量。 */
+        else
+        {
+            /* counter和sum减去对应值。 */
+            node->left->counter--;
+            node->left->sum -= num;
+            /* 如果该分支的数量减光了，则这个分支直接删除。 */
+            if(0 == node->left->counter)
+            {
+                deleteTree(node->left);
+                node->left = NULL;
+            }
+            node = node->left;
+        }
+        bits = bits >> 1;
+    }
+    return;
+}
+
+/* 计算较小的k个数值的和。 */
+long int calcSmallSum(MKAverage *obj)
+{
+    int bits = HIGHEST_BIT, num = 0, counter = obj->k;
+    long int sum = 0;
+    BinaryNode *node = obj->tree;
+    while(0 != bits)
+    {
+        /* 如果左分支的数量不足counter个，则前counter个数值必然要往右分支找。 */
+        if(NULL == node->left || counter > node->left->counter)
+        {
+            /* 记得左边已有的数量要减去，这样在右边才能缩小查找范围。 */
+            if(NULL != node->left)
+            {
+                counter -= node->left->counter;
+                sum += node->left->sum;
+            }
+            /* 查找的数值对应的比特置上。 */
+            num += bits;
+            node = node->right;
+        }
+        /* 否则其一定在左分支继续查找。 */
+        else
+        {
+            node = node->left;
+        }
+        bits = bits >> 1;
+    }
+    /* 如果经过上面的过程，counter仍不为0，则表示前k个较小数值，必然正好在某个数值的区间内。例如，一共有10个3，50个7，那么，要找前20个数值，分界线必然在50个7的范围内。 */
+    if(0 < counter)
+    {
+        sum += counter * num;
+    }
+    return sum;
+}
+
+/* 计算较大的k个数值的和。 */
+long int calcBigSum(MKAverage *obj)
+{
+    int bits = HIGHEST_BIT, num = 0, counter = obj->k;
+    long int sum = 0;
+    BinaryNode *node = obj->tree;
+    while(0 != bits)
+    {
+        /* 如果右分支的数量不足counter个，则前counter个数值必然要往左分支找。 */
+        if(NULL == node->right || counter > node->right->counter)
+        {
+            /* 记得右边已有的数量要减去，这样在左边才能缩小查找范围。 */
+            if(NULL != node->right)
+            {
+                counter -= node->right->counter;
+                sum += node->right->sum;
+            }
+            node = node->left;
+        }
+        /* 否则在右边分支继续查找。 */
+        else
+        {
+            /* 往右边查找时，对应的比特位赋1。 */
+            num += bits;
+            node = node->right;
+        }
+        bits = bits >> 1;
+    }
+    /* 类似的，如果经过上面的过程，counter仍不为0，则表示后k个较大数值，必然在某个数值的区间内。 */
+    if(0 < counter)
+    {
+        sum += counter * num;
+    }
+    return sum;
+}
