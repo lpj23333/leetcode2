@@ -1,0 +1,54 @@
+/* 计算加入聪明学生后, 通过率的提升值 */
+double calc(int *a) {
+    return (double)(a[0] + 1) / (a[1] + 1) - (double)a[0] / a[1];
+}
+
+/* 数组元素交换 */
+void swap(int **a, int **b) {
+    int *tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+/* 维护大顶堆函数, 标准写法 */
+void maxHeapify(int** classes, int n, int i) {
+    int largest = i;
+    int l = 2 * i + 1;
+    int r = 2 * i + 2;
+    if (l < n && calc(classes[l]) > calc(classes[largest])) { /* 注意: 比较的是通过率的提升值 */
+        largest = l;
+    }
+    if (r < n && calc(classes[r]) > calc(classes[largest])) {
+        largest = r;
+    }
+    if (i != largest) {
+        swap(&classes[i], &classes[largest]);
+        maxHeapify(classes, n, largest);
+    }
+}
+
+double maxAverageRatio(int** classes, int classesSize, int* classesColSize, int extraStudents){
+    int i;
+    int n = classesSize;
+    double aveSum = 0.0;
+    
+    /* 建立大顶堆 */
+    for (i = n / 2 - 1; i >= 0; i--) {
+        maxHeapify(classes, n, i);
+    }
+    classes[0][0]++; /* 堆顶元素加入聪明学生 */
+    classes[0][1]++;
+    
+    /* 继续维护大顶堆, 并加入聪明学生 */
+    for (i = 1; i < extraStudents; i++) {
+        maxHeapify(classes, classesSize, 0);
+        classes[0][0]++;
+        classes[0][1]++;
+    }
+
+    /* 计算通过率之和, 并输出平均值 */
+    for (i = 0; i < classesSize; i++) {
+        aveSum += (double)classes[i][0] / (double)classes[i][1];
+    }
+    return aveSum / classesSize;
+}
