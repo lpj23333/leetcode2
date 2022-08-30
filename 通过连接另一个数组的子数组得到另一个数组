@@ -1,0 +1,28 @@
+/* 判断数组group能否在nums中找到 */
+bool isFind(int *group, int groupSize, int *nums, int numsSize) {
+    if (groupSize > numsSize) { /* 长度不匹配时 */
+        return false;
+    }
+    int i;
+    /* group可以在nums中找到，返回true */
+    for (i = 0; i < groupSize; i++) {
+        if (group[i] != nums[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool canChoose(int** groups, int groupsSize, int* groupsColSize, int* nums, int numsSize){
+    int i;
+    int j = 0;
+    /* 在nums中找groups[j], 找到后就在剩余数组中继续查找其他数组 */
+    /* 直到将groups数组全部找到, 返回ture                        */
+    for (i = 0; i < numsSize && j < groupsSize; i++) {
+        if (isFind(groups[j], groupsColSize[j], nums + i, numsSize - i) == true) {
+            i += groupsColSize[j] - 1; /* for循环中有i++, 这里少加个1 */
+            j++;
+        }
+    }
+    return j == groupsSize;
+}
