@@ -1,0 +1,29 @@
+int maximumScore(int* nums, int numsSize, int* multipliers, int multipliersSize){
+    int dp[1002][1002] = {0}; // dp[A][B]表示从nums中取其前A个数和后B个数时，分数最大值
+    dp[0][0] = 0;
+
+    int res = INT_MIN;
+
+    // numAll为从nums中取的总共数值数，leftNum为从nums左边取的数值数
+    for (int numAll = 1; numAll <= multipliersSize; numAll++) {
+        for (int leftNum = 0; leftNum <= numAll; leftNum++) {
+            if (leftNum == 0) {
+                // 全从右边取的情况，即A == 0
+                dp[0][numAll] = dp[0][numAll - 1] + nums[numsSize - numAll] * multipliers[numAll - 1];
+            } else if (leftNum == numAll) {
+                // 全从左边取的情况，即B == 0
+                dp[leftNum][0] = dp[leftNum - 1][0] + nums[leftNum - 1] * multipliers[numAll - 1];
+            } else {
+                // 左右都有取数的情况，即A > 0 && B > 0
+                dp[leftNum][numAll - leftNum] = fmax(dp[leftNum - 1][numAll - leftNum] + nums[leftNum - 1] * multipliers[numAll - 1],  \
+                    dp[leftNum][numAll - leftNum- 1] + nums[numsSize - numAll + leftNum] * multipliers[numAll - 1]);
+            }
+
+            // 当取出m个数值时，刷新最大值的题解
+            if (numAll == multipliersSize) {
+                res = fmax(res, dp[leftNum][numAll - leftNum]);
+            }
+        }
+    }
+    return res;
+}
