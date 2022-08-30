@@ -1,0 +1,146 @@
+#define USED     1
+#define UN_USED  0
+#define MAX_SIZE 32767
+
+#define STOP     0
+
+#define Max( a , b ) ( ( ( a ) > ( b ) ) * ( a ) + ( ( a ) <= ( b ) ) * ( b ) )
+#define setBit( val , bit ) ( ( val ) |= ( 0x01 << ( bit ) ) )
+#define getBit( val , bit ) ( 0x01 & ( ( val ) >> ( bit ) ) )
+#define clearBit( val , bit ) ( ( val ) &= ( ~( 0x01 << ( bit ) ) ) )
+
+/* 快速排序接口 */
+int cmp( const void * a , const void * b ) {
+
+    return *( int * )b - *( int * )a;
+
+}
+
+/**
+ * 辗转相除法计算最大公约数
+ * @param int m :
+ * @param int n :
+ * Return int :
+ */
+int gcd( int m , int n ) {
+
+    int c = m % n;
+
+    return c == 0 ? n : gcd( n , c );
+
+}
+
+/* max 用于存储最大值， mask 用于标记 nums 数组中哪些元素已经被访问 */
+int max , mask;
+
+/* largest_gcd 存储当前深度时，可计算的最大 i * gcd( a , b ) 的值 */
+/* memo 用于存储所有组合的最大公约数的值 */
+int * largest_gcd , * memo;
+
+/**
+ * 回溯
+ * @param int index : 当前剩余的深度
+ * @param int ans : 当前结果值
+ * @param int * nums :
+ * @param int numsSize :
+ * Return void :
+ */
+void backtrack( int index , int ans , int * nums , int numsSize ) {
+
+    /* ---- 结束条件 ---- */
+    if( index == STOP ) {
+
+        /* ---- 将当前路径添加至答案中 ---- */
+        max = Max( max , ans );
+        return ;
+
+    }
+
+    /* ---- 遍历可操作列表 ---- */
+    for( int i = 0 ; i < numsSize ; ++i ) {
+
+        /* 剪枝，跳过当前遍历 */
+        if( getBit( mask , i ) == USED ) {
+
+            continue;
+
+        }
+
+        /* 标记 i 已经被访问 */
+        setBit( mask , i );
+
+        for( int j = i + 1 ; j < numsSize ; ++j ) {
+
+            /* 根据当前 key 值获取最大公约数的值 */
+            int key = 0;
+
+            setBit( key , i );
+            setBit( key , j );
+            
+            int curr_gcd = memo[ key ];
+
+            /* 剪枝，做贪心选择，跳过当前遍历 */
+            if( ( largest_gcd[ index ] > curr_gcd ) || getBit( mask , j ) == USED ) {
+
+                continue;
+
+            }
+
+            /* ---- 做选择 ---- */
+            /* 更新当前深度最大公约数值 */
+            largest_gcd[ index ] = curr_gcd;
+            /* 标记 j 已经被访问 */
+            setBit( mask , j );
+            backtrack( index - 1 , ans + curr_gcd * index , nums , numsSize );
+            /* ---- 撤销选择 ---- */
+            /* 取消当前标记 j */
+            clearBit( mask , j );
+
+        }
+
+        /* 取消当前标记 i */
+        clearBit( mask , i );
+
+    }
+
+    /* 撤销 largest_gcd 操作 */
+    largest_gcd[ index ] = 0;
+
+}
+
+int maxScore( int * nums , int numsSize ) {
+
+    int n = numsSize >> 1;
+    largest_gcd = ( int * )malloc( sizeof( int ) * ( n + 1 ) );
+    memo = ( int * )malloc( sizeof( int ) * MAX_SIZE );
+
+    /* 先计算排序 */
+    qsort( nums , numsSize , sizeof( nums[ 0 ] ) , cmp );
+
+    /* 计算所有组合的最大公约数 */
+    for( int i = 0 ; i < numsSize ; ++i ) {
+
+        for( int j = i + 1 ; j < numsSize ; ++j ) {
+
+            int key = 0;
+
+            setBit( key , i );
+            setBit( key , j );
+            memo[ key ] = gcd( nums[ i ] , nums[ j ] );
+
+        }
+
+    }
+
+    /* 先计算排序 */
+    //qsort( nums , numsSize , sizeof( nums[ 0 ] ) , cmp );
+    //后计算排序的时候，程序运行发现所花费的时间是先排序的两倍，因为key值都不一样了，所以应该排序完了在进行相应的 key 值计算
+    //后计算排序，相当于没排序一样的效果
+
+    max = mask = 0;
+    backtrack( n , 0 , nums , numsSize );
+    free( memo );
+    free( largest_gcd );
+    return max;
+
+}
