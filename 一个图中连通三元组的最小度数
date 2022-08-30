@@ -1,0 +1,27 @@
+int minTrioDegree(int n, int** edges, int edgesSize, int* edgesColSize){
+    int graph[401][401] = {0};
+    int edge[401] = {0};
+    int res = INT_MAX;
+
+    for(int i=0 ; i<edgesSize ; i++){
+        graph[edges[i][0]][edges[i][1]] = 1;
+        graph[edges[i][1]][edges[i][0]] = 1;
+        edge[edges[i][0]]++;
+        edge[edges[i][1]]++;
+    }
+
+    for(int i=1 ; i<=n ; i++){
+        for(int j=i+1 ; j<=n ; j++){
+            for(int k=j+1 ; k<=n ; k++){
+                if(graph[i][j] && graph[j][k] && graph[i][k]){
+                    res = fmin(res, edge[i]+edge[j]+edge[k]-6);
+                }
+            }
+        }
+    }
+
+    if(res == INT_MAX){
+        return -1;
+    }
+    return res;
+}
