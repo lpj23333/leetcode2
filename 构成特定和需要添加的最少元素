@@ -1,0 +1,13 @@
+int minElements(int* nums, int numsSize, int limit, int goal){
+    long long sum = 0;
+    for(int i =0; i<numsSize; i++) {
+        sum += nums[i];
+    }
+    if(goal == sum) {
+        return 0;
+    } else if(goal > sum) {
+        return (goal - sum + limit-1)/limit;
+    } else {
+        return (sum-goal+limit-1)/limit;
+    }
+}
