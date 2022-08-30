@@ -1,0 +1,16 @@
+int maxValue(long n, int index, int maxSum) {
+    if (index > n / 2 - 1) index = n - 1 - index;
+    long l = index + 1, c = 2 * l - 1;
+    long m1 = l * l + n - c;
+    long m2 = (n * n + n) / 2 - l * l + l;
+    if (m1 > maxSum) {
+        long delta = (c - 1) * (c - 1) - 4 * (m1 - maxSum);
+        double k = ((c - 1) - sqrt(delta)) / 2;
+        return l - ceil(k);
+    } else if (m2 >= maxSum) {
+        long delta = (2 * c - 1) * (2 * c - 1) - 8 * (m1 - maxSum);
+        return l + (sqrt(delta) - (2 * c - 1)) / 2;
+    } else {
+        return n - index + (maxSum - m2) / n;
+    }
+}
