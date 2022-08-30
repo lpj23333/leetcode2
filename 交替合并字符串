@@ -1,0 +1,19 @@
+char * mergeAlternately(char * word1, char * word2){
+    //得到两个字符串长度
+    int len1 = strlen(word1);
+    int len2 = strlen(word2);
+    //申请返回答案的字符串内存
+    char *ans = (char*)malloc(sizeof(char) * (len1 + len2 + 1));
+    int i = 0,j = 0,index = 0;
+    // 将word1, word2交错排列 
+    while (i < len1 && j < len2) {
+        ans[index++] = word1[i++];
+        ans[index++] = word2[j++];
+    }
+    // word1,word2剩余的字符排在ans的后面 
+    while (i < len1)    ans[index++] = word1[i++];
+    while (j < len2)    ans[index++] = word2[j++];
+    
+    ans[index] = '\0'; //字符串的结束码，这行必须有，不能漏
+    return ans;
+}
