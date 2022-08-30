@@ -1,0 +1,39 @@
+int reverse(int a){
+    int b=a%10;
+    for(;a>=10;){
+        a/=10;
+        b*=10;
+        b+=a%10;
+    }
+    return b;
+}
+int cmp(const void* a,const void* b){
+    return *(int*)a-*(int*)b;
+}
+int countNicePairs(int* nums, int numsSize){
+    for(int i=0;i<numsSize;i++){
+        nums[i]=nums[i]-reverse(nums[i]);
+    }
+    qsort(nums,numsSize,sizeof(int),cmp);
+    int sum=0;
+    int mark=0;
+    for(int i=0;i<numsSize-1;i++){
+        if(nums[i]==nums[i+1]) mark++;
+        else{
+            if(mark!=0){
+                for(int j=1;j<=mark;j++){
+                    sum+=j;
+                    sum%=1000000007;
+                }
+            }
+            mark=0;
+        }
+    }
+    if(mark!=0){
+        for(int j=1;j<=mark;j++){
+            sum+=j;
+            sum%=1000000007;
+        }
+    }
+    return sum;
+}
