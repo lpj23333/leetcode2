@@ -1,0 +1,17 @@
+int maximumScore(int* nums, int numsSize, int k){
+    int ans = nums[k];
+    int left = k;
+    int right = k;
+    int min = nums[k];
+    while (left > 0 || right < numsSize - 1) {
+        if (right >= numsSize - 1 || (left > 0 && nums[left - 1] > nums[right + 1])) {
+            left--;
+            min = fmin(min, nums[left]);
+        } else {
+            right++;
+            min = fmin(min, nums[right]);
+        }
+        ans = fmax(ans, (right - left + 1) * min);
+    }
+    return ans;
+}
