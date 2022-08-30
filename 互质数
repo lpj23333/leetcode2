@@ -1,0 +1,83 @@
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+typedef struct list{
+    int val;
+    struct list *next;
+}ListNode;
+bool mcd(int x, int y) {
+    if (x == 1 && y == 1) return true;
+    if (x == y) return false;
+    int t = x;
+    x = fmin(x, y);
+    y = fmax(t, y);
+    t = 1;
+    for (int i = 2; i <= x; i++) {
+        if (x % i == 0 && y % i == 0) return false;
+    }
+    return true;
+}
+void dfs(int curr, int floor, int *ans, int *nums, ListNode **obj, int **dic, int *diccnt, int (*nearfloor)[2]) {
+    int tans = -1;
+    int tfloor = -1;
+    for (int i = 0; i < diccnt[ nums[curr] ]; i++) {
+        if (tfloor < nearfloor[ dic[ nums[curr] ][i] ][0]){
+            tans =  nearfloor[ dic[ nums[curr] ][i] ][1];
+            tfloor = nearfloor[ dic[ nums[curr] ][i] ][0];
+        }
+    }
+    ans[curr] = tans;
+    int pre = nearfloor[nums[curr]][0];
+    int pree = nearfloor[nums[curr]][1];
+    nearfloor[nums[curr]][0] = floor;
+    nearfloor[nums[curr]][1] = curr;
+    ListNode *temp = obj[curr];
+    while (temp != NULL) {
+        if (ans[temp -> val] == -100) dfs(temp -> val, floor + 1, ans, nums, obj, dic, diccnt, nearfloor);
+        temp = temp -> next;
+    }
+    nearfloor[nums[curr]][0] = pre;
+    nearfloor[nums[curr]][1] = pree;
+}
+int* getCoprimes(int* nums, int numsSize, int** edges, int edgesSize, int* edgesColSize, int* returnSize){
+    int *ans = malloc(sizeof(int) * numsSize);
+    for (int i = 0; i < numsSize; i++) ans[i] = -100;
+    *returnSize = numsSize;
+    int **dic = malloc(sizeof(int *) * 51);
+    int *diccnt = malloc(sizeof(int) * 51);
+    for (int i = 1; i < 51; i++) {    //建立字典
+        diccnt[i] = 0;
+        dic[i] = malloc(sizeof(int) * 51);
+        for (int j = 1; j < 51; j++) {
+            if (mcd(i, j)) dic[i][diccnt[i]++] = j;
+        }
+    }
+    int nearfloor[51][2];
+    for (int i = 0; i < 51; i++) nearfloor[i][0] = -1;
+    ListNode **obj = (ListNode **)malloc(sizeof(ListNode *) * numsSize);
+    for (int i = 0; i < numsSize; i++) obj[i] = NULL;
+    for (int i = 0; i < edgesSize; i++) {
+        int x = fmin(edges[i][0], edges[i][1]);
+        int y = fmax(edges[i][0], edges[i][1]);
+        ListNode *temp = malloc(sizeof(ListNode));
+        temp -> val = y;
+        temp -> next = obj[x];
+        obj[x] = temp;
+        temp = malloc(sizeof(ListNode));
+        temp -> val = x;
+        temp -> next = obj[y];
+        obj[y] = temp;
+    }
+    dfs(0, 0, ans, nums, obj, dic, diccnt, nearfloor);
+    for (int i = 1; i < 51; i++) free(dic[i]);
+    free(dic);
+    free(diccnt);
+    for (int i = 0; i < numsSize; i++) {
+        while (obj[i] != NULL) {
+            ListNode *temp = obj[i];
+            obj[i] = obj[i] -> next;
+            free(temp);
+        }
+    }
+    return ans;
+}
