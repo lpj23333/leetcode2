@@ -1,0 +1,15 @@
+char * truncateSentence(char * s, int k){
+    int n = strlen(s);
+    int end = 0, count = 0;
+    for (int i = 1; i <= n; i++) {
+        if (i == n || s[i] == ' ') {
+            count++;
+            if (count == k) {
+                end = i;
+                break;
+            }
+        }
+    }
+    s[end] = '\0';
+    return s;
+}
