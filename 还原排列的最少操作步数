@@ -1,0 +1,10 @@
+int reinitializePermutation(int n) {
+    int a = 1;
+    int x = 2;
+    while(x!=1 && x < n)
+    {
+        x = (x*2)%(n-1);
+        a++;
+    }
+    return a;
+}
