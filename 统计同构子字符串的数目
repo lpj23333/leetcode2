@@ -1,0 +1,14 @@
+int countHomogenous(char* s) {
+	long ret = 0, left = 0, right = 0;
+	for (int i = 1; s[i]; i++){
+		if (s[i] == s[i - 1])
+			right++;
+		else {
+            ret += (right - left + 2) * (right - left + 1) / 2;
+			right++;
+			left = right;
+		}
+	}
+	ret += (right - left + 2) * (right - left + 1) / 2;
+	return ret %= 1000000007;
+}
