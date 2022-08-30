@@ -1,0 +1,53 @@
+#define CAPACITY 200001  
+int Exist[CAPACITY];
+
+//辗转相除， 递归方法求最大公约数
+int gcd(int a, int b)
+{
+    return !b ? a : gcd(b, a % b);
+}
+
+//比较两个数中的最大值
+int Max_Int(int a, int b)
+{
+    return a > b ? a : b;
+}
+
+int countDifferentSubsequenceGCDs(int* nums, int numsSize)
+{
+    //判空
+    if (NULL == nums) return 0;
+
+    //将数组数据置为0
+    memset(Exist, 0, sizeof(Exist));
+
+    int max = 0, ans = 0;
+
+    //标记题目给出的数组中的值，并且找出最大值
+    for (int i = 0; i < numsSize; ++i)
+    {
+        Exist[nums[i]] = 1;
+        max = Max_Int(max, nums[i]);
+    }
+
+    //枚举所有可能存在的最大公约数
+    for (int i = 1; i <= max; ++i)
+    {
+        int tmp = 0;
+        for (int j = i; j <= max; j += i)
+        {
+            if (Exist[j] != 0)
+            {
+                tmp = gcd(tmp, j);
+            }
+        }
+
+        //如果这个最大公约数等于i，就记录一次
+        if (tmp == i)
+        {
+            ans++;
+        }
+    }
+
+    return ans;
+}
