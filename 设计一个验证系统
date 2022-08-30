@@ -1,0 +1,64 @@
+typedef struct {
+    char tokenId[6];
+    int createTime;     // 当前时间
+    int timeToLive;     // 过期时间
+    UT_hash_handle hh;
+} AuthenticationManager;
+// 用来指向哈希表的全局指针
+AuthenticationManager *g_hash = NULL;
+int g_timeToLive = 0;
+AuthenticationManager* authenticationManagerCreate(int timeToLive) {
+    // 由于指向哈希表的指针是全局的，所以这里只要记录一下过期时间就行了，为了方便就也用全局变量记录了
+    g_timeToLive = timeToLive;
+    return NULL;
+}
+
+void authenticationManagerGenerate(AuthenticationManager* obj, char * tokenId, int currentTime) {
+    AuthenticationManager *s;
+    HASH_FIND_STR(g_hash, tokenId, s);
+    // 主要生成的条件是tokenId对应的节点不存在
+    if (s == NULL) {
+        s = (AuthenticationManager *)malloc(sizeof(AuthenticationManager));
+        memset(s, 0, sizeof(AuthenticationManager));
+        strcpy(s->tokenId, tokenId);
+        s->timeToLive = g_timeToLive;
+        s->createTime = currentTime;
+        HASH_ADD_STR(g_hash, tokenId, s);
+    }
+    return;
+}
+
+void authenticationManagerRenew(AuthenticationManager* obj, char * tokenId, int currentTime) {
+    AuthenticationManager *s;
+    HASH_FIND_STR(g_hash, tokenId, s);
+    // 而更新的条件是tokenId对应的节点存在
+    if (s != NULL) {
+        // 并且验证码尚未过期
+        if (currentTime - s->createTime < s->timeToLive) {
+            s->createTime = currentTime;
+        }
+    }
+    return;
+}
+
+int authenticationManagerCountUnexpiredTokens(AuthenticationManager* obj, int currentTime) {
+    int ans = 0;
+    AuthenticationManager *cur, *tmp;
+    // 变量哈希表找出所有还没有过期的节点
+    HASH_ITER(hh, g_hash, cur, tmp) {
+        if (currentTime - cur->createTime < cur->timeToLive) {
+            ans++;
+        }
+    }
+    return ans;
+}
+// 清理全局变量是必须的，不然多用例执行的时候肯定有问题
+void authenticationManagerFree(AuthenticationManager* obj) {
+    AuthenticationManager *cur, *tmp;
+    HASH_ITER(hh, g_hash, cur, tmp) {
+        HASH_DEL(g_hash, cur);
+        free(cur);
+    }
+    g_timeToLive = 0;
+    return;
+}
