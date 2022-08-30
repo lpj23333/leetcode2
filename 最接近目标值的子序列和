@@ -1,0 +1,61 @@
+void getSum(int *dst, int len, int *nums) {
+    int n = 1 << len;
+   // printf("n = %d\n",n);
+    int sum = 0;
+    int pos = 0;
+    for (int i = 0; i < n; i++) {
+        sum = 0;
+        for (int j = 0; j < len; j++) {
+            if (i & 1 << j) {
+                //printf(j = %d);
+                sum += nums[j];
+               // printf("sum = %d\n", sum);
+            }
+        }
+        dst[pos++] = sum;
+    }
+    //printf("\n11\n");
+}
+int comp(const void *a, const void *b) {
+    return *(int *)a - *(int *)b;
+}
+int minAbsDifference(int* nums, int numsSize, int goal){
+    int mid = numsSize / 2;
+    //int n = 1 << numsSize;
+    int sum = 0;
+    int min = 0x7ffffffe;
+    int len1 = 1<<(mid + 1);
+    int len2 = 1 << (numsSize - mid - 1);
+    int left[len1];
+    int right[len2];
+
+    getSum(left, mid + 1, nums);
+    getSum(right, numsSize - mid - 1, nums + mid + 1);
+   /* for (int i = 0; i < len1; i++) {
+        printf("%d ", left[i]);
+    }
+    printf("\n");
+    for (int i = 0; i < len2; i++) {
+        printf("%d ", right[i]);
+    }
+    printf("\n");*/
+    qsort(left, len1, sizeof(int), comp);
+    qsort(right, len2, sizeof(int), comp);
+    int i = 0;
+    int j = len2 - 1;
+    while(i < len1 && j >= 0) {
+        sum = left[i] + right[j];
+        if (sum > goal) {
+            j--;
+            min = min < abs(sum - goal) ? min : abs(sum - goal);
+        } else if (sum < goal) {
+            i++;
+            min = min < abs(sum - goal) ? min : abs(sum - goal);
+        } else {
+            return 0;
+        }
+    }
+  
+    
+    return min;
+}
