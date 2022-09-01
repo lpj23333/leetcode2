@@ -1,0 +1,31 @@
+/* 将数字字符转换成整形数据 */
+#define charToInt(ch) (ch - '0')
+
+bool backtrack(char *s, int index, unsigned long long pre, int cnt) {
+    /* 结束条件 */
+    if (s[index] == '\0') {
+        /* 当且仅当数字序列长度大于1时，才满足返回 true 的条件 */
+        return cnt > 1;
+    }
+    /* 计算当前的整形数据 */
+    unsigned long long tmp = 0;
+    for (int i = index; s[i] != '\0'; ++i) {
+        tmp = tmp * 10 + charToInt(s[i]);
+        /* 剪枝，如果前后两个值超过 1，就对当前分治进行剪枝，同时保证当前的长度大于 1 */
+        if (cnt != 0 && tmp > pre) {
+            break;
+        }
+        /* 当前长度大于 1 时，做选择 */
+        if (cnt == 0 || tmp + 1 == pre) {
+            if (backtrack(s, i + 1, tmp, cnt + 1)){
+                return true;
+            }
+        }
+        /* 撤销选择 */
+    }
+    return false;
+}
+
+bool splitString(char * s){
+    return backtrack(s, 0, -1, 0);
+}
