@@ -1,0 +1,30 @@
+int Xor(int a, int b) {
+    int res = 0;
+    int i = 0;
+    while ((a != 0) && (b != 0)) {
+        int tmp = a % 2;
+        tmp *= (b % 2);
+        res += (tmp * pow(2, i));
+        a = a / 2;
+        b = b / 2;
+        i++;
+    }
+    return res;
+}
+
+
+
+int getXORSum(int* arr1, int arr1Size, int* arr2, int arr2Size){
+    int res = arr1[0];
+    int res2 = arr2[0]; 
+    for (int i = 1; i< arr1Size; i++) {
+        res ^= arr1[i];
+    }
+    
+    for (int i= 1; i < arr2Size; i++) {
+        res2 ^= arr2[i];
+    }
+    res = Xor(res, res2);
+   
+    return res;
+}
