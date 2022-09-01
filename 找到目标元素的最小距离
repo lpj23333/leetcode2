@@ -1,0 +1,66 @@
+typedef struct {
+    int val;
+    int pos;
+} pair;
+
+typedef struct {
+    pair* pairs;
+    int size;
+} vector;
+
+#define HASH_SIZE 149
+
+typedef struct {
+    vector hash[HASH_SIZE];
+} HASH;
+
+
+HASH* createHash() {
+    HASH* res = (HASH*)malloc(sizeof(HASH));
+    for (int i = 0; i < HASH_SIZE; i++) {
+        res->hash[i].pairs = NULL;
+        res->hash[i].size = 0;
+    }
+    return res;
+}
+
+void add(HASH* h, int v, int p) {
+    int idx = v % HASH_SIZE;
+    vector *vec = &(h->hash[idx]);
+    vec->pairs = (pair*)realloc(vec->pairs, sizeof(pair)*(vec->size+1));
+    vec->pairs[vec->size].pos = p;
+    vec->pairs[vec->size].val = v;
+    vec->size++;
+}
+
+void freehash(HASH* h) {
+    if (h != NULL) {
+        for (int i = 0; i < HASH_SIZE; i++) {
+            if (h->hash[i].pairs != NULL) {
+                free(h->hash[i].pairs);
+            }
+        }
+        free(h);
+    }
+}
+
+int abs(int a) {
+    return a < 0 ? -a : a;
+}
+
+int getMinDistance(int* nums, int numsSize, int target, int start){
+    HASH* h = createHash();
+    for (int i = 0; i < numsSize; i++) {
+        add(h, nums[i], i);
+    }
+
+    vector* vec = &(h->hash[target%HASH_SIZE]);
+    int res = numsSize;
+    for (int i = 0; i < vec->size; i++) {
+        if ((vec->pairs[i].val == target) && ((abs(vec->pairs[i].pos-start) < res))) {
+            res = abs(vec->pairs[i].pos-start);
+        }
+    }
+    freehash(h);
+    return res;
+}
