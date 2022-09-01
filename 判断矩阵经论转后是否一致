@@ -1,0 +1,88 @@
+bool checkMatch(int** mat,int** target,int maxLen)
+{
+    for(int row = 0; row < maxLen; row++)
+    {
+        for(int col = 0; col < maxLen; col++)
+        {
+            if(mat[row][col] != target[row][col] )
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+void rotateMat(int** mat,int maxLen)
+{
+    /*
+    for(int row = 0; row < maxLen; row++)
+    {
+        for(int col = 0; col < maxLen; col++)
+        {
+            printf("%d->",mat[row][col]);
+        }
+         printf("\n");
+    }
+    */
+
+    //从内圈旋转到外圈旋转
+    //因为正方形有四个边，由这四个边旋转，从外到内
+    for(int row = 0; row < maxLen/2; row++)
+    {
+        for(int col = row; col < maxLen - 1 - row; col++) 
+        {
+            //取出第一个旋转的位置
+            int temp = mat[row][col];   //取左上
+            // 左上      《======== 左下
+            mat[row][col] = mat[ maxLen - 1 - col][row];
+            //左下       <=========右下
+            mat[maxLen - 1 - col][row] = mat[maxLen - 1- row][maxLen- 1-col];
+
+            //右下       <=========右上
+            mat[maxLen - 1 - row][maxLen - 1 - col]= mat[col][maxLen - 1- row];
+
+            //右上      <========= 左上
+            mat[col][maxLen-1-row] = temp; 
+        }
+    }
+    /*
+    for(int row = 0; row < maxLen; row++)
+    {
+        for(int col = 0; col < maxLen; col++)
+        {
+            printf("%d->",mat[row][col]);
+        }
+         printf("\n");
+    }
+    */
+}
+
+
+
+bool findRotation(int** mat, int matSize, int* matColSize, int** target, int targetSize, int* targetColSize)
+{
+    int maxLen = matSize;
+    int** tempMat = (int **) malloc(sizeof(int *)*maxLen);
+    for(int row = 0 ; row < maxLen; row++)
+    {
+        tempMat[row] = (int *)malloc(sizeof(int)*maxLen);
+        memcpy(tempMat[row], mat[row], sizeof(int)*maxLen);
+    }
+
+    if(checkMatch(tempMat,target,maxLen))
+    {
+        return true;
+    }
+
+
+    for(int i =0; i< 4; i++)
+    {
+        rotateMat(tempMat,maxLen);
+        if(checkMatch(tempMat,target,maxLen))
+        {
+            return true;
+        }
+    }
+    return false;
+}
