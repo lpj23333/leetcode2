@@ -1,0 +1,51 @@
+int minFlips(char * s) {
+    int odd = 0;
+    int even = 0;
+    int sum01 = 0;
+    int sum10 = 0;
+    int len;
+    int i;
+    int min = 0x7fffffff;
+
+    len = strlen(s);
+    // 01 -- sum01
+    for (i = 0; s[i] != '\0'; i++) {
+        if (i%2 == 0) {
+            even += (s[i] == '1'? 1:0);     
+        } else {
+            odd += (s[i] == '0'? 1:0); 
+        }
+    }
+
+    sum01 = odd + even;
+    sum10 = len - sum01;
+    // printf("sum01:%d, sum10:%d \n", sum01, sum10);
+
+    // len 是偶数，移动不影响结果
+    if (len%2 == 0) {
+        return sum01 < sum10? sum01 : sum10;
+    }
+
+    // len 是奇数
+    // 01
+    for (i = 0; s[i] != '\0'; i++) {
+        if (i%2 == 0) {
+            sum01 += (s[i] == '0'? 1:-1); 
+        } else {
+            sum01 += s[i] == '1'? 1:-1; 
+        }
+        min =  min < sum01? min : sum01;
+    }
+
+    // 10
+    for (i = 0; s[i] != '\0'; i++) {
+        if (i%2 == 0) {
+            sum10 += s[i] == '1'? 1:-1; 
+        } else {
+            sum10 += s[i] == '0'? 1:-1; 
+        }
+        min =  min < sum10? min : sum10;
+    }    
+    // printf("after sum01:%d, sum10:%d \n", sum01, sum10);
+    return min;
+}
