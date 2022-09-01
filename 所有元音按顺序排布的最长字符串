@@ -1,0 +1,24 @@
+int longestBeautifulSubstring(char * word){
+    int len = strlen(word);
+    if (len < 5) return 0;
+
+    int ans = 0, type = 1;
+    for (int l=0, r=1; r < len; r++) {
+        // 如果当前的字符比前一个字符小,那么就不美丽了,所以缩小窗口区间
+        // l = r 是因为如果当前字符比前一个字符小,
+        // 那么只要区间包括当前字符和前一个字符,这个区间就是不美丽的
+        // 同时, 如果在这个字符之前,窗口内元素就美丽了(满足aeiou && tpye == 5)
+        // 那么ans的值就已经被更新了
+        if (word[r] < word[r-1]) {
+            l = r;
+            type = 1;
+        }
+        // 当前字符比前一个字符大,说明种类不同
+        // 当前字符如果和前一个相同, r++
+        if (word[r] > word[r-1]) type++;
+        // 如果种类有五个, 则更新ans
+        if (type == 5) ans = fmax(ans, r-l+1);
+    }
+
+    return ans;
+}
