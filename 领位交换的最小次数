@@ -1,0 +1,79 @@
+int getMinSwaps(char * nums, int k){
+int p=strlen(nums)-1,e=0;
+char ak[1006];
+strcpy(ak,nums);
+for(int i=0;i<k;i++)
+{
+    int a=strlen(nums)-1;
+    for(int j=a-1;j>=0;j--)
+    {
+        int w=0;
+        if(nums[j]<nums[j+1])
+        {
+        for(int r=a;r>j;r--)
+        {
+        if(nums[j]<nums[r])
+        {
+            w=1;
+            char h=nums[j];
+            nums[j]=nums[r];
+            nums[r]=h;
+            int jj=a,ii=j+1;
+            while(jj>ii)
+            {
+                         char l=nums[ii];
+                         nums[ii]=nums[jj];
+                         nums[jj]=l;
+                            jj--;
+                            ii++;
+                
+            }
+            // for(int x=a;x>j+1;x--)
+            // {
+            //     for(int y=x-1;y>j;y--)
+            //     {
+            //         if(nums[x]<nums[y])
+            //         {
+            //             char l=nums[x];
+            //             nums[x]=nums[y];
+            //             nums[y]=l;
+            //         }
+            //     }
+            // }
+            break;
+        }
+        }
+        if(w==1)
+        {
+            break;
+        }
+    }
+    }
+}
+  
+for(int o=p;o>=0;o--)
+{
+    for(int g=o;g>=0;g--)
+    {
+        if(ak[g]==nums[o])
+        {
+            if(g==o)
+            {
+                break;
+            }
+            else
+            {
+                for(int v=g;v<o;v++)
+                {
+                    char u=ak[v];
+                    ak[v]=ak[v+1];
+                    ak[v+1]=u;
+                    e++;  
+                }
+            }
+            break;
+        }
+    }
+}
+    return e;
+}
