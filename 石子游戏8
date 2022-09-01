@@ -1,0 +1,10 @@
+int stoneGameVIII(int* stones, int stonesSize){
+    int pre[stonesSize];pre[0]=stones[0];
+    int i,j,dp[stonesSize];
+    for(i=1;i<stonesSize;i++)pre[i]=pre[i-1]+stones[i];
+    dp[stonesSize-1]=pre[stonesSize-1];
+    for(i=stonesSize-2;i>=1;i--){
+        dp[i]=fmax(dp[i+1],pre[i]-dp[i+1]);
+    }
+    return dp[1];
+}
