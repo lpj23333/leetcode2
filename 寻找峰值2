@@ -1,0 +1,18 @@
+int* findPeakGrid(int** mat, int matSize, int* matColSize, int* returnSize){
+    int x,y;
+    int ans=0;
+    for(int i=0;i<matSize;i++){
+        for(int j=0;j<matColSize[0];j++){
+            if(mat[i][j]>ans){
+                ans=mat[i][j];
+                x=i;
+                y=j;
+            }
+        }
+    }
+    *returnSize=2;
+    int* a=(int*)malloc(sizeof(int)*(*returnSize));
+    a[0]=x;
+    a[1]=y;
+    return a;
+}
