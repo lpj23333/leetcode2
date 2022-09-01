@@ -1,0 +1,12 @@
+int cmp(int *a, int *b) {
+    return *a - *b;
+}
+
+int maximumElementAfterDecrementingAndRearranging(int *arr, int arrSize) {
+    qsort(arr, arrSize, sizeof(int), cmp);
+    arr[0] = 1;
+    for (int i = 1; i < arrSize; ++i) {
+        arr[i] = fmin(arr[i], arr[i - 1] + 1);
+    }
+    return arr[arrSize - 1];
+}
