@@ -1,0 +1,118 @@
+typedef struct {
+    int data1;
+    int data2;
+} Element;
+
+typedef struct {
+    Element *arr;
+    int idx;
+} Heap;
+
+Heap *initHeap(int n) {
+    Heap *obj = (Heap*)malloc(sizeof(Heap));
+    obj->idx = 0;
+    obj->arr = (Element*)malloc(sizeof(Element) * n);
+    return obj;
+}
+/* 比较函数, 对于idle优先队列, 权值小的, 下标小的排在前面    */
+/*          对于busy优先队列, 结束时间早的, 下标小的排在前面 */
+bool cmp(Element *a, Element *b) {
+    if (a->data1 == b->data1) {
+        return a->data2 < b->data2;
+    }
+    return a->data1 < b->data1;
+}
+
+bool empty(Heap *obj) {
+    return obj->idx == 0;
+}
+/* 元素交换 */
+void swap(Element *a, Element *b) {
+    Element tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+/* 插入到最后一个位置, 元素上浮 */
+void push(Heap *obj, Element ele) {
+    obj->arr[obj->idx++] = ele;
+    int x = obj->idx - 1;
+    int p;
+    while (x > 0) {
+        p = (x - 1) / 2;
+        if (cmp(&obj->arr[x], &obj->arr[p])) {
+            swap(&obj->arr[x], &obj->arr[p]);
+            x = p;
+        } else {
+            break;
+        }
+    }
+}
+/* 弹出堆顶元素, 堆顶元素下沉 */
+int pop(Heap *obj) {
+    int res = obj->arr[0].data2;
+    obj->arr[0] = obj->arr[--obj->idx];
+    int i = 0;
+    int l, r, smallest;
+    while (i < obj->idx) {
+        smallest = i;
+        l = 2 * i + 1;
+        r = 2 * i + 2;
+        if (l < obj->idx && cmp(&obj->arr[l], &obj->arr[smallest])) {
+            smallest = l;
+        }
+        if (r < obj->idx && cmp(&obj->arr[r], &obj->arr[smallest])) {
+            smallest = r;
+        }
+        if (i != smallest) {
+            swap(&obj->arr[i], &obj->arr[smallest]);
+            i = smallest;
+        } else {
+            break;
+        }
+    }
+    return res;
+}
+
+/* busy中时间小于ts的服务器, 进行释放 */
+void relBusy(Heap *busyQue, Heap *idleQue, int ts, int *servers) {
+    while (!empty(busyQue) && busyQue->arr[0].data1 <= ts) {
+        int idx = pop(busyQue);
+        Element e2 = {servers[idx], idx};
+        push(idleQue, e2);
+    }
+}
+
+int* assignTasks(int* servers, int serversSize, int* tasks, int tasksSize, int* returnSize){
+    int n = serversSize;
+    int m = tasksSize;
+    int i, idx;
+    int *res = (int*)malloc(sizeof(int) * m);
+    Heap *idleQue = initHeap(n);
+    Heap *busyQue = initHeap(n);
+
+    /* 将服务器添加到idle中 */
+    for (i = 0; i < n; i++) {
+        Element ele = {servers[i], i};  /* 权重 + 下标 */
+        push(idleQue, ele);
+    }
+
+    int ts = 0;
+    for (i = 0; i < m; i++) {
+        ts = fmax(ts, i);
+        relBusy(busyQue, idleQue, ts, servers);
+        
+        /* 如果idle为空, 需要将busy堆顶的服务器进行释放, 更新时间戳 */
+        if (empty(idleQue)) { 
+            ts = busyQue->arr[0].data1;
+            relBusy(busyQue, idleQue, ts, servers);
+        }
+        /* 从空闲服务器选取一个使用, 并加入到busy中 */
+        idx = pop(idleQue);
+        Element e3 = {ts + tasks[i], idx};
+        push(busyQue, e3);
+        res[i] = idx;
+    }
+    *returnSize = m;
+    return res;
+}
