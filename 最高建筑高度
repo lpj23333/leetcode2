@@ -1,0 +1,49 @@
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+
+int Cmp(const void *a, const void *b)
+{
+    const int *pa = *(const int **)a;
+    const int *pb = *(const int **)b;
+    return pa[0] - pb[0];
+}
+
+int maxBuilding(int n, int **restrictions, int restrictionsSize, int *restrictionsColSize)
+{
+    if (restrictionsSize == 0) {
+        return n - 1;
+    }
+    qsort(restrictions, restrictionsSize, sizeof(int) * 2, Cmp);
+    // 对限制高度进行修正
+    for (int i = 0; i < restrictionsSize - 1; i++) {
+        int newRestriction = restrictions[i][1] + restrictions[i + 1][0] - restrictions[i][0];
+        restrictions[i + 1][1] = MIN(restrictions[i + 1][1], newRestriction);
+    }
+    for (int i = restrictionsSize - 1; i > 0; i--) {
+        int newRestriction = restrictions[i][1] + restrictions[i][0] - restrictions[i - 1][0];
+        restrictions[i - 1][1] = MIN(restrictions[i - 1][1], newRestriction);
+    }
+
+    int left = 1;
+    int right;
+    int leftHeight = 0;
+    int rightHeight;
+    int maxHeight = 0;
+
+    for (int i = 0; i < restrictionsSize; i++) {
+        right = restrictions[i][0];
+        int distance = right - left;
+        rightHeight = MIN(leftHeight + distance, restrictions[i][1]);
+
+        int heightDiff = abs(rightHeight - leftHeight);
+        int newHeight = MAX(leftHeight, rightHeight) + (distance - heightDiff) / 2;
+        maxHeight = MAX(maxHeight, newHeight);
+
+        left = right;
+        leftHeight = rightHeight;
+    }
+    // 处理最后一段没有限制的区间
+    maxHeight = MAX(maxHeight, rightHeight + n - right);
+
+    return maxHeight;
+}
