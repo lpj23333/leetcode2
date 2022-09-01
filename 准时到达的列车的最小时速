@@ -1,0 +1,26 @@
+int minSpeedOnTime(int *dist, int distSize, double hour) {
+    int low = 1, high = pow(10, 7);
+
+    while(low <= high)
+    {
+        int mid = (low + high) / 2;
+        double temp_hour = hour;
+        for(int i = 0; i < distSize - 1; ++i) {
+            temp_hour -= dist[i] / mid + (dist[i] % mid == 0 ? 0 : 1);
+            if(temp_hour <= 0) break;
+        }
+        temp_hour -= dist[distSize - 1] / mid;
+
+        /* 错误代码块
+        if(temp_hour < 0) low = mid + 1;    //这里存在精度问题，判断浮点数是否为0不能简单的double == 0
+        else high = mid - 1;                //应该取该浮点数的绝对值后与允许误差进行比较
+        */
+
+        //正确方法
+        if(temp_hour > 0 || fabs(temp_hour) < 1e-15) high = mid - 1;
+        else low = mid + 1;
+    }
+
+
+    return low > pow(10, 7) ? -1 : low;
+}
