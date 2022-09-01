@@ -1,0 +1,5 @@
+int sumBase(int n, int k) {
+    int ans = n%k;
+    while(n /= k)   ans += n%k;
+    return ans;
+}
