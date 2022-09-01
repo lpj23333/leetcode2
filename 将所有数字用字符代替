@@ -1,0 +1,12 @@
+char shift(char s,int num){
+    //利用0变换
+    s = s+(num-'0');
+	return s;
+}
+char * replaceDigits(char * s){
+	
+	for(int i = 1;i<strlen(s);i += 2){
+		s[i] = shift(s[i-1],s[i]);
+	} 
+	return s;
+}
