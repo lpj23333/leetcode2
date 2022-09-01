@@ -1,0 +1,23 @@
+typedef struct {
+    int year;
+    int cnt;
+} PERSON_S;
+
+int compare(const void *a, const void *b) {
+    PERSON_S *p1 = (PERSON_S *)a;
+    PERSON_S *p2 = (PERSON_S *)b;
+    return p2->cnt - p1->cnt;
+}
+int maximumPopulation(int** logs, int logsSize, int* logsColSize){
+    PERSON_S p[102] = {0};
+    for (int i = 0; i < 102; i++) {
+        p[i].year = i + 1950;
+    }
+    for (int i = 0; i < logsSize; i++) {
+        for (int j = logs[i][0]; j < logs[i][1]; j++) {
+            p[j - 1950].cnt++;
+        }
+    }
+    qsort(p, 102, sizeof(PERSON_S), compare);
+    return p[0].year;
+}
