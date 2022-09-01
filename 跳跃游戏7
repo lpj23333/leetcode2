@@ -1,0 +1,31 @@
+bool canReach(char * s, int minJump, int maxJump)
+{
+    int cnt=0;
+    int left=0, right=maxJump-minJump, len=strlen(s);
+    s[0]='0';
+    //下标1到minJump-1都无法到达，赋值为1
+    for(int i=1; i<minJump; i++)
+    {
+        s[i]='1';
+    }
+    //初识化滑动窗口，cnt记录能到达maxJump处的下标的数量
+    if(right<minJump) cnt=1;
+    else
+    {
+        for(int i=minJump; i<=right; i++)
+        {
+            if(s[i]=='0') cnt++;
+        }
+        cnt++;
+    }
+    //记录窗口内‘0’的数量，若cnt为0，则说明right+minJump处无法到达，将s[right+minJump]置1
+    for(right=right+1; right<len-minJump; left++,right++)
+    {
+        if(s[right]=='0') cnt++;
+        if(s[left]=='0') cnt--;
+        if(!cnt) s[right+minJump]='1';
+    }
+
+    if(s[len-1]=='0') return true;
+    else return false;
+}
