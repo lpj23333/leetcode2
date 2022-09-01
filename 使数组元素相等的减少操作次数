@@ -1,0 +1,33 @@
+int cmp(const void *a,const void *b){
+    return *(int*)a-*(int*)b;
+}
+int reductionOperations(int* nums, int numsSize){
+    if(numsSize<2)
+        return 0;
+    int res=0;
+    int steps[numsSize],freq[numsSize];
+    qsort(nums,numsSize,sizeof(int),cmp);
+    int tempval=nums[0],index=0,cnt=1;
+    for(int i=1;i<numsSize;i++){
+        if(nums[i]==tempval)
+            {
+                cnt++;
+                continue;
+            }
+        
+        else{
+            steps[index]=index;
+            freq[index]=cnt;
+            index++;
+            tempval=nums[i];
+            cnt=1;
+        }   
+    }
+    steps[index]=index;
+    freq[index]=cnt;
+    index++;
+    for(int i=0;i<index;i++){
+        res += steps[i]*freq[i];
+    }
+    return res;
+}
