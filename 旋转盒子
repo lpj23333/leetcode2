@@ -1,0 +1,31 @@
+char** rotateTheBox(char** box, int boxSize, int* boxColSize, int* returnSize, int** returnColumnSizes){
+    int m = boxSize;
+    int n = boxColSize[0];
+    char **res = (char**)malloc(sizeof(char*) * n);
+    int i, j, bottom;
+    *returnColumnSizes = (int*)malloc(sizeof(int) * n);
+
+    /* 盒子旋转, 注意下标的变化 */
+    for (i = 0; i < n; i++) {
+        res[i] = (char*)malloc(sizeof(char) * m);
+        (*returnColumnSizes)[i] = m;
+        for (j = 0; j < m; j++) {
+            res[i][j] = box[m - 1 - j][i];
+        }
+    }
+
+    /* 石头根据重力掉落 */
+    for (j = 0; j < m; j++) {
+        bottom = n - 1; /* 石头可以掉落的最下位置 */
+        for (i = n - 1; i >= 0; i--) {
+            if (res[i][j] == '*') { /* 其他障碍物, 更新bottom */
+                bottom = i - 1;
+            } else if (res[i][j] == '#') { /* 石头掉落 */
+                res[i][j] = '.';
+                res[bottom--][j] = '#';
+            }
+        }
+    }
+    *returnSize = n;
+    return res;
+}
