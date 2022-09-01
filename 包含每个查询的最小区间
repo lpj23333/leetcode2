@@ -1,0 +1,119 @@
+typedef struct structHeap Heap;
+
+struct structHeap {
+    void **array;
+    int size;
+    int (*cmp)(const void *o1, const void *o2);
+};
+
+
+static Heap *allocHeap(int capacity, int (*cmp)(const void *, const void *))
+{
+    Heap *heap = malloc(sizeof(Heap));
+    heap->array = calloc(capacity + 1, sizeof(void*));
+    heap->cmp = cmp;
+    heap->size = 0;
+    return heap;
+}
+
+
+static void deallocHeap(Heap *heap)
+{
+    free(heap->array);
+    free(heap);
+}
+
+
+static void *pop(Heap *heap)
+{
+    void *ans = heap->array[1], *val = heap->array[heap->size];
+    heap->size--;
+    int i = 1, j = 2;
+    for (; j <= heap->size; i = j, j <<= 1) {
+        if (j + 1 <= heap->size && heap->cmp(&(heap->array[j]), &(heap->array[j + 1])) > 0) {
+            j++;
+        }
+
+        if (heap->cmp(&(heap->array[j]), &val) >= 0) {
+            break;
+        }
+        heap->array[i] = heap->array[j];
+    }
+    heap->array[i] = val;
+    return ans;
+}
+
+
+static void push(Heap *heap, void *val)
+{
+    heap->size++;
+    int i = heap->size, j = heap->size >> 1;
+    for (; j > 0; i = j, j >>= 1) {
+        if (heap->cmp(&(heap->array[j]), &val) <= 0) {
+            break;
+        }
+        heap->array[i] = heap->array[j];
+    }
+    heap->array[i] = val;
+}
+
+
+static void *top(Heap *heap)
+{
+    return heap->array[1];
+}
+
+
+static int cmp0(const void *o1, const void *o2)
+{
+    int *v1 = (int*)o1, *v2 = (int*)o2;
+    return v1[0] - v2[0];
+}
+
+
+static int cmp1(const void *o1, const void *o2)
+{
+    int *v1 = *(int**)o1, *v2 = *(int**)o2;
+    return v1[0] - v2[0];
+}
+
+
+static int cmp2(const void *o1, const void *o2)
+{
+    int *v1 = *(int**)o1, *v2 = *(int**)o2;
+    return v1[1] - v1[0] - v2[1] + v2[0];
+}
+
+
+int* minInterval(int** intervals, int intervalsSize, int* intervalsColSize, int* queries, int queriesSize, int* returnSize){
+    int sortQueries[queriesSize][2];
+
+    for (int i = 0; i < queriesSize; i++) {
+        sortQueries[i][0] = queries[i];
+        sortQueries[i][1] = i;
+    }
+    qsort(sortQueries, queriesSize, sizeof(int) * 2, cmp0);
+    qsort(intervals, intervalsSize, sizeof(int*), cmp1);
+
+    Heap *heap = allocHeap(intervalsSize, cmp2);
+
+    *returnSize = queriesSize;
+    int j = 0, *ans = calloc(queriesSize, sizeof(int));
+    for (int i = 0; i < queriesSize; i++) {
+        while (j < intervalsSize && intervals[j][0] <= sortQueries[i][0]) {
+            push(heap, intervals[j]);
+            j++;
+        }
+        while (heap->size && ((int*)top(heap))[1] < sortQueries[i][0]) {
+            pop(heap);
+        }
+        int t = -1;
+        if (heap->size) {
+            int *v = top(heap);
+            t = v[1] - v[0] + 1;
+        }
+        ans[sortQueries[i][1]] = t;
+    }
+    
+    return ans;
+}
