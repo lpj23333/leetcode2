@@ -1,0 +1,168 @@
+/* 计算菱形四条边长上面的数值和。 */
+extern int calcCircleSum(int **grid, int **p1, int **p2, int row, int col, int size, const int m, const int n);
+
+/* 将计算好的数值和中，取出其中最大的三个。 */
+extern void insertSumIntoResult(int *array, int sum, int *arraySize);
+
+/* 四个数值的最小值。在固定好菱形中心时，计算其可能的最大边长时用得到。 */
+static inline int min4(int a, int b, int c, int d)
+{
+    int x = (a < b) ? a : b;
+    int y = (c < d) ? c : d;
+
+    return (x < y) ? x : y;
+}
+
+int *getBiggestThree(int **grid, int gridSize, int *gridColSize, int *returnSize)
+{
+    const int m = gridSize, n = gridColSize[0];
+    /* 前缀和二维数组的范围，即最多m + n - 1个，每个最长为m、n的较小值。 */
+    const int prefixSize = m + n - 1, prefixColSize = (m < n) ? m : n;
+    int prefix1[prefixSize][prefixColSize], prefix2[prefixSize][prefixColSize];
+    /* 二维数组不能直接带入到子函数的入参中，需以指针形式带入。 */
+    int *p1[prefixSize], *p2[prefixSize];
+    int x = 0, y = 0, row = 0, col = 0, sum = 0;
+    int *result = (int *)malloc(sizeof(int) * 3);
+
+    /* 初始化。 */
+    *returnSize = 0;
+
+    /* 计算前缀和数组。 */
+    while(prefixSize > x)
+    {
+        /* 从左下往右上方向的prefix1。 */
+        row = (m > x) ? x : (m - 1);
+        col = (m > x) ? 0 : (x + 1 - m);
+        y = 0;
+        while(0 <= row && n > col)
+        {
+            prefix1[x][y] = (0 == y) ? grid[row][col] : (grid[row][col] + prefix1[x][y - 1]);
+            y++;
+            row--;
+            col++;
+        }
+
+        /* 从左上往右下方向的prefix2。 */
+        row = (n > x) ? 0 : (x + 1 - n);
+        col = (n > x) ? (n - 1 - x) : 0;
+        y = 0;
+        while(m > row && n > col)
+        {
+            prefix2[x][y] = (0 == y) ? grid[row][col] : (grid[row][col] + prefix2[x][y - 1]);
+            y++;
+            row++;
+            col++;
+        }
+
+        /* 以指针的方式出现到子函数的入参中。 */
+        p1[x] = &prefix1[x][0];
+        p2[x] = &prefix2[x][0];
+
+        x++;
+    }
+
+    /* 遍历每一个可能的菱形中心。 */
+    row = 0;
+    while(m > row)
+    {
+        col = 0;
+        while(n > col)
+        {
+            /* 菱形的四条边必须在矩形以内，所以它的边长最大值受到上下左右四个边界的影响，取四个方向距离的最小值。 */
+            x = min4(row, m - 1 - row, col, n - 1 - col);
+            /* 查看不同边长的菱形数值和，其中，边长为0的表示该单元格本身。 */
+            y = 0;
+            while(x >= y)
+            {
+                sum = calcCircleSum(grid, p1, p2, row, col, y, m, n);
+                insertSumIntoResult(result, sum, returnSize);
+                y++;
+            }
+            col++;
+        }
+        row++;
+    }
+
+    return result;
+}
+
+/* 计算菱形四条边长上面的数值和。计算时，注意四个顶点，依次只给其中一条边使用，即不要重复计算四个顶点的数值。 */
+int calcCircleSum(int **grid, int **p1, int **p2, int row, int col, int size, const int m, const int n)
+{
+    /* 边长为0的菱形，即表示单元格本身。 */
+    if(0 == size)
+    {
+        return grid[row][col];
+    }
+
+    int sum = 0, i = 0, j = 0, x = row, y = col - size;
+
+    /* 左上边，不含上顶点。 */
+    j = (y < m - 1 - x) ? y : (m - 1 - x);
+    i = x + y;
+    sum += ((0 == j) ? p1[i][size - 1] : (p1[i][j + size - 1] - p1[i][j - 1]));
+
+    /* 右下边，不含下顶点。 */
+    x = row + size - 1;
+    y = col + 1;
+    j = (y < m - 1 - x) ? y : (m - 1 - x);
+    i = x + y;
+    sum += ((0 == j) ? p1[i][size - 1] : (p1[i][j + size - 1] - p1[i][j - 1]));
+
+    /* 右上边，不含右顶点。 */
+    x = row - size;
+    y = col;
+    j = (x < y) ? x : y;
+    i = n - 1 - y + x;
+    sum += ((0 == j) ? p2[i][size - 1] : (p2[i][j + size - 1] - p2[i][j - 1]));
+
+    /* 左下边，不含左顶点。 */
+    x = row + 1;
+    y = col - size + 1;
+    j = (x < y) ? x : y;
+    i = n - 1 - y + x;
+    sum += ((0 == j) ? p2[i][size - 1] : (p2[i][j + size - 1] - p2[i][j - 1]));
+
+    return sum;
+}
+
+/* 将计算好的数值和中，取出其中最大的三个。 */
+void insertSumIntoResult(int *array, int sum, int *arraySize)
+{
+    int x = 0, y = *arraySize - 1;
+
+    /* 首次出现，直接放入。 */
+    if(0 == *arraySize)
+    {
+        array[0] = sum;
+        *arraySize = 1;
+        return;
+    }
+
+    /* 插入到第一个小于它的位置。 */
+    while(*arraySize > x && array[x] > sum)
+    {
+        x++;
+    }
+
+    /* 已经有三个比自己大，或者是出现过的重复数值，则不需要插入。 */
+    if(3 == x || array[x] == sum)
+    {
+        return;
+    }
+
+    /* 其余情况，将需要插入的数值，按照降序的要求放在应该出现的位置。 */
+    if(3 > *arraySize)
+    {
+        array[*arraySize] = array[*arraySize - 1];
+        (*arraySize)++;
+    }
+    while(y > x)
+    {
+        array[y] = array[y - 1];
+        y--;
+    }
+    array[x] = sum;
+
+    return;
+}
