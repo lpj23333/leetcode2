@@ -1,0 +1,21 @@
+bool checkZeroOnes(char * s){
+    int i,count1=0,count0=0,max1=0,max0=0;
+    int len=strlen(s);
+    for(i=0;i<len;i++){
+    if(s[i]=='1'){
+        count1++;
+        count0=0;
+        if(count1>max1)
+        max1=count1;
+    }
+    if(s[i]=='0'){
+        count0++;
+        count1=0;
+        if(count0>max0)
+        max0=count0;
+    }
+    }
+    if(max1>max0)
+    return true;
+    return false;
+}
