@@ -1,0 +1,107 @@
+#define  MAX(a, b)  ((a) > (b)? (a):(b))
+int largestPathValue(char * colors, int** edges, int edgesSize, int* edgesColSize) {
+     int ** in;
+     int *inLen;
+     int * inIndex;
+     int ** out;
+     int * outLen;
+     int * outIndex;
+     int ** maxc;
+     int i, j;
+     int max = -1;
+     int maxId = -1;
+     int n;
+     int *q;
+     int begin = 0;
+     int end = 0;
+     int cur, tmp;
+     int curNum;
+     int nextNum;
+
+     n = strlen(colors);
+     in = (int **) malloc(sizeof(int*) * n);
+     inLen= (int *) malloc(sizeof(int) * n);
+     inIndex= (int *) malloc(sizeof(int) * n);
+     out = (int **) malloc(sizeof(int*) * n); 
+     outLen= (int *) malloc(sizeof(int) * n);
+     outIndex= (int *) malloc(sizeof(int) * n);
+     q = (int *) malloc(sizeof(int) * n);  
+     maxc = (int **) malloc(sizeof(int*) * n); 
+     memset(inLen, 0, sizeof(int) * n);
+     memset(inIndex, 0, sizeof(int) * n);
+     memset(outLen, 0, sizeof(int) * n);
+     memset(outIndex, 0, sizeof(int) * n);
+     // cal num 
+     for (i = 0; i < edgesSize; i++) {
+         if (edges[i][0] == edges[i][1]) {
+             return -1;
+         }
+         outLen[edges[i][0]]++;
+         inLen[edges[i][1]]++;
+     }
+
+     // malloc
+     for (i = 0; i < n; i++) {
+         // printf("inLen[%u]=%u \n", i, inLen[i]);
+         if (inLen[i] > 0) {
+            in[i] = (int *)malloc(sizeof(int) * inLen[i]);
+         }
+
+         if (outLen[i] > 0) {
+            out[i] = (int *)malloc(sizeof(int) * outLen[i]);   
+         }
+         
+         maxc[i] = (int *)malloc(sizeof(int) * 26);  
+         memset(maxc[i], 0, sizeof(int) * 26);    
+     }
+
+     // int in and out
+     for (i = 0; i < edgesSize; i++) {
+         out[edges[i][0]][outIndex[edges[i][0]]++] = edges[i][1];
+     }    
+     // cal q
+     for (i = 0; i < n; i++) {
+        if (inLen[i] == 0) {
+            q[end++] = i;
+        }       
+     }    
+
+
+    // process q
+    while (begin < end) {
+        cur = q[begin];
+        // printf("begin=%u, cur=%u \n",begin, cur);
+        maxc[cur][colors[cur] - 'a']++; // 在弹出的时候++（每个点有且弹出一次），因为求取的是以每个点为结尾的最大值
+        for (i = 0; i < outLen[cur]; i++) {
+             tmp = out[cur][i];
+             // printf("i=%u, tmp=%u, outLen = %u \n",i, tmp, outLen[cur]);
+             inLen[tmp]--;
+             if (inLen[tmp] == 0) {
+                 // printf("%u in q\n",tmp);
+                 q[end++] = tmp;
+             }
+             
+             for (j = 0; j < 26; j++) {
+                 curNum = maxc[cur][j];
+                 nextNum = maxc[tmp][j];  
+                 // printf("j=%u, curNum = %u, nextNum=%u \n",j, curNum, nextNum);
+                 maxc[tmp][j] = MAX(curNum, nextNum);         
+             }
+         }
+         begin++;
+     }
+
+     // cal rst
+     if (end < n) {
+        return -1; // have circle
+     }
+
+     for (i = 0; i < n; i++) {
+        for (j = 0; j < 26; j++) {       
+            max = MAX(max, maxc[i][j]);                       
+        }  
+        // printf("point:%u, max:%u \n", i, max);     
+     }   
+
+     return max;
+}
