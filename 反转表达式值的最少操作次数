@@ -1,0 +1,56 @@
+
+struct num{
+int val;
+int min;
+};
+typedef struct num node;
+
+void cmp(node*nums,int *ntop,char *stack,int *top)
+{
+        int ans=nums[*ntop].val&nums[*ntop-1].val;
+        int anss=nums[*ntop].val|nums[*ntop-1].val;
+        (*ntop)--;
+        if(ans)
+            nums[*ntop].min=fmin(nums[*ntop].min,nums[*ntop+1].min)+(stack[*top]=='|');
+        else if(anss)
+            nums[*ntop].min=1;
+        else nums[*ntop].min=fmin(nums[*ntop].min,nums[*ntop+1].min)+(stack[*top]=='&');
+
+        nums[*ntop].val=stack[*top]=='&'?ans:anss;
+}
+
+
+
+int minOperationsToFlip(char *s){
+int leng=strlen(s);
+char stack[leng/2+1];
+struct num nums[leng/2+1];
+int ntop=-1,top=-1;
+for(int i=0;i<leng;i++)
+if(isdigit(s[i]))
+    {
+        node temp={s[i]-'0',1};
+        nums[++ntop]=temp;
+    }
+else {
+    if(s[i]=='&'||s[i]=='|')
+        if(top==-1||stack[top]=='(')
+            stack[++top]=s[i];
+        else{
+            cmp(nums,&ntop,stack,&top);
+            stack[top]=s[i];
+            }
+    else if(s[i]=='(')
+        stack[++top]=s[i];
+    else if(stack[top]!='(')
+        {cmp(nums,&ntop,stack,&top);
+        top-=2;}
+    else top=top-1;
+    }
+
+
+while(top!=-1)
+{cmp(nums,&ntop,stack,&top);
+top--;}
+return nums[0].min;
+}
