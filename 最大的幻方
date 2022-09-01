@@ -1,0 +1,68 @@
+#define MIN(a,b) ((a)>(b)?(b):(a))
+
+int isHuanfang(int** grid, int x, int y, int length)
+{
+int num = 0;
+int num2 = 0;
+for(int i=0;i<length;i++){
+num += grid[x][y+i];
+}
+for(int i=0;i<length;i++){
+num2 += grid[x+i][y];
+}
+if(num != num2) {
+return 0;
+}
+int j =0;
+while(j<length) {
+num2 = 0;
+for(int i=0;i<length;i++){
+num2 += grid[x+j][y+i];
+}
+if(num2 != num) {
+return 0;
+}
+j++;
+}
+j =0;
+while(j<length) {
+num2 = 0;
+for(int i=0;i<length;i++){
+num2 += grid[x+i][y+j];
+}
+if(num2 != num) {
+return 0;
+}
+j++;
+}
+num2 = 0;
+for(int i=0;i<length;i++){
+num2 += grid[x+i][y+i];
+}
+if(num2 != num) {
+return 0;
+}
+num2 = 0;
+for(int i=0;i<length;i++){
+num2 += grid[x+length-1-i][y+i];
+}
+if(num2 != num) {
+return 0;
+}
+return 1;
+}
+
+int largestMagicSquare(int** grid, int gridSize, int* gridColSize){
+int ans = MIN(gridSize, *gridColSize);
+while (ans > 1) {
+for(int i=0;i<=gridSize-ans;i++) {
+for(int j=0;j<=*gridColSize - ans;j++) {
+if(isHuanfang(grid, i, j, ans)) {
+return ans;
+}
+}
+}
+ans--;
+}
+return 1;
+}
