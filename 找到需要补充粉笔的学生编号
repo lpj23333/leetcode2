@@ -1,0 +1,15 @@
+int chalkReplacer(int* chalk, int chalkSize, int k){
+    int sum=0;
+    for(int i=0;i<chalkSize;i++){
+        sum+=chalk[i];
+        if(sum>k)
+            return i;//若超出k则直接返回i，不会发生溢出
+    }
+    sum=k%sum;
+    for(int i=0;i<chalkSize;i++){
+        sum-=chalk[i];
+        if(sum<0)
+            return i;
+    }
+    return 0;
+}
