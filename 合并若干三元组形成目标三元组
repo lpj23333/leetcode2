@@ -1,0 +1,14 @@
+bool mergeTriplets(int** triplets, int tripletsSize, int* tripletsColSize, int* target, int targetSize){
+    int max1 = 0;
+    int max2 = 0;
+    int max3 = 0;
+    for (int i = 0; i < tripletsSize; i++) {
+        /* 满足选取条件, 求最大值 */
+        if (triplets[i][0] <= target[0] && triplets[i][1] <= target[1] && triplets[i][2] <= target[2]) {
+            max1 = fmax(max1, triplets[i][0]);
+            max2 = fmax(max2, triplets[i][1]);
+            max3 = fmax(max3, triplets[i][2]);
+        }
+    }
+    return max1 == target[0] && max2 == target[1] && max3 == target[2];
+}
