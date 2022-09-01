@@ -1,0 +1,19 @@
+int cmp(int *a, int *b) {
+    return *a - *b;
+}
+
+int maxFrequency(int *nums, int numsSize, int k) {
+    qsort(nums, numsSize, sizeof(int), cmp);
+    int n = numsSize;
+    long long total = 0;
+    int l = 0, res = 1;
+    for (int r = 1; r < n; ++r) {
+        total += (long long)(nums[r] - nums[r - 1]) * (r - l);
+        while (total > k) {
+            total -= nums[r] - nums[l];
+            ++l;
+        }
+        res = fmax(res, r - l + 1);
+    }
+    return res;
+}
