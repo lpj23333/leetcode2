@@ -1,0 +1,12 @@
+int minOperations(int* nums, int numsSize){
+    int sum=0;
+    int old=0;
+    for(int i=0;i<numsSize;i++){
+        while(nums[i]<=old){
+            nums[i]++;
+            sum++;
+        }
+        old=nums[i];
+    }
+    return sum;
+}
