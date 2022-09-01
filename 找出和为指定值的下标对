@@ -1,0 +1,253 @@
+struct hash_node {
+    int key;
+    int val;
+    struct hash_node *next;
+};
+
+// 定义哈希表的结构
+struct hash {
+    struct hash_node **slots;
+    int size;  // 哈希表的大小
+    int count; // 哈希表中的元素的数量
+};
+
+// 创建哈希表
+struct hash *hash_init(int size) {
+    struct hash *hash = NULL;
+    hash = (struct hash *)malloc(sizeof(struct hash));
+    if (hash == NULL) {
+        return NULL;
+    }
+
+    assert(hash != NULL);
+    hash->slots = NULL;
+    hash->slots = (struct hash_node **)calloc(size, sizeof(struct hash_node *));
+    if (hash->slots == NULL) {
+        free(hash);
+        return NULL;
+    }
+
+    assert(hash->slots != NULL);
+    hash->size = size; // 记录下哈希表的大小
+    hash->count = 0; // 初始化 count 为 0, 因为此时哈希表中还没有元素
+    
+    return hash;
+}
+
+// 清空哈希表当中的内容
+void hash_clear(struct hash *hash) {
+    int i;
+    struct hash_node *p = NULL;
+    struct hash_node *node = NULL;
+
+    assert(hash != NULL);
+
+    for (i = 0; i < hash->size; i++) { // 逐个清空哈希表中每条链上的结点
+        p = hash->slots[i]; // 从头节点开始
+        while (p) {
+            node = p; // node 记录下来需要释放的结点
+            p = node->next;
+            free(node);
+            hash->count--; // 每释放一个结点，哈希表中的结点数量就减一
+        }
+    }
+
+    assert(hash->count == 0); // 正确清空哈希表之后，哈希表里面的元素数量一定为 0
+    return;
+}
+
+// 清空哈希表并释放哈希表
+void hash_free(struct hash *hash) {
+    assert(hash != NULL);
+    assert(hash->slots != NULL);
+    
+    hash_clear(hash); // 在释放哈希表之前，需要清空哈希表
+    free(hash->slots);
+    free(hash);
+    return;
+}
+
+// 向哈希表中添加元素，假如要添加的元素已经存在，那么把它的 value值 修改为 val
+void hash_put(struct hash *hash, int key, int val) {
+    // 有的 key 可能为负数(虽然这道题提示我们 nums1和nums2 数组中的元素值均为非负数，但我已经习惯这样定义了，不喜勿喷)
+    unsigned int index; 
+    struct hash_node *node = NULL;
+
+    assert(hash != NULL);
+
+    index = (unsigned int) key % hash->size; // index 用于记录 当前 key 应当出现在哪条链上
+    node = hash->slots[index];
+    while (node) { // 遍历一整条链
+        if (node->key == key) { // 要添加的元素已经存在，那么把它的 value值 修改为 val
+            node->val = val;
+            return; // 函数运行结束
+        }
+        node = node->next;
+    }
+
+    // 先给 node 赋空，然后再给其分配空间
+    node = NULL;
+    node = (struct hash_node *)malloc(sizeof(struct hash_node));
+    if (node == NULL) {
+        perror("malloc failed in put()");
+        exit(1);
+    }
+
+    // 确保分配无误之后将 key 和 value 存进去
+    assert(node != NULL);
+    node->key = key;
+    node->val = val;
+    node->next = NULL;
+
+    // 将 node结点 插入到哈希表中对应的链当中
+    node->next = hash->slots[index];
+    hash->slots[index] = node;
+    hash->count++;
+    return;
+}
+
+// 获取哈希表中 键值为 key 的结点对应的 value 值，假如 key 不存在，返回 INT_MAX
+int hash_get(struct hash *hash, int key) {
+    unsigned int index;
+    struct hash_node *node = NULL;
+
+    assert(hash != NULL);
+    assert(hash->count >= 0);
+
+    index = (unsigned int) key % hash->size; // 计算该 key值 对应的结点理应出现在哪条链上
+    node = hash->slots[index];
+    while (node) { // 遍历这一整条链
+        if (node->key == key) // 如果找到了
+            return node->val; // 那么返回相应的 value 值
+        node = node->next;
+    }
+
+    return INT_MAX; // 没找到,说明 key 不存在，返回 INT_MAX
+}
+
+// 移除哈希表中 键值为 key 的结点
+void hash_remove(struct hash *hash, int key) {
+    unsigned int index;
+    struct hash_node *node = NULL;
+    struct hash_node *pre = NULL;
+    struct hash_node *tmp = NULL;
+
+    assert(hash != NULL);
+    assert(hash->count >= 0);
+
+    index = (unsigned int) key % hash->size;
+    
+    // 第一个结点便是要删除的结点的情况
+    if (hash->slots[index]->key == key) {
+        tmp = hash->slots[index];
+        hash->slots[index] = tmp->next;
+        free(tmp);
+        hash->count--;
+        return;
+    }
+
+    node = hash->slots[index];
+    while (node && node->next) {
+        if (node->next->key == key) {
+            tmp = node->next;
+            node->next = tmp->next;
+            free(tmp);
+            hash->count--;
+            return;
+        }
+        node = node->next;
+    }
+
+    return;
+}
+
+// 定义 FindSumPairs 的结构
+typedef struct {
+    int *nums1;
+    int *nums2;
+    int nums1Size;
+    int nums2Size;
+    struct hash *hash;
+} FindSumPairs;
+
+// 创建一个 FindSumPairs 对象
+FindSumPairs* findSumPairsCreate(int* nums1, int nums1Size, int* nums2, int nums2Size) {
+    int i, val;
+    FindSumPairs *obj = NULL;
+    obj = (FindSumPairs *)malloc(sizeof(FindSumPairs));
+    if (obj == NULL) return NULL;
+
+    assert(obj != NULL);
+    obj->hash = NULL;
+    obj->nums1 = nums1;
+    obj->nums2 = nums2;
+    obj->nums1Size = nums1Size;
+    obj->nums2Size = nums2Size;
+
+    // 根据 nums2 的大小来设置哈希表的大小，以使得哈希表的增删改查等操作尽可能地快
+    obj->hash = hash_init(nums2Size); 
+    if (obj->hash == NULL) {
+        free(obj);
+        return NULL;
+    }
+    assert(obj->hash != NULL);
+
+    // 将 nums2 中的元素均存入哈希表中，key 为 nums[i]的值，val 为该数值出现的次数
+    for (i = 0; i < obj->nums2Size; i++) {
+        val = hash_get(obj->hash, obj->nums2[i]);
+
+        if (val == INT_MAX) { // 如果当前元素不存在于哈希表中，则设置其 value 值为 1
+            hash_put(obj->hash, obj->nums2[i], 1);
+        } else { // 如果当前元素已经存在于哈希表中，那么对应的 value + 1 即可
+            hash_put(obj->hash, obj->nums2[i], val + 1);
+        }
+    }
+
+    return obj;
+}
+
+// 向 nums2 的指定位置添加 一个指定值
+void findSumPairsAdd(FindSumPairs* obj, int index, int val) {
+    int i, value;
+
+    assert(index >= 0 && index < obj->nums2Size); // 确保 index 不会导致 数组越界
+
+    value = hash_get(obj->hash, obj->nums2[index]);
+    hash_put(obj->hash, obj->nums2[index], value - 1);
+    // 对 nums2[index] 进行改变之后，nums2 中就少了一个 值为 nums2[index] 的元素
+    // 故哈希表中，key 为 nums2[index] 对应的value值应该减一
+
+    obj->nums2[index] += val; // 将一个正整数加到 nums2 中指定下标对应元素上。
+
+    value = hash_get(obj->hash, obj->nums2[index]); // 假如 key 不存在，返回 INT_MAX
+    value = value == INT_MAX ? 1 : (value + 1);
+    // 如果累加之后得到的元素在哈希表中已经存在，那么value值加一即可
+    // 否则，需将其添加进去并且设置 value 值为 1
+
+    hash_put(obj->hash, obj->nums2[index], value);
+    return;
+}
+
+int findSumPairsCount(FindSumPairs* obj, int tot) {
+    int i, val, ret = 0;
+
+    for (i = 0; i < obj->nums1Size; i++) {
+        // 目标值为 tot，当前值为 nums1[i], 所以要寻找哈希表中是否存在 tot - nums1[i]
+        val = hash_get(obj->hash, tot - obj->nums1[i]);
+        if (val != INT_MAX) // 如果存在，那么加上其出现的次数
+            ret += val;
+    }
+
+    return ret;
+}
+
+// 释放 FindSumPairs 对象
+void findSumPairsFree(FindSumPairs* obj) {
+    assert(obj != NULL);
+
+    hash_free(obj->hash); // 释放哈希表
+    free(obj->nums1); // 释放两个数组
+    free(obj->nums2);
+    free(obj); // 释放 FindSumPairs 对象
+    return; // 结束
+}
