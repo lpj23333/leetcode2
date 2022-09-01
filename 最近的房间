@@ -1,0 +1,40 @@
+struct node {
+    int pre,size,pos;
+};
+int cmp(const void *a,const void *b){
+    int *ap = *(int **)a;       
+    int *bp = *(int **)b;
+    return ap[1]-bp[1];
+}
+int cmp2(const void *a,const void *b){
+    struct node *aa=(struct node *)a;
+    struct node *bb=(struct node *)b;
+    return aa->size-bb->size;
+}
+
+
+int* closestRoom(int** rooms, int roomsSize, int* roomsColSize, int** queries, int queriesSize, int* queriesColSize, int* returnSize){
+
+    int i,j,k;
+    int *res=(int*)malloc(sizeof(int)*queriesSize);
+
+    struct node list[queriesSize];
+    for(i=0;i<queriesSize;i++)list[i]=(struct node){queries[i][0],queries[i][1],i};
+    qsort(rooms,roomsSize,sizeof(int)*2,cmp); qsort(list,queriesSize,sizeof(list[0]),cmp2);
+
+    for(i=0,j=0;i<queriesSize;i++){
+        while(j<roomsSize&&rooms[j][1]<list[i].size)j++;
+
+        int dis=INT_MAX,v=list[i].pre,pp=-1;
+        for(k=j;k<roomsSize;k++){
+            int D=abs(rooms[k][0]-v);
+            if(D<dis){dis=D;pp=rooms[k][0];}
+            if(D==dis&&rooms[k][0]<pp)pp=rooms[k][0];
+        }
+        res[list[i].pos]=pp;
+    }
+
+
+    *returnSize=queriesSize;
+    return res;
+}
