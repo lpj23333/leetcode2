@@ -1,0 +1,43 @@
+bool check(char *s1, int len1, char *s2, int len2, int *removable, int k) {
+    bool flag[len1];
+    int i, j;
+    memset(flag, 0, sizeof(flag));
+    /* [0,k-1]之间的元素移除 */
+    for (i = 0; i < k; i++) {
+        flag[removable[i]] = true;
+    }
+    i = 0;
+    j = 0;
+    /* 判断s2是否为s1的子序列 */
+    while (i < len1 && j < len2) {
+        if (flag[i] || s1[i] != s2[j]) {
+            i++;
+        } else{
+            i++;
+            j++;
+        }
+    }
+    return j == len2;
+}
+/* 应用二分法的前提是单调性, 本题的单调性为移除的元素越少, 越符合子序列特性 */
+/* 本题求出最大的k, 删除[0,k-1]之间的元素, 依然满足子序列特征 */
+/* 二分法利用求左边边界解法, 求出左侧边界l, 删除[0,l-1], 不满足子序列 */
+/* 最终的结果k = l - 1, 即为最大k值 */
+int maximumRemovals(char * s, char * p, int* removable, int removableSize){
+    int l = 0;
+    int r = removableSize + 1;
+    int m;
+    int len1 = strlen(s);
+    int len2 = strlen(p);
+    
+    /* 利用二分法求左侧边界 */
+    while (l < r) {
+        m = (l + r) / 2;
+        if (check(s, len1, p, len2, removable, m) == false) {
+            r = m;
+        } else {
+            l = m + 1;
+        }
+    }
+    return l - 1; /* k = l-1 */
+}
