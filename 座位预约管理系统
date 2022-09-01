@@ -1,0 +1,28 @@
+typedef struct {
+    char availableSeat[100002];
+} SeatManager;
+
+
+SeatManager* seatManagerCreate(int n) {
+    SeatManager *newSys = (SeatManager *)malloc(sizeof(SeatManager));
+    newSys->availableSeat[0] = '1';
+    for (int i = 1; i < 100001; ++i) {
+        newSys->availableSeat[i] = '0';
+    }
+    newSys->availableSeat[100001] = '\0';
+    return newSys;
+}
+
+int seatManagerReserve(SeatManager* obj) {
+    char *temp = strstr(obj->availableSeat, "0");
+    temp[0] = '1';
+    return temp - obj->availableSeat;
+}
+
+void seatManagerUnreserve(SeatManager* obj, int seatNumber) {
+    obj->availableSeat[seatNumber] = '0';
+}
+
+void seatManagerFree(SeatManager* obj) {
+    free(obj);
+}
