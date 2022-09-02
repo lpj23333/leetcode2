@@ -1,0 +1,18 @@
+long long gridGame(int** grid, int gridSize, int* gridColSize){
+    int n = gridColSize[0];
+    long long preSum[2][n + 1];
+    preSum[0][0] = 0;
+    preSum[1][0] = 0;
+    /* 求两行数组的前缀和 */
+    for (int i = 1; i <= n; i++) {
+        preSum[0][i] = preSum[0][i - 1] + grid[0][i - 1];
+        preSum[1][i] = preSum[1][i - 1] + grid[1][i - 1];
+    }
+
+    long long res = LONG_MAX;
+    /* 分别求第一行和第二行的最大值 */
+    for (int i = 1; i <= n; i++) {
+        res= fmin(res, fmax(preSum[1][i-1], preSum[0][n] - preSum[0][i]));
+    }
+    return res;
+}
