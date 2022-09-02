@@ -1,0 +1,19 @@
+int* missingRolls(int* rolls, int rollsSize, int mean, int n, int* returnSize){
+    int m = rollsSize;
+    int sum = mean * (n + m);
+    int missingSum = sum;
+    for (int i = 0; i < m; i++) {
+        missingSum -= rolls[i];
+    }
+    if (missingSum < n || missingSum > 6 * n) {
+        *returnSize = 0;
+        return NULL;
+    }
+    int quotient = missingSum / n, remainder = missingSum % n;
+    int * missing = (int *)malloc(sizeof(int) * n);
+    for (int i = 0; i < n; i++) {
+        missing[i] = quotient + (i < remainder ? 1 : 0);
+    }
+    *returnSize = n;
+    return missing;
+}
