@@ -1,0 +1,16 @@
+#define mod 1000000007
+int numberOfUniqueGoodSubsequences(char * binary){
+    int i,flag=0,l=strlen(binary);    long long zero=0,one=0;
+    if(l==1)return 1;  
+    for(i=0;i<l;i++){
+        if(binary[i]=='0'){
+            flag=1;
+            zero=(zero+one)%mod;
+        }else{
+            one=(zero+one+1)%mod;
+        }
+    }
+    return (zero+one+flag)%mod;
+
+    
+}
