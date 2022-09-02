@@ -1,0 +1,194 @@
+typedef struct Heap
+{
+    char **str;   //存放堆的数组
+    int  capacity;//数组的容量
+    int  len;     //已存数组的大小
+}Heap;
+//#define maxHeap                                         /*大小根堆切换开关*/
+int  HeapLen(Heap* hp);                                 //heap获取当前的堆大小
+void HeapSwap(char** pLeft, char** pRight);                 //heap交换父子结点的数值
+bool HeapEmpty(Heap* hp);                               //heap判空
+bool HeapFull(Heap* hp);                                //heap判满
+char* HeapGetTop(Heap* hp);                              //heap获取堆顶
+void HeapInsert(Heap* hp, char *str);                    //heap向堆的尾部插入1个元素
+void HeapDelete(Heap* hp);                              //heap删除堆顶
+void HeapAdjustDown(Heap* hp, int parent);              //heap向下调整
+void HeapAdjustUp(Heap* hp, int child);                 //heap向上调整
+Heap* CreateHeap(int size);                             //heap创建
+void heapFree(Heap* hp);                                //heap释放空间
+
+
+int HeapLen(Heap* hp)
+{
+    return hp->len;
+}
+
+
+
+bool HeapEmpty(Heap* hp)          //判空
+{
+    if (HeapLen(hp) == 1)
+    {
+        return true;
+    }
+    return false;
+}
+
+bool HeapFull(Heap* hp)          //判满
+{
+    if (hp->capacity == hp->len)
+    {
+        return true;
+    }
+    return false;
+}
+
+
+void HeapSwap(char** pLeft, char** pRight)//交换数值
+{
+    //交换堆中的父子结点
+    char*  temp;
+    temp     = *pLeft;
+    *pLeft   = *pRight;
+    *pRight  = temp;
+}
+
+char * HeapGetTop(Heap* hp)
+{
+    return hp->str[1];
+}
+
+void HeapDelete(Heap* hp)//删除堆顶
+{
+    if (HeapEmpty(hp))
+        return;
+
+    //用最后一个元素覆盖堆顶，相当于删除堆顶
+    hp->str[1] = hp->str[hp->len - 1];
+    hp->len--;//删除最后一个元素 heap长度变短
+    HeapAdjustDown(hp, 1);//对第一个元素进行调整
+}
+
+
+
+void HeapInsert(Heap* hp, char * str)
+{
+    if (HeapFull(hp))
+        return;
+    int child = 0;
+    int parent = 0;
+    //插入到最后一个元素的下一个位置
+    hp->str[hp->len++] = str;
+    //调整刚插入元素，
+    //因为插入的是堆的尾部，需要堆向上调整
+    HeapAdjustUp(hp, hp->len - 1);
+}
+
+
+
+Heap* CreateHeap(int size)//创建
+{
+    Heap* heap = (Heap*)malloc(sizeof(Heap));
+    int   heapLen = size + 1;//长度比size的长度大1才行
+    //给堆申请空间,初始化
+    heap->str = (char**)malloc(sizeof(char*) * heapLen);
+    heap->capacity = heapLen;     //容量
+    heap->len = 1;     //当前大小
+    return heap;
+}
+
+void HeapAdjustDown(Heap* hp, int parent)//向下调整
+{
+    //标记左右孩子中最小孩子
+    int child = 2 * parent;            //左孩子为2*parent  右孩子为 2*parent +1
+    int len = hp->len;
+
+    while (child < len)
+    {
+
+        //小根堆  选最小的
+        //有右子树时 ，找左右孩子中最小的孩子 
+        int chidLen     = strlen(hp->str[child]);
+        int parentLen   = strlen(hp->str[parent]);
+        if (child + 1 < len )
+        {
+            int chidRLen = strlen(hp->str[child+1]);
+            if(chidLen > chidRLen)
+            {
+                child = child + 1;
+            }
+            else if(chidLen == chidRLen)
+            {
+                if(strcmp(hp->str[child],hp->str[child+1]) == 1)
+                {
+                    child = child + 1;
+                }
+            }
+        }
+        chidLen     = strlen(hp->str[child]);
+        //最小孩子小于双亲时 ，孩子与双亲数值交换，否则说明已经调好，不用继续
+        if(chidLen <  parentLen || ((chidLen ==  parentLen)&& strcmp(hp->str[parent],hp->str[child]) == 1))
+        {
+            HeapSwap(&hp->str[child], &hp->str[parent]);
+            parent = child;
+            child = parent << 1;
+        }
+        else
+            return;
+    }
+}
+
+
+
+
+void HeapAdjustUp(Heap* hp, int child)//向上调整
+{
+    //得到父母结点的位置
+    int parent = child / 2;
+
+    //小根堆选择小的
+    //循环迭代从child当前位置一直迭代到0位置即对顶
+    while (child > 1)
+    {
+        int chidLen     = strlen(hp->str[child]);
+        int parentLen   = strlen(hp->str[parent]);
+        if(chidLen <  parentLen || ((chidLen ==  parentLen)&& strcmp(hp->str[parent],hp->str[child]) == 1))
+        {
+            HeapSwap(&hp->str[child], &hp->str[parent]);
+            child = parent;
+            parent = child/2;
+        }
+        else
+            return;
+    }
+}
+
+void heapFree(Heap* hp)
+{
+    free(hp->str);
+    free(hp);
+}
+
+
+char * kthLargestNumber(char ** nums, int numsSize, int k)
+{
+    Heap *newHeap = CreateHeap(k);
+    for(int i = 0; i < numsSize; i++)
+    {
+        if(HeapFull(newHeap) == false)
+        {
+            HeapInsert(newHeap, nums[i]);
+        }
+        else
+        {
+            int topLen = strlen(newHeap->str[1]);
+            int curLen = strlen(nums[i]);
+            if(curLen > topLen || (curLen == topLen && strcmp(nums[i],newHeap->str[1]) == 1))
+            {
+                newHeap->str[1] = nums[i];
+                HeapAdjustDown(newHeap, 1);
+            }
+        }
+    }
+    return newHeap->str[1];
+}
