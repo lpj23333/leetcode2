@@ -1,0 +1,17 @@
+int countSpecialSubsequences(int* nums, int numsSize){
+    long long numof0=0,numof01=0,numof012=0;
+    for (long long i=0;i!=numsSize;++i){
+        if (nums[i]==0){
+            numof0+=numof0+1;
+            numof0%=1000000007;
+        }else if (nums[i]==1){
+            numof01+=numof0+numof01;
+            
+            numof01%=1000000007;
+        }else{
+            numof012+=numof01+numof012;
+            numof012%=1000000007;
+        }
+    }
+    return numof012;
+}
