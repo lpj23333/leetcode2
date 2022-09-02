@@ -1,0 +1,10 @@
+#define MOD 1000000007
+int minNonZeroProduct(int p){
+    long long ret=1;
+    long long a=((1l<<p)-2)%MOD;
+    for(int i=0;i<p-1;i++){
+        ret=ret*a%MOD;
+        a=a*a%MOD;
+    }
+    return ret*(((1l<<p)-1)%MOD)%MOD;
+}
