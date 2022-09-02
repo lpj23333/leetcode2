@@ -1,0 +1,9 @@
+int* longestObstacleCourseAtEachPosition(int* obstacles, int obstaclesSize, int* returnSize){
+    int i,j,l=obstaclesSize,dp[l],right=-1;   int *res=(int*)malloc(sizeof(int)*l);
+
+    for(i=0;i<l;i++){
+        if(right==-1||obstacles[i]>=dp[right]){
+            dp[++right]=obstacles[i];   res[i]=right+1;
+        }else for(j=0;j<=right;j++) if(obstacles[i]<dp[j]){dp[j]=obstacles[i];res[i]=j+1;break;}
+    } *returnSize=l; return res;
+}
