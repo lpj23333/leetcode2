@@ -1,0 +1,28 @@
+int cmp(const void *a, const void *b) {
+    return *(int*)a - *(int*)b;
+}
+
+int minOperations(int** grid, int gridSize, int* gridColSize, int x){
+    int m = gridSize;
+    int n = gridColSize[0];
+    int len = m * n;
+    int arr[len];
+    /* 转成数组进行排序 */
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            arr[i * n + j] = grid[i][j];
+        }
+    }
+    qsort(arr, len, sizeof(arr[0]), cmp);
+
+    /* 取中位数, 并计算操作次数 */
+    int mid = arr[len / 2];
+    int sum = fabs(mid - arr[0]) / x;
+    for (int i = 1; i < len; i++) {
+        if ((arr[i] - arr[i - 1]) % x != 0) { /* 不能转为相同的值 */
+            return -1;
+        }
+        sum += fabs(mid - arr[i]) / x;
+    }
+    return sum;
+}
