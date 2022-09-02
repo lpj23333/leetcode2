@@ -1,0 +1,39 @@
+int minimizeTheDifference(int** mat, int matSize, int* matColSize, int target) {
+    int n = matSize, m = *matColSize, minnum = INT_MAX, maxnum = INT_MIN, ans = -1;
+    int mmap[70][4905] = {0};
+    for (int i = 0; i < m; i++) {
+        mmap[0][mat[0][i]] = 1;
+        if (mat[0][i] < minnum) minnum = mat[0][i];
+        if (mat[0][i] > maxnum) maxnum = mat[0][i];
+    }
+    for (int i = 1; i < n; i++) {
+        int mintmp = INT_MAX, maxtmp = INT_MIN;
+        for (int j = 0; j < m; j++) {
+            if (mat[i][j] < mintmp) mintmp = mat[i][j];
+            if (mat[i][j] > maxtmp) maxtmp = mat[i][j];
+        }
+        minnum += mintmp;
+        maxnum += maxtmp;
+        for (int j = minnum; j <= maxnum; j++) {
+            for (int k = 0; k < m; k++) {
+                if (j >= mat[i][k] && mmap[i - 1][j - mat[i][k]]) {
+                    mmap[i][j] = 1;
+                    break;
+                }
+            }
+        }
+    }
+    for (int i = 0; target + i < 4901; i++) {
+        if (mmap[n - 1][target + i]) {
+            ans = i;
+            break;
+        }
+    }
+    for (int i = 0; target - i >= 0; i++) {
+        if (mmap[n - 1][target - i]) {
+            if (ans == -1 || i < ans) ans = i;
+            break;
+        }
+    }
+    return ans;
+}
