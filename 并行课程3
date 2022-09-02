@@ -1,0 +1,30 @@
+int minimumTime(int n, int** relations, int relationsSize, int* relationsColSize, int* time, int timeSize){
+    int res=INT_MIN,i,j,k,left=0,right=-1;
+    int Que[50001],dgree[n+1],dp[n+1],map[n+1][300],len[n+1];
+    memset(dgree,0,sizeof(dgree)); memset(map,0,sizeof(map)); memset(dp,128,sizeof(dp)); memset(len,0,sizeof(len));
+
+    for(i=0;i<relationsSize;i++){
+        int left=relations[i][0],right=relations[i][1];
+        map[left][len[left]++]=right;
+        dgree[right]++;
+    }
+    for(i=1;i<=n;i++){
+        if(dgree[i]==0){
+            Que[++right]=i; dp[i]=time[i-1]; res=fmax(dp[i],res);
+        }
+    }
+
+    while(left<=right){
+        int node=Que[left];
+        for(i=0;i<len[node];i++){
+            int next=map[node][i];  dgree[next]--;
+            dp[next]=fmax(dp[next],dp[node]+time[next-1]);
+            if(dgree[next]==0){
+                Que[++right]=next;
+            } res=fmax(dp[next],res);
+        }
+        left++;
+
+    }
+    return res;
+}
