@@ -1,0 +1,37 @@
+int cmp(const void *a,const void *b){
+    return *(int*)a-*(int*)b;
+}
+int min,sum;
+void dfs(int value,int *nums,int used,int dep,int len,int target,int map[][10000],int length[]){
+    if(len-dep+used<target)return;
+    if(used==target){ map[target][ length[target]++ ]=value; return;}
+    dfs(value,nums,used,dep+1,len,target,map,length);
+    dfs(value+nums[dep],nums,used+1,dep+1,len,target,map,length);  
+}
+
+void dfs2(int value,int *nums,int used,int dep,int len,int target,int map[][10000],int length[]){
+    if(len-dep+used<target)return;
+    if(used==target){
+        int K=len/2-target,Tar;
+        if(length[K]==1){min=fmin(min,abs(sum-(value+map[K][0])*2));return;}
+        int left=0,right=length[K]-1,mid;
+        while(left<right){
+            mid=(left+right)>>1;
+            Tar=sum-value-map[K][mid];
+            min=fmin(min,abs(Tar-value-map[K][mid]));
+            if(Tar>map[K][mid]+value)left=mid+1;
+            else right=mid;
+        }
+        return;
+    }
+    dfs2(value,nums,used,dep+1,len,target,map,length);
+    dfs2(value+nums[dep],nums,used+1,dep+1,len,target,map,length);  
+}
+int minimumDifference(int* nums, int numsSize){
+    min=INT_MAX; sum=0; int i,j,k;
+    for(i=0;i<numsSize;i++)sum+=nums[i];
+    int map[16][10000]; int length[16]; memset(length,0,sizeof(length));
+    for(i=0;i<=numsSize/2;i++){dfs(0,nums,0,0,numsSize/2,i,map,length);qsort(map[i],length[i],sizeof(int),cmp);}
+    for(i=0;i<=numsSize/2;i++)dfs2(0,nums,0,numsSize/2,numsSize,i,map,length);
+    return min;
+}
