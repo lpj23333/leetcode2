@@ -1,0 +1,113 @@
+#define MOD_NUM 32452843
+#define RADIX_NUM 33
+#define MAX_VAL(x, y) (((x) > (y)) ? (x) : (y))
+#define MIN_VAL(x, y) (((x) < (y)) ? (x) : (y))
+
+/*
+forward[x]:     正向哈希。
+backward[x]:    逆向哈希。
+power[x]:       表示33^x。
+wing[x]:        以s[x]为中心的回文串最长单侧翼展，单侧翼展长度不包括s[x]本身在内。
+leftMax[x]:        [0, x]范围内的最长奇数回文串。
+rightMax[x]:       [x, length - 1]范围内的最长奇数回文串。
+*/
+long long maxProduct(char *s)
+{
+    const int length = strlen(s);
+    int x = 1, y = 0, L = 0, R = 0, m = 0, hash1 = 0, hash2 = 0;
+    int forward[length], backward[length], power[length], wing[length], leftMax[length], rightMax[length];
+    long long t = 0, result = 0;
+
+    /* x = 0时，单独处理。 */
+    forward[0] = s[0] - 'a';
+    backward[length - 1] = s[length - 1] - 'a';
+    power[0] = 1;
+    /* 然后从x = 1开始。 */
+    while(length > x)
+    {
+        /* 正向哈希。 */
+        y = s[x] - 'a';
+        forward[x] = (forward[x - 1] * RADIX_NUM + y) % MOD_NUM;
+        /* 逆向哈希。 */
+        y = s[length - 1 - x] - 'a';
+        backward[length - 1 - x] = (backward[length - x] * RADIX_NUM + y) % MOD_NUM;
+        /* 33的幂次。 */
+        power[x] = power[x - 1] * RADIX_NUM % MOD_NUM;
+        x++;
+    }
+
+    /* 二分法计算每个s[x]为中心的最长翼展。 */
+    x = 0;
+    while(length > x)
+    {
+        /* 翼展最短为0， 最长不能越过字符串边界。 */
+        L = 0;
+        R = MIN_VAL(x, length - 1 - x);
+        while(L < R)
+        {
+            /* 分别计算翼展为m的左半部分哈希值hash1，和右半部分哈希值hash2。
+            可以包含s[x]在内，也可以不包含。结果都一样。本处的计算包括了s[x]在内。 */
+            m = L + R + 1 >> 1;
+            /* s[x]左侧片段的正向哈希。注意减法可能出现负数，取模后要加上模后取模，确保得到非负数。 */
+            hash1 = (m == x) ? forward[x] : ((((long long)forward[x] - (long long)forward[x - m - 1] * power[m + 1]) % MOD_NUM + MOD_NUM) % MOD_NUM);
+            /* s[x]右侧片段的逆向哈希。注意减法可能出现负数，取模后要加上模后取模，确保得到非负数。 */
+            hash2 = (m == length - 1 - x) ? backward[x] : ((((long long)backward[x] - (long long)backward[x + m + 1] * power[m + 1]) % MOD_NUM + MOD_NUM) % MOD_NUM);
+            if(hash1 == hash2)
+            {
+                L = m;
+            }
+            else
+            {
+                R = m - 1;
+            }
+        }
+        /* wing[x]的值便确定下来了。 */
+        wing[x] = L;
+        x++;
+    }
+
+    /* 双指针计算leftMax[x]。 */
+    leftMax[0] = 1;
+    x = 1;
+    y = 0;
+    while(length > x)
+    {
+        /* 慢指针跟上，直到能够覆盖s[x]为止。
+        一定会存在，因为最多最多就是到x == y为止，是个单字符的回文串。 */
+        while(x > y + wing[y])
+        {
+            y++;
+        }
+        m = (x - y << 1) + 1;
+        leftMax[x] = MAX_VAL(leftMax[x - 1], m);
+        x++;
+    }
+
+    /* 双指针计算rightMax[x]。 */
+    rightMax[length - 1] = 1;
+    x = length - 2;
+    y = length - 1;
+    while(0 <= x)
+    {
+        /* 慢指针跟上，直到能够覆盖s[x]为止。
+        一定会存在，因为最多最多就是到x == y为止，是个单字符的回文串。 */
+        while(x < y - wing[y])
+        {
+            y--;
+        }
+        m = (y - x << 1) + 1;
+        rightMax[x] = MAX_VAL(rightMax[x + 1], m);
+        x--;
+    }
+
+    /* 以每一对s[x - 1]和s[x]的边界为隔离点，查看可能获取的最大乘积。 */
+    x = 1;
+    while(length > x)
+    {
+        t = (long long)leftMax[x - 1] * rightMax[x];
+        result = MAX_VAL(result, t);
+        x++;
+    }
+
+    return result;
+}
