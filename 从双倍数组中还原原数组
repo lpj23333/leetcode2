@@ -1,0 +1,46 @@
+int cmp(const void *a, const void* b){
+    return *(int*)a - *(int*)b;
+}
+
+int* findOriginalArray(int* changed, int changedSize, int* returnSize){
+    *returnSize = 0;
+    if(changedSize % 2 != 0){
+        return NULL;
+    }
+    //判断是不是所有数组元素都在数组中有对应的二倍数
+    //用一个快排，会快一点
+    qsort(changed, changedSize, sizeof(int), cmp);
+    if(changed[0]*2 < changed[1] || changed[0]*2 > changed[changedSize-1]) {
+        return NULL;
+    }//特殊状况直接排除
+    
+    int *res = (int*)malloc(sizeof(int)*(changedSize/2));
+    int i = 0, j = 1, sum = 0;
+    //由于已经快排过了，可以用双指针来跳转
+    //慢指针指向单倍数，快指针指向双倍数
+    while(i < changedSize && j < changedSize){
+        if(changed[i] == -1){
+            i++;
+            if(i == j)
+                j++;
+            continue;
+        }
+        //只找单倍数，双倍数直接过去
+        if(changed[i]*2 > changed[j]){
+            j++;
+        }else if(changed[i]*2 == changed[j]){
+            res[sum++] = changed[i++];
+            changed[j++] = -1;
+        }else{
+            free(res);
+            return NULL;
+        }
+    }
+    if(sum != changedSize/2){
+        free(res);
+        return NULL;
+    }  
+    *returnSize = sum;
+    return res;
+
+}
