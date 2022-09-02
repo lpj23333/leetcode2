@@ -1,0 +1,100 @@
+#define LOCKED 1
+#define UNLOCKED 0
+#define MAX_PARENT_SIZE 2000
+
+// 引入children数组和childNum方便遍历子节点
+typedef struct {
+    int state;
+    int user;
+    int parent;
+    int children[MAX_PARENT_SIZE];
+    int childNum;
+} LockingTree;
+
+LockingTree* lockingTreeCreate(int* parent, int parentSize) {
+    LockingTree *lockingTree = malloc(sizeof(LockingTree) * parentSize);
+    memset(lockingTree, 0, sizeof(LockingTree) * parentSize);
+    for (int i = 0; i < parentSize; i++) {
+        lockingTree[i].state = UNLOCKED;
+        lockingTree[i].user = 0;
+        lockingTree[i].parent = parent[i];
+        if (parent[i] == -1) {
+            // 无需更新父节点的子节点
+            continue;
+        }
+        // 当前节点为某父节点的子节点，更新之
+        lockingTree[parent[i]].children[lockingTree[parent[i]].childNum] = i;
+        lockingTree[parent[i]].childNum++;
+    }
+    return lockingTree;
+}
+
+bool lockingTreeLock(LockingTree* obj, int num, int user) {
+    if (obj[num].state == LOCKED) {
+        return false;
+    }
+    obj[num].state = LOCKED;
+    obj[num].user = user;
+    return true;
+}
+
+bool lockingTreeUnlock(LockingTree* obj, int num, int user) {
+    if (obj[num].user == user && obj[num].state == LOCKED) {
+        obj[num].user = 0;
+        obj[num].state = UNLOCKED;
+        return true;
+    }
+    return false;
+}
+
+bool isChildUnlocked;
+void unLockChildren(LockingTree *obj, LockingTree *root)
+{
+    // 终止条件
+    if (root == NULL || root->childNum == 0) {
+        return;
+    }
+    // 遍历子节点
+    for (int i = 0; i < root->childNum; i++) {
+        if (obj[root->children[i]].state == LOCKED) {
+            obj[root->children[i]].state = UNLOCKED;
+            obj[root->children[i]].user = 0;
+            isChildUnlocked = true;
+        }
+        unLockChildren(obj, &obj[root->children[i]]);
+    }
+}
+
+bool lockingTreeUpgrade(LockingTree* obj, int num, int user) {
+    LockingTree *node;
+    
+    // 当前节点状态
+    if (obj[num].state == LOCKED) {
+        return false;
+    }
+    // 查询祖先节点状态
+    node = &obj[num];
+    while (node->parent != -1) {
+        node = &obj[node->parent];
+        if (node->state == LOCKED) {
+            return false;
+        }
+    }
+    isChildUnlocked = false;
+    // 遍历子孙节点状态
+    unLockChildren(obj, &obj[num]);
+    if (isChildUnlocked == false) {
+        return false;
+    }
+    // 当前节点上锁
+    lockingTreeLock(obj, num, user);
+
+    return true;
+}
+
+void lockingTreeFree(LockingTree* obj) {
+    if (obj) {
+        free(obj);
+        obj = NULL;
+    }
+}
