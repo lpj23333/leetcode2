@@ -1,0 +1,101 @@
+typedef struct {
+    int key; 
+    int val;
+    UT_hash_handle hh;         
+} HashMapEntry;
+
+typedef struct {
+    int key;
+    HashMapEntry * obj;
+    UT_hash_handle hh;     
+} HashMapDictEntry;
+
+int hashMapGetVal(const HashMapEntry ** obj, int key) {
+    HashMapEntry * pEntry = NULL;
+    HASH_FIND(hh, *obj, &key, sizeof(int), pEntry);
+    if (NULL == pEntry) {
+        return 0;
+    }
+    return pEntry->val;
+}
+
+void hashMapFree(HashMapEntry ** obj) {
+    HashMapEntry *curr = NULL, *next = NULL;
+    HASH_ITER(hh, *obj, curr, next)
+    {
+        HASH_DEL(*obj, curr);  
+        free(curr);      
+    }
+}
+
+typedef struct {
+    HashMapDictEntry * dict;
+} DetectSquares;
+
+DetectSquares* detectSquaresCreate() {
+    DetectSquares * obj = (DetectSquares *)malloc(sizeof(DetectSquares));
+    obj->dict = NULL;
+    return obj;
+}
+
+void detectSquaresAdd(DetectSquares* obj, int* point, int pointSize) {
+    int x = point[0], y = point[1];
+    HashMapDictEntry * pEntry = NULL;
+    HashMapEntry * pItemEntry = NULL;
+    
+    HASH_FIND(hh, obj->dict, &y, sizeof(int), pEntry);
+    if (NULL == pEntry) {
+        pItemEntry = (HashMapEntry *)malloc(sizeof(HashMapEntry));
+        pItemEntry->key = x;
+        pItemEntry->val = 1;
+        pEntry = (HashMapDictEntry *)malloc(sizeof(HashMapDictEntry));
+        pEntry->key = y;
+        pEntry->obj = NULL;
+        HASH_ADD(hh, pEntry->obj, key, sizeof(int), pItemEntry);
+        HASH_ADD(hh, obj->dict, key, sizeof(int), pEntry);
+    } else {
+        HASH_FIND(hh, pEntry->obj, &x, sizeof(int), pItemEntry);
+        if (NULL == pItemEntry) {
+            pItemEntry = (HashMapEntry *)malloc(sizeof(HashMapEntry));
+            pItemEntry->key = x;
+            pItemEntry->val = 1;
+            HASH_ADD(hh, pEntry->obj, key, sizeof(int), pItemEntry);
+        } else {
+            pItemEntry->val++;
+        }
+    }
+}
+
+int detectSquaresCount(DetectSquares* obj, int* point, int pointSize) {
+    int res = 0;
+    int x = point[0], y = point[1];
+    HashMapDictEntry * pEntry = NULL;
+    HashMapEntry * yCnt = NULL;
+    HASH_FIND(hh, obj->dict, &y, sizeof(int), pEntry);
+    if (NULL == pEntry) {
+        return 0;
+    }
+    yCnt = pEntry->obj;
+    HashMapDictEntry *curr = NULL, *next = NULL;
+    HASH_ITER(hh, obj->dict, curr, next) {
+        int col = curr->key;
+        HashMapEntry * colCnt = curr->obj;
+        if (col != y) {
+            // 根据对称性，这里可以不用取绝对值
+            int d = col - y;
+            res += hashMapGetVal(&colCnt, x) * hashMapGetVal(&yCnt, x + d) * hashMapGetVal(&colCnt, x + d);
+            res += hashMapGetVal(&colCnt, x) * hashMapGetVal(&yCnt, x - d) * hashMapGetVal(&colCnt, x - d);
+        }   
+    }
+    return res;
+}
+
+void detectSquaresFree(DetectSquares* obj) {
+    HashMapDictEntry *curr = NULL, *next = NULL;
+    HASH_ITER(hh, obj->dict, curr, next)
+    {
+        hashMapFree(&(curr->obj));
+        HASH_DEL(obj->dict, curr); 
+        free(curr);      
+    }
+}
