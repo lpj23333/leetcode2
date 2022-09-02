@@ -1,0 +1,59 @@
+//找到尾部节点并更新前面节点指向的节点
+int find(int x,int* p){
+    if(x!=p[x]){
+        p[x]=find(p[x],p);
+    }
+    return p[x];
+}
+//合并，将新数添加到之前的集合中
+void merge(int x,int y,int* p){
+    int a = find(x,p);
+    int b = find(y,p);
+    if(a==b){
+        return;
+    }
+    p[a]=b;
+}
+int cmp(int* a,int* b){
+    return *a-*b;
+}
+bool gcdSort(int* nums, int numsSize){
+    int N = 1e5+1;
+    int* p=malloc(N*sizeof(int));
+    for(int i=0;i<N;i++){
+        p[i]=i;
+    }
+    //分解质因数
+    for(int i=0;i<numsSize;i++){
+        int k = nums[i];
+        for(int j=2;j<=k/j;j++){
+            bool flag = false;
+            while(k%j==0){
+                k=k/j;
+                flag=true;
+            }
+            if(flag){
+                merge(nums[i],j,p);
+            }
+        }
+        if(k>1){
+            merge(nums[i],k,p);
+        }
+    }
+    //tmp数组存储原来的数据
+    int* tmp = malloc(numsSize*sizeof(int));
+    for(int i=0;i<numsSize;i++){
+        tmp[i]=nums[i];
+    }
+    //排序
+    qsort(nums,numsSize,sizeof(int),cmp);
+    for(int i=0;i<numsSize;i++){
+        if(nums[i] == tmp[i]){
+            continue;
+        }
+        if(find(nums[i],p) != find(tmp[i],p)){
+            return false;
+        }
+    }
+    return true;
+}
