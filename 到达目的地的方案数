@@ -1,0 +1,38 @@
+#define inf 0x3f3f3f3f3f3f3f3f
+#define MOD 1000000007
+int countPaths(int n, int** roads, int roadsSize, int* roadsColSize){
+    int martix[n][n];   //用矩阵存图
+    memset(martix,0x3f,sizeof(martix));
+    for(int i=0;i<roadsSize;i++)
+        martix[roads[i][0]][roads[i][1]]=martix[roads[i][1]][roads[i][0]]=roads[i][2];
+    long long dist[n];  //dist[i]表示0到i的最短距离
+    memset(dist,0x3f,sizeof(dist));
+    dist[0]=0;
+    int flag[n];    //标记已经求得最短路径的点
+    memset(flag,0,sizeof(flag));
+    int dp[n];  //路径总数
+    memset(dp,0,sizeof(dp));
+    dp[0]=1;
+    flag[0]=1;
+    while(!flag[n-1]){
+        long long min=inf;
+        int next;
+        for(int i=0;i<n;i++){
+            if(!flag[i]) continue;
+            for(int j=0;j<n;j++){
+                if(flag[j]||martix[i][j]==0x3f3f3f3f) continue;
+                long long tmp=dist[i]+martix[i][j];
+                if(tmp<min){
+                    min=tmp;
+                    dp[j]=dp[i];
+                    next=j;
+                }
+                else if(tmp==min)
+                    dp[j]=(dp[i]+dp[j])%MOD;
+            }
+        }
+        flag[next]=1;
+        dist[next]=min;
+    }
+    return dp[n-1];
+}
