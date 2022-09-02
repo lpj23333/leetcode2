@@ -1,0 +1,132 @@
+struct HashMapNode
+{
+    int key;    /* 键值key表示源数组中的数值。 */
+    int count;  /* count表示该数值出现的次数。 */
+    int *index; /* index是需要malloc的数组空间，长度等于count，记录数值在源数组中的下标。 */
+    UT_hash_handle hh;
+};
+
+int waysToPartition(int *nums, int numsSize, int k)
+{
+    int i = 0, j = 0, result = 0, key = 0;
+    int record[numsSize];   /* 修改nums[i]可以使得左右分割相等的次数。 */
+    const int min = -100000, max = 100000;  /* 数组的取值范围。 */
+    long int diff = 0, sum = 0, prev = 0;   /* 使用long int类型。 */
+    struct HashMapNode *hashTable = NULL, *node = NULL, *t = NULL;
+
+    /* 初始化。 */
+    memset(record, 0, sizeof(record));
+
+    /* 第一次遍历，求总和sum，以及记录各个数值出现过的次数。 */
+    while(numsSize > i)
+    {
+        key = nums[i];
+        HASH_FIND_INT(hashTable, &key, node);
+        /* 新出现的，增加节点，node->index先初始化为NULL。 */
+        if(NULL == node)
+        {
+            node = (struct HashMapNode *)malloc(sizeof(struct HashMapNode));
+            node->key = key;
+            node->count = 1;
+            node->index = NULL;
+            HASH_ADD_INT(hashTable, key, node);
+        }
+        /* 已有记录，count累加。 */
+        else
+        {
+            node->count++;
+        }
+
+        sum += nums[i]; /* 求总和。 */
+        i++;
+    }
+
+    /* 给每个node->index malloc空间。然后先把count归零，后面记录每个下标时，再重新加上。 */
+    HASH_ITER(hh, hashTable, node, t)
+    {
+        node->index = (int *)malloc(sizeof(int) * node->count);
+        node->count = 0;
+    }
+
+    /* 给每个数值所在源数组的下标，记录到node->index中。 */
+    i = 0;
+    while(numsSize > i)
+    {
+        key = nums[i];
+        HASH_FIND_INT(hashTable, &key, node);
+        node->index[node->count] = i;
+        node->count++;
+        i++;
+    }
+
+    /* 这里遍历时的i，即表示题目中的pivot - 1。 */
+    i = 0;
+    while(numsSize - 1 > i)
+    {
+        prev += nums[i];
+        /* 如果左右直接相等，表示不需要交换任何数值，就能满足左右分割相等，先记录下这个的次数。 */
+        if(sum - prev == prev)
+        {
+            result++;
+        }
+
+        /* 替换[0, idx]中的某个nums[j]，是否满足左右分割相等。注意只有当diff在取值范围内时才进行查找。 */
+        diff = prev * 2 + k - sum;
+        if(min <= diff && max >= diff)
+        {
+            key = (int)diff;
+            HASH_FIND_INT(hashTable, &key, node);
+            /* [0, idx]中所有等于diff的数值，替换掉都可以满足条件，所以这些下标每个都给记录一次。 */
+            if(NULL != node)
+            {
+                j = 0;
+                while(node->count > j && node->index[j] <= i)
+                {
+                    record[node->index[j]]++;
+                    j++;
+                }
+            }
+        }
+
+        /* 替换[idx + 1, numsSize - 1]中的某个nums[j]，是否满足左右分割相等。注意只有当diff在取值范围内时才进行查找。 */
+        diff = sum + k - prev * 2;
+        if(min <= diff && max >= diff)
+        {
+            key = (int)diff;
+            HASH_FIND_INT(hashTable, &key, node);
+            /* [idx + 1, numsSize - 1]中所有等于diff的数值，替换掉都可以满足条件，所以这些下标每个都给记录一次。 */
+            if(NULL != node)
+            {
+                j = node->count - 1;
+                while(0 <= j && node->index[j] > i)
+                {
+                    record[node->index[j]]++;
+                    j--;
+                }
+            }
+        }
+
+        i++;
+    }
+
+    /* 上面那一层循环完成后，result的值等于“不交换任何数值时满足左右分割相等”的次数。
+    它再和record[numsSize]中的最大值，取较大值，即为最终结果。 */
+    i = 0;
+    while(numsSize > i)
+    {
+        if(record[i] > result)
+        {
+            result = record[i];
+        }
+        i++;
+    }
+
+    HASH_ITER(hh, hashTable, node, t)
+    {
+        HASH_DEL(hashTable, node);
+        free(node->index);
+        free(node);
+    }
+
+    return result;
+}
