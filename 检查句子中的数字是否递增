@@ -1,0 +1,16 @@
+bool areNumbersAscending(char * s) {
+    char* ptr = strtok(s, " ");
+    int ref = -1;
+    while (ptr != NULL) {
+        if (ptr[0] >= '0' && ptr[0] <= '9') {
+            int temp = atoi(ptr);
+            if (temp <= ref) {
+                return false;
+            } else {
+                ref = temp;
+            }
+        }
+        ptr = strtok(NULL, " ");
+    }
+    return true;
+}
