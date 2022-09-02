@@ -1,0 +1,16 @@
+#include<stdio.h>
+long long numberOfWeeks(int* milestones, int milestonesSize)
+{
+	int max = 0;
+	long long sum = 0;
+	int i = 0;
+	for(i=0;i<milestonesSize;i++)
+	{
+		sum += milestones[i];
+		if (milestones[i] > max)
+			max = milestones[i];
+	}
+	if (max * 2 - 1 < sum)
+		return sum;
+	return (sum - max) * 2 + 1;
+}
