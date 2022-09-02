@@ -1,0 +1,28 @@
+int cmp(double *a, double *b)
+{       
+    return *a>*b;
+}
+long long interchangeableRectangles(int** rectangles, int rectanglesSize, int* rectanglesColSize){
+    int i,j,m=rectanglesSize,n=rectanglesColSize[0];
+    double* temp = (double*)malloc(sizeof(double) * rectanglesSize);                           
+    for (int i = 0; i < rectanglesSize; i++) {
+        temp[i] = (double)rectangles[i][0] / rectangles[i][1];
+    }   
+    qsort(temp,m,sizeof(double),cmp);
+    long long num[m],k=0;
+    long long count=0,sum=1;
+    for(i=1;i<m;i++){
+        if(temp[i-1]==temp[i]){
+            sum++;
+        }
+        else{
+            num[k++]=sum;
+            sum=1;
+        }
+    }
+    num[k++]=sum;
+    for(i=0;i<k;i++){
+        if(num[i]>1) count+=(num[i])*(num[i]-1)/2;
+    }
+    return count;
+}
