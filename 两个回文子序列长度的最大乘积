@@ -1,0 +1,81 @@
+int maxProduct(char *s)
+{
+    const int length = strlen(s), maxMask = (1 << length) - 1;
+    int x = 0, mask1 = 1, mask2 = 0, i = 0, j = 0, bufferSize = 0, t = 0, complementary = 0, former = 0, result = 0;
+    char buffer[length];
+
+    // 子集mask1非空，所以从1开始遍历。
+    while(maxMask > mask1)
+    {
+        // 列出子集mask1的字符。
+        // 由于mask1是循环变量，不要中途修改掉，把它赋值给临时变量t来计算。
+        x = 0;
+        bufferSize = 0;
+        t = mask1;
+        while(0 != t)
+        {
+            if(1 & t)
+            {
+                buffer[bufferSize] = s[x];
+                bufferSize++;
+            }
+            x++;
+            t = t >> 1;
+        }
+        // 查看子集mask1是否回文子序列。
+        i = 0;
+        j = bufferSize - 1;
+        while(i < j && buffer[i] == buffer[j])
+        {
+            i++;
+            j--;
+        }
+        // 当子集mask1是回文子序列时，再看它的补集里面的最长回文子序列。
+        if(i >= j)
+        {
+            // 先把刚才子集mask1的长度记录下来，放到former变量中。
+            // 把mask1的补集complementary列出，遍历它的所有子集。
+            former = bufferSize;
+            complementary = maxMask & ~mask1;
+            mask2 = complementary;
+            while(0 < mask2)
+            {
+                // 列出补集complementary的子集mask2的字符。
+                // 同上，由于mask2是循环变量，不能中途改变掉，所以赋值给临时变量t。
+                x = 0;
+                bufferSize = 0;
+                t = mask2;
+                while(0 != t)
+                {
+                    if(1 & t)
+                    {
+                        buffer[bufferSize] = s[x];
+                        bufferSize++;
+                    }
+                    x++;
+                    t = t >> 1;
+                }
+                // 查看子集mask2是否回文子序列。
+                i = 0;
+                j = bufferSize - 1;
+                while(i < j && buffer[i] == buffer[j])
+                {
+                    i++;
+                    j--;
+                }
+                // 当complementary的子集mask2也是回文子序列，且两者长度乘积更大时，更新结果。
+                if(i >= j && result < former * bufferSize)
+                {
+                    result = former * bufferSize;
+                }
+                // complementary的下一个子集。
+                // 这里用一个与操作，是加快循环速度，且确保它是complementary的子集。
+                mask2 = mask2 - 1 & complementary;
+            }
+        }
+        // 下一个子集。
+        mask1++;
+    }
+
+    return result;
+}
