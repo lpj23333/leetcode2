@@ -1,0 +1,132 @@
+struct HashTable{
+    int key,val;
+    int index[2];
+    UT_hash_handle hh;
+};
+
+typedef struct {
+    struct HashTable *hashTable;
+    struct HashTable **bigHeap;
+    struct HashTable **smallHeap;
+    int heapSize;
+    int heapCapacity;
+    int currentTime;
+} StockPrice;
+
+void UpdataHeap(struct HashTable **heap,int headSize,int flag)
+{
+    int fatherIdx = headSize - 1, childIdx = 0;
+    int idx = (flag==1) ? 0 : 1;
+    struct HashTable *originVal = heap[fatherIdx];
+
+    while (fatherIdx >= 0) {
+        childIdx = ((fatherIdx + 1) >> 1) - 1;
+        if (childIdx < 0 || originVal->val * flag < heap[childIdx]->val * flag) {
+            break;
+        }
+        heap[fatherIdx] = heap[childIdx];
+        heap[fatherIdx]->index[idx] = fatherIdx;
+        fatherIdx = childIdx;
+    }
+    heap[fatherIdx] = originVal;
+    heap[fatherIdx]->index[idx] = fatherIdx;
+}
+
+void HeapAdd(StockPrice* obj,struct HashTable *node)
+{
+	if(obj->heapSize >= obj->heapCapacity)
+	{
+		obj->heapCapacity <<= 1;
+		obj->bigHeap = (struct HashTable**)realloc(obj->bigHeap,sizeof(struct HashTable*)*(obj->heapCapacity));
+        obj->smallHeap = (struct HashTable**)realloc(obj->smallHeap,sizeof(struct HashTable*)*(obj->heapCapacity));
+	}
+    obj->smallHeap[obj->heapSize] = node;
+    obj->bigHeap[obj->heapSize++] = node;
+    UpdataHeap(obj->bigHeap,obj->heapSize,1);
+    UpdataHeap(obj->smallHeap,obj->heapSize,-1);
+}
+
+void AdjastHeap(struct HashTable **heap,int heapSize,int index,int flag)
+{
+    int childIdx, max;
+    int middle = heapSize >> 1;
+    int idx = (flag==1) ? 0 : 1;
+    struct HashTable *originVal = heap[index]; 
+
+    while (index < middle) {
+        childIdx = 2 * index + 1;
+        max = heap[childIdx]->val;
+        if ((childIdx + 1 < heapSize) && (flag * max < flag * heap[childIdx + 1]->val)) { 
+            childIdx++;
+            max = heap[childIdx]->val;
+        }
+        if (flag * originVal->val > flag * max) { 
+            break;
+        }
+        heap[index] = heap[childIdx];
+        heap[index]->index[idx] = index;
+        index = childIdx;
+    }
+    heap[index] = originVal;
+    heap[index]->index[idx] = index;
+}
+
+void HeapDive(StockPrice* obj,struct HashTable *node){
+    UpdataHeap(obj->bigHeap,node->index[0]+1,1);
+    AdjastHeap(obj->bigHeap,obj->heapSize,node->index[0],1);
+    UpdataHeap(obj->smallHeap,node->index[1]+1,-1);
+    AdjastHeap(obj->smallHeap,obj->heapSize,node->index[1],-1);
+}
+
+StockPrice* stockPriceCreate() {
+    StockPrice *ret = malloc(sizeof(StockPrice));
+    ret->hashTable = NULL;
+    ret->heapCapacity = 1;
+    ret->heapSize = 0;
+    ret->bigHeap = malloc(sizeof(struct HashTable*)*ret->heapCapacity);
+    ret->smallHeap = malloc(sizeof(struct HashTable*)*ret->heapCapacity);
+    ret->currentTime = 0;
+    return ret;
+}
+
+void stockPriceUpdate(StockPrice* obj, int timestamp, int price) {
+    struct HashTable *tmp;
+    HASH_FIND_INT(obj->hashTable,&timestamp,tmp);
+    if(tmp==NULL){
+        struct HashTable *tmp = malloc(sizeof(struct HashTable));
+        tmp->key = timestamp,tmp->val = price;
+        tmp->index[0] = tmp->index[1] = obj->heapSize;
+        HASH_ADD_INT(obj->hashTable,key,tmp);
+        HeapAdd(obj,tmp);
+        if(timestamp > obj->currentTime) obj->currentTime = timestamp;
+    }else{
+        tmp->val = price;
+        HeapDive(obj,tmp);
+    }
+}
+
+int stockPriceCurrent(StockPrice* obj) {
+    struct HashTable *tmp;
+    HASH_FIND_INT(obj->hashTable,&obj->currentTime,tmp);
+    return tmp->val;
+}
+
+int stockPriceMaximum(StockPrice* obj) {
+    return obj->bigHeap[0]->val;
+}
+
+int stockPriceMinimum(StockPrice* obj) {
+    return obj->smallHeap[0]->val;
+}
+
+void stockPriceFree(StockPrice* obj) {
+    struct HashTable *cur = NULL, *next = NULL;
+    HASH_ITER(hh, obj->hashTable, cur, next)
+    {
+        HASH_DEL(obj->hashTable, cur);  
+        free(cur);      
+    }
+    free(obj->bigHeap);
+    free(obj->smallHeap);
+    free(obj);
+}
