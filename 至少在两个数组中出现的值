@@ -1,0 +1,38 @@
+int* twoOutOfThree(int* nums1, int nums1Size, int* nums2, int nums2Size, int* nums3, int nums3Size, int* returnSize){
+int i,j=0; 
+int a[101]={0};
+int f2[102]={0};
+int f3[102]={0};
+int *b=malloc(sizeof(int)*101);
+for(i=0;i<nums1Size;i++){
+    a[nums1[i]]=1;
+}
+for(i=0;i<nums2Size;i++){
+    a[nums2[i]]=a[nums2[i]]+100;
+}
+for(i=0;i<nums3Size;i++){
+    a[nums3[i]]=a[nums3[i]]+10000;
+}
+for(i=0;i<101;i++){
+    //12
+    if(a[i]>=101&&a[i]%10>0){
+        a[i]=9999;
+    }
+    //23
+    if(a[i]>=10001&&a[i]%10==0&&a[i]/100%100>0){
+        a[i]=9999;
+    }
+    //13
+    if(a[i]%10>0&&a[i]/10000>0){
+        a[i]=9999;
+    }
+    //123
+}
+for(i=0;i<101;i++){
+    if(a[i]==9999){
+        b[j++]=i;
+    }
+}
+*returnSize=j;
+return b;
+}
