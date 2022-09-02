@@ -1,0 +1,29 @@
+bool checkMove(char** board, int boardSize, int* boardColSize, int rMove, int cMove, char color){
+    char tar;
+    if (color=='B')
+        tar='W';
+    else
+        tar='B';
+
+int dx[8]={1,-1,0,0,-1,1,-1,1};
+int dy[8]={0,0,1,-1,1,1,-1,-1};
+int x,y;
+
+int count;
+
+for(int i=0;i<8;i++){
+
+    count=0;
+    for(x=rMove+dx[i],y=cMove+dy[i];x<8&&x>=0&&y<8&&y>=0;x+=dx[i],y+=dy[i]){
+        if(tar==board[x][y])
+            count++;
+        else
+            break;
+
+    }
+    if(count>=1&&x<8&&x>=0&&y<8&&y>=0&&board[x][y]==color)
+        return true;
+    
+}
+return false;
+}
