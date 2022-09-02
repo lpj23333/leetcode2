@@ -1,0 +1,75 @@
+struct pos {
+    int x;
+    int y;
+};
+
+int x_dir[4] = {0, 1, 0, -1};
+int y_dir[4] = {1, 0, -1, 0};
+
+
+void find_corner(int** land, int landSize, int *landColSize, int _x, int _y, int* returnSize, int **res) {
+    int x = _x;
+    while (x >= 0 && land[x][_y] == 2) {
+        x--;
+    }
+
+    int y = _y;
+    while (y >= 0 && land[x + 1][y] == 2) {
+        y--;
+    }
+
+    res[(*returnSize)][0] = x + 1;
+    res[(*returnSize)][1] = y + 1;
+
+    x = _x;
+    while (x < landSize && land[x][_y] == 2) {
+        x++;
+    }
+
+    y = _y;
+    while (y < (*landColSize) && land[x - 1][y] == 2) {
+        y++;
+    }
+    res[(*returnSize)][2] = x - 1;
+    res[(*returnSize)++][3] = y - 1;
+}
+
+void dfs(int** land, int landSize, int *landColSize, int _x, int _y) {
+    if (land[_x][_y] == 1) {
+        land[_x][_y] = 2;
+    }
+
+    for (int i = 0; i < 4; i++) {
+        int x = _x + x_dir[i];
+        int y = _y + y_dir[i];
+
+        if (x >= 0 && y >= 0 && x < landSize && y < (*landColSize) && land[x][y] == 1) {
+            dfs(land, landSize, landColSize, x, y);
+        }
+    }
+}
+
+int** findFarmland(int** land, int landSize, int* landColSize, int* returnSize, int** returnColumnSizes){
+    int **res = malloc(sizeof(int *) * landSize * (*landColSize));
+    for (int i = 0; i < landSize * (*landColSize); i++) {
+        res[i] = malloc(sizeof(int) * 4);
+    }
+
+    returnColumnSizes[0] = malloc(sizeof(int) * landSize * (*landColSize));
+    for (int i = 0; i < landSize * (*landColSize); i++) {
+        returnColumnSizes[0][i] = 4;
+    }
+    (*returnSize) = 0;
+    struct pos p;
+
+    for (int i = 0; i < landSize; i++) {
+        for (int j = 0; j < (*landColSize); j++) {
+            if (land[i][j] == 1) {
+                dfs(land, landSize, landColSize, i, j);
+                find_corner(land, landSize, landColSize, i, j, returnSize, res);
+            }
+        }
+    }
+
+    return res;
+}
