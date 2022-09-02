@@ -1,0 +1,50 @@
+char * smallestSubsequence(char * s, int k, char letter, int repetition)
+{
+    int i;
+    int letterCnt = 0; // 当前栈里面的letter个数
+    int length = strlen(s);
+    int lastLetter = 0; // s里面剩余的letter个数
+    char* stackStr = (char*)malloc(sizeof(char) * (length + 10));
+    if (stackStr == NULL) {
+        return s;
+    }
+    int strSize = 0;
+
+    for (i = 0; i < length; i++) {
+        if (s[i] == letter) {
+            lastLetter += 1;
+        }
+    }
+    // 先入栈，需要pop出来的条件是(while循环满足几个条件)：
+    // 1、以下条件需要同时满足：1.1 栈不为空；1.2 当前的长度加上后面的长度满足条件；1.3当前比栈顶更小；1.4必须包含的字符个数满足；
+    // 2、以下条件需要同时满足：2.1 栈不为空；2.2 是否有位置添加letter
+    for (i = 0; i < length; i++) {
+        while ((strSize > 0 && 
+            (strSize + (length - i)) > k && 
+            s[i] < stackStr[strSize - 1] && 
+            (letterCnt - (stackStr[strSize - 1] == letter ? 1 : 0) + lastLetter >= repetition)) ||
+             (strSize > 0) && (k - strSize + letterCnt < repetition)) 
+        {
+            if (stackStr[strSize - 1] == letter) {
+                letterCnt -= 1;
+            }
+            strSize -= 1;
+        }
+
+        if (strSize < k) { // 最长是k，超过就不需要入栈了
+            stackStr[strSize++] = s[i];
+            if (s[i] == letter) {
+                letterCnt += 1;
+            }
+        }
+        if (s[i] == letter) {
+            lastLetter -= 1;
+        }
+    }
+
+    stackStr[strSize] = '\0';
+    strcpy(s, stackStr);
+    free(stackStr);
+    stackStr = NULL;
+    return s;
+}
