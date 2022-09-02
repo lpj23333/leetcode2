@@ -1,0 +1,17 @@
+bool isPrefixString(char * s, char ** words, int wordsSize){
+    int i, index = 0;
+    char *str = NULL;
+    str = (char *)malloc(sizeof(char) * 2001); // 如果少于2001,则有的测试用例会发生溢出
+
+    if (strcmp(s, words[0]) == 0) return true;
+
+    strcpy(str, words[0]);
+
+    for (i = 1; i < wordsSize; i++) {
+        strcpy(str + strlen(str), words[i]); // 将 words[i] 复制到适当位置
+        if (strlen(str) > strlen(s)) return false;
+        if (strcmp(s, str) == 0) return true;
+    }
+    
+    return false;
+}
