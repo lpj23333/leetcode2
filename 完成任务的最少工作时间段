@@ -1,0 +1,46 @@
+int ret;
+int times[1000];
+int session_max;
+void dfs(int *task, int task_idx, int tasksSize, int session_cnt)
+{
+    if (session_cnt > ret) {
+        return;
+    }
+
+    if (task_idx == tasksSize) {
+        ret = session_cnt;
+        return;
+    }
+
+    for (int i = 0; i < session_cnt; i++) {
+        if ((times[i] + task[task_idx]) <= session_max) {
+            times[i] += task[task_idx];
+            dfs(task, task_idx + 1, tasksSize, session_cnt);
+            times[i] -= task[task_idx];
+        }
+    }
+
+    times[session_cnt] = task[task_idx];
+
+    dfs(task, task_idx + 1, tasksSize, session_cnt + 1);
+    times[session_cnt] = 0;
+    return;
+}
+
+int cmp(const void* a, const void* b)
+{
+    return -(*(int*)a - *(int*)b);
+}
+
+int minSessions(int* tasks, int tasksSize, int sessionTime)
+{
+    ret = tasksSize;
+    memset(times, 0, sizeof(times));
+    session_max = sessionTime;
+
+    qsort(tasks, tasksSize, sizeof(int), cmp);
+
+    dfs(tasks, 0, tasksSize, 0);
+
+    return ret;
+}
