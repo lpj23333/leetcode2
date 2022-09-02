@@ -1,0 +1,90 @@
+#define N 2E5 + 10 // 图中至多顶点的数量
+#define M 4E5 + 10 // 图中至多边的数量
+
+// =================== 链式前向星 =================== 
+int head[(int) N], cnt_edges;
+struct Edge {
+  int to;
+  int nxt;
+} Edges[(int) M];
+
+void addEdge(int u, int v) {
+  (Edges + cnt_edges)->to = v;
+  (*(Edges + cnt_edges)).nxt = *(head + u);
+  *(head + u) = cnt_edges++;
+}
+// =================== 链式前向星 =================== 
+
+int seen[(int) N];
+
+// function declaration 
+void Initialize(void);
+void BuildGraph(int** edges, int edgesSize);
+bool FindPath_Using_DFS(int curr, int goal);
+bool FindPath_Using_BFS(int start, int goal);
+
+bool validPath(int n, int** edges, int edgesSize, int* edgesColSize, int start, int end) {
+  // step 1: 初始化
+  Initialize();
+  // step 2: 建无向图
+  BuildGraph(edges, edgesSize);
+  // step 3: 广度优先搜索找路径
+  return FindPath_Using_BFS(start, end);
+}
+
+bool validPathII(int n, int** edges, int edgesSize, int* edgesColSize, int start, int end) {
+  // step 1: 初始化
+  Initialize();
+  // step 2: 建无向图
+  BuildGraph(edges, edgesSize);
+  // step 3: 深度优先搜索找路径
+  return FindPath_Using_DFS(start, end);
+}
+
+void Initialize(void) {
+  memset(head, -1, sizeof head);
+  memset(seen, 0x0000, sizeof seen);
+  cnt_edges = 0;
+}
+
+void BuildGraph(int** edges, int edgesSize) {
+  int e, u, v;
+  for (e = 0; e < edgesSize; ++e) {
+    u = **(edges + e), v = *(*(edges + e) + 1);
+    addEdge(u, v);
+    addEdge(v, u);
+  }
+}
+
+bool FindPath_Using_DFS(int curr, int goal) {
+  if (curr == goal) return true;
+  *(seen + curr) ^= 1;
+  for (int e = *(head + curr); ~e; e = (Edges + e)->nxt) {
+    int nxt = (Edges + e)->to;
+    if (*(seen + nxt)) continue;
+    if (FindPath_Using_DFS(nxt, goal)) return true;
+  }
+
+  return false;
+}
+
+bool FindPath_Using_BFS(int start, int goal) {
+
+  int q[(int) N], front = 0, rear = 0;
+  *(q + rear++) = start;
+  *(seen + start) ^= 1; // mark as visited
+
+  int curr;
+  while (front < rear) {
+    curr = *(q + front++);
+    if (curr == goal) return true;
+    for (int e = *(head + curr); ~e; e = (Edges + e)->nxt) {
+      int nxt = (Edges + e)->to;
+      if (*(seen + nxt)) continue;
+      *(q + rear++) = nxt;
+      *(seen + nxt) ^= 1; // mark as visted
+    }
+  }
+
+  return false;
+}
