@@ -1,0 +1,204 @@
+#define MIN_VAL(a, b) (((a) < (b)) ? (a) : (b))
+#define MAX_VAL(a, b) (((a) > (b)) ? (a) : (b))
+
+/* 二分法查看递增数组中，负数的数量。 */
+extern long long countNegative(int *nums, int numsSize);
+
+/* 表格中四个块，其中查找小于等于value值的数量。
+它们只是递增的方向不一样。讲究一点的话，加一些宏定义，可以把它们合并成同一个函数，这里就不作了，简单粗暴用四个函数分别处理。 */
+extern long long counterLeftUp(int *nums1, int nums1Size, int *nums2, int nums2Size, long long value);
+extern long long counterLeftDown(int *nums1, int nums1Size, int *nums2, int nums2Size, long long value);
+extern long long counterRightUp(int *nums1, int nums1Size, int *nums2, int nums2Size, long long value);
+extern long long counterRightDown(int *nums1, int nums1Size, int *nums2, int nums2Size, long long value);
+
+long long kthSmallestProduct(int *nums1, int nums1Size, int *nums2, int nums2Size, long long k)
+{
+    long long x = 0, y = 0, mid = 0, nega1 = 0, nega2 = 0, negaNum = 0, counter = 0;
+
+    /* 二分法查找两个数组中，各自有多少个负数。 */
+    nega1 = countNegative(nums1, nums1Size);
+    nega2 = countNegative(nums2, nums2Size);
+    /* 表格中，红绿两块的总数。 */
+    negaNum = nega1 * (nums2Size - nega2) + nega2 * (nums1Size - nega1);
+
+    /* 在negaNum范围内。 */
+    if(k <= negaNum)
+    {
+        x = MIN_VAL((long long)nums1[0] * nums2[nums2Size - 1], (long long)nums1[nums1Size - 1] * nums2[0]);
+        y = 0;
+        /* 二分法逐渐缩小范围。注意，这里的mid，向下取整，否则x、y相差1时，可能无法收敛，会陷入死循环。 */
+        while(x < y)
+        {
+            mid = (x + y - 1L) / 2L;
+            counter = 0;
+            /* 表格中的右上角绿色块。 */
+            if(0 < nega1 && nums2Size > nega2)
+            {
+                counter += counterRightUp(nums1, nega1, &nums2[nega2], nums2Size - nega2, mid);
+            }
+            /* 表格中的左下角红色块。 */
+            if(0 < nega2 && nums1Size > nega1)
+            {
+                counter += counterLeftDown(&nums1[nega1], nums1Size - nega1, nums2, nega2, mid);
+            }
+            if(k <= counter)
+            {
+                y = mid;
+            }
+            else
+            {
+                x = mid + 1;
+            }
+        }
+    }
+
+    /* 在negaNum范围外，k要减去negaNum，即剩下非负数中的第几个。 */
+    else
+    {
+        k -= negaNum;
+        x = 0;
+        y = MAX_VAL((long long)nums1[0] * nums2[0], (long long)nums1[nums1Size - 1] * nums2[nums2Size - 1]);
+        /* 二分法逐渐缩小范围。 */
+        while(x < y)
+        {
+            mid = (x + y) / 2L;
+            counter = 0;
+            /* 表格中的左上角黄色块。 */
+            if(0 < nega1 && 0 < nega2)
+            {
+                counter += counterLeftUp(nums1, nega1, nums2, nega2, mid);
+            }
+            /* 表格中的右下角蓝色块。 */
+            if(nums1Size > nega1 && nums2Size > nega2)
+            {
+                counter += counterRightDown(&nums1[nega1], nums1Size - nega1, &nums2[nega2], nums2Size - nega2, mid);
+            }
+            if(k <= counter)
+            {
+                y = mid;
+            }
+            else
+            {
+                x = mid + 1;
+            }
+        }
+    }
+
+    return x;
+}
+
+/* 计数递增数组中，负数的数量。 */
+long long countNegative(int *nums, int numsSize)
+{
+    int x = 0, y = numsSize - 1, mid = 0;
+
+    /* 这一句要加上：“如果全都是负数，直接返回总长度”，否则下面的二分法，不可能返回numsSize这个数值。 */
+    if(0 > nums[y])
+    {
+        return (long long)numsSize;
+    }
+
+    /* 数组下标从0开始。所以，负数数量实际就是从左数第一个非负数的下标值。 */
+    while(x < y)
+    {
+        mid = x + y >> 1;
+        if(0 > nums[mid])
+        {
+            x = mid + 1;
+        }
+        else
+        {
+            y = mid;
+        }
+    }
+
+    return (long long)x;
+}
+
+/* 左上角黄色块，每一行递减，每一列递减。 */
+long long counterLeftUp(int *nums1, int nums1Size, int *nums2, int nums2Size, long long value)
+{
+    int x = 0, y = nums2Size - 1;
+    long long counter = 0;
+
+    while(nums1Size > x && 0 <= y)
+    {
+        if(value >= (long long)nums1[x] * nums2[y])
+        {
+            counter += (nums1Size - x);
+            y--;
+        }
+        else
+        {
+            x++;
+        }
+    }
+
+    return counter;
+}
+
+/* 左下角红色块，每一行递减，每一列递增。 */
+long long counterLeftDown(int *nums1, int nums1Size, int *nums2, int nums2Size, long long value)
+{
+    int x = 0, y = 0;
+    long long counter = 0;
+
+    while(nums1Size > x && nums2Size > y)
+    {
+        if(value >= (long long)nums1[x] * nums2[y])
+        {
+            counter += (nums1Size - x);
+            y++;
+        }
+        else
+        {
+            x++;
+        }
+    }
+
+    return counter;
+}
+
+/* 右上角绿色块，每一行递增，每一列递减。 */
+long long counterRightUp(int *nums1, int nums1Size, int *nums2, int nums2Size, long long value)
+{
+    int x = nums1Size - 1, y = nums2Size - 1;
+    long long counter = 0;
+
+    while(0 <= x && 0 <= y)
+    {
+        if(value >= (long long)nums1[x] * nums2[y])
+        {
+            counter += (x + 1);
+            y--;
+        }
+        else
+        {
+            x--;
+        }
+    }
+
+    return counter;
+}
+
+/* 右下角蓝色块，每一行递增，每一列递增。 */
+long long counterRightDown(int *nums1, int nums1Size, int *nums2, int nums2Size, long long value)
+{
+    int x = nums1Size - 1, y = 0;
+    long long counter = 0;
+
+    while(0 <= x && nums2Size > y)
+    {
+        if(value >= (long long)nums1[x] * nums2[y])
+        {
+            counter += (x + 1);
+            y++;
+        }
+        else
+        {
+            x--;
+        }
+    }
+
+    return counter;
+}
