@@ -1,0 +1,186 @@
+//代码示例   标准堆 存储数据
+typedef struct Heap
+{
+    int* array;   //存放堆的数组
+    int  capacity;//数组的容量
+    int  len;     //已存数组的大小
+}Heap;
+//#define maxHeap                                         /*大小根堆切换开关*/
+int  HeapLen(Heap* hp);                                 //heap获取当前的堆大小
+void HeapSwap(int* pLeft, int* pRight);                 //heap交换父子结点的数值
+bool HeapEmpty(Heap* hp);                               //heap判空
+bool HeapFull(Heap* hp);                                //heap判满
+int  HeapGetTop(Heap* hp);                              //heap获取堆顶
+void HeapInsert(Heap* hp, int  dat);                    //heap向堆的尾部插入1个元素
+void HeapDelete(Heap* hp);                              //heap删除堆顶
+void HeapAdjustDown(Heap* hp, int parent);              //heap向下调整
+void HeapAdjustUp(Heap* hp, int child);                 //heap向上调整
+Heap* CreateHeap(int* array, int size);                 //heap创建
+void heapFree(Heap* hp);                                //heap释放空间
+
+
+int HeapLen(Heap* hp)
+{
+    return hp->len;
+}
+
+
+
+bool HeapEmpty(Heap* hp)          //判空
+{
+    if (HeapLen(hp) == 1)
+    {
+        return true;
+    }
+    return false;
+}
+
+bool HeapFull(Heap* hp)          //判满
+{
+    if (hp->capacity == hp->len)
+    {
+        return true;
+    }
+    return false;
+}
+
+
+void HeapSwap(int* pLeft, int* pRight)//交换数值
+{
+    //交换堆中的父子结点
+    int  temp;
+    temp = *pLeft;
+    *pLeft = *pRight;
+    *pRight = temp;
+}
+
+int HeapGetTop(Heap* hp)
+{
+    return hp->array[1];
+}
+
+void HeapDelete(Heap* hp)//删除堆顶
+{
+    if (HeapEmpty(hp))
+        return;
+
+    //用最后一个元素覆盖堆顶，相当于删除堆顶
+    hp->array[1] = hp->array[hp->len - 1];
+    hp->len--;//删除最后一个元素 heap长度变短
+    HeapAdjustDown(hp, 1);//对第一个元素进行调整
+}
+
+
+
+void HeapInsert(Heap* hp, int  dat)
+{
+    if (HeapFull(hp))
+        return;
+    int child = 0;
+    int parent = 0;
+    //插入到最后一个元素的下一个位置
+    hp->array[hp->len++] = dat;
+    //调整刚插入元素，
+    //因为插入的是堆的尾部，需要堆向上调整
+    HeapAdjustUp(hp, hp->len - 1);
+}
+
+
+
+Heap* CreateHeap(int* array, int size)//创建
+{
+    Heap* heap = (Heap*)malloc(sizeof(Heap));
+    int   heapLen = size + 1;//长度比size的长度大1才行
+    //给堆申请空间,初始化
+    heap->array = (int*)malloc(sizeof(int) * heapLen);
+
+    //数组中元素放到堆中
+    memcpy(heap->array + 1, array, sizeof(int) * size);
+    heap->capacity = heapLen;     //容量
+    heap->len = heapLen;     //当前大小
+
+    //元素数据建立起堆
+    //自下而上，自左而右调整
+    int root = heapLen / 2;
+    for (; root >= 1; root--)
+    {
+        HeapAdjustDown(heap, root);
+    }
+    return heap;
+}
+
+void HeapAdjustDown(Heap* hp, int parent)//向下调整
+{
+    //标记左右孩子中最小孩子
+    int child = 2 * parent;            //左孩子为2*parent  右孩子为 2*parent +1
+    int len = hp->len;
+
+    while (child < len)
+    {
+        //大根堆 选最大的
+        //有右子树时 ，找左右孩子中最大的孩子 
+        if ((child + 1 < len) && hp->array[child] < hp->array[child + 1])
+            child = child + 1;
+
+        //最大孩子大于双亲时 ，孩子与双亲数值交换，否则说明已经调好，不用继续
+        if (hp->array[child] > hp->array[parent])
+        {
+            HeapSwap(&hp->array[child], &hp->array[parent]);
+            parent = child;
+            child = parent << 1;
+        }
+        else
+            return;
+
+    }
+}
+
+
+
+
+void HeapAdjustUp(Heap* hp, int child)//向上调整
+{
+    //得到父母结点的位置
+    int parent = child / 2;
+    //大根堆选择大的
+    //循环迭代从child当前位置一直迭代到0位置即对顶
+    while (child > 1)
+    {
+        if (hp->array[child] > hp->array[parent])
+        {
+            HeapSwap(&hp->array[child], &hp->array[parent]);
+            child = parent;
+            parent = child/2;
+        }
+        else
+            return;
+    }
+}
+
+void heapFree(Heap* hp)
+{
+    free(hp->array);
+    free(hp);
+}
+
+
+int minStoneSum(int* piles, int pilesSize, int k)
+{
+    //建立大根堆
+    Heap* newHeap =  CreateHeap(piles, pilesSize);
+    for(int i =0; i< k; i++)
+    {
+        int maxTop =  HeapGetTop(newHeap);
+        int remove = floor(maxTop/ 2);
+        newHeap->array[1] = maxTop- remove;
+        HeapAdjustDown(newHeap ,1);
+    }
+
+    int sum = 0;
+    while(HeapEmpty(newHeap) == false)
+    {
+        sum +=HeapGetTop(newHeap);
+        HeapDelete(newHeap);
+    }
+    return sum;
+}
