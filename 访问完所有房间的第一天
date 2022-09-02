@@ -1,0 +1,9 @@
+int firstDayBeenInAllRooms(int* nextVisit, int nextVisitSize){
+    long* dp = malloc(nextVisitSize*sizeof(long));
+    dp[0] = 0;
+    int mod = (int)1e9+7;
+    for(int i = 1;i<nextVisitSize;i++){
+        dp[i] = (2*dp[i-1]-dp[nextVisit[i-1]]+2+mod)%mod;
+    }
+    return (int)dp[nextVisitSize-1];
+}
