@@ -1,0 +1,17 @@
+int** construct2DArray(int* original, int originalSize, int m, int n, int* returnSize, int** returnColumnSizes){    
+    if (originalSize != m * n) {
+        *returnSize = 0;
+        return NULL;
+    }
+    int ** ans = (int **)malloc(sizeof(int *) * m);
+    *returnColumnSizes = (int *)malloc(sizeof(int) * m);
+    for (int i = 0; i < m; ++i) {
+        ans[i] = (int *)malloc(sizeof(int) * n);
+        (*returnColumnSizes)[i] = n;
+    }
+    for (int i = 0; i < originalSize; i += n) {
+        memcpy(ans[i / n], original + i, sizeof(int) * n);
+    }
+    *returnSize = m;
+    return ans;
+}
