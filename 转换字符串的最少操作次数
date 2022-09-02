@@ -1,0 +1,13 @@
+int minimumMoves(char * s){
+    int count = 0;
+    int i = 0;
+    while (i < strlen(s)) {
+        if (s[i] == 'X') {
+            count++;
+            i += 3;
+        } else {
+            i++;
+        }
+    }
+    return count;
+}
