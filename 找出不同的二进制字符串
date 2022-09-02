@@ -1,0 +1,39 @@
+int cmp(const void *a, const void *b)
+{
+    return strcmp(*(char **)a, *(char **)b);
+}
+
+// 直接对源字符串做修改
+void StrAddOne(char *src, int len)
+{
+    int flag = 1;
+    for (int i = len - 1; i >= 0; i--) {
+        if (flag == 1 && src[i] == '1') {
+            src[i] = '0';
+            continue;
+        }
+        if (flag == 1 && src[i] == '0') {
+            src[i] = '1';
+            flag = 0;
+            continue;
+        }
+
+        if (flag == 0) break;
+    }
+}
+
+char * findDifferentBinaryString(char ** nums, int numsSize){
+    int n = numsSize;
+    qsort(nums, n, sizeof(nums[0]), cmp);
+    int i = 0;
+    for (; i < n - 1; i++) {
+        StrAddOne(nums[i], n);
+        if (strcmp(nums[i], nums[i + 1]) != 0) {
+            return nums[i];
+        }
+    }
+    if (i == n - 1) {
+        StrAddOne(nums[i], n);
+    }
+    return nums[i];
+}
