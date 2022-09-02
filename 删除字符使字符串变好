@@ -1,0 +1,26 @@
+char * makeFancyString(char * s)
+{
+    int i, index = 1, cnt = 1;
+    char temp = s[0];
+    char *res = malloc(sizeof(char) * (strlen(s) + 1));
+    res[0] = s[0];
+    for (i = 1; i < strlen(s); i++)
+    {
+        if (temp == s[i])
+        {
+            cnt++;
+            if (cnt < 3)
+            {
+                res[index++] = s[i];
+            }
+        }
+        else
+        {
+            cnt = 1;
+            res[index++] = s[i];
+            temp = s[i];
+        }
+    }
+    res[index] = '\0';
+    return res;
+}
