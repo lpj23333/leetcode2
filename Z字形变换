@@ -1,0 +1,33 @@
+char * convert(char * s, int numRows){
+    int n = strlen(s), r = numRows;
+    if (r == 1 || r >= n) {
+        return s;
+    }
+    int t = r * 2 - 2;//向右上填写r-2个字符，然后一个周期填写r+r-2个字符，所以一次周期填的字符数为t 
+    int c = (n + t - 1) / t * (r - 1);//完成所有周期需要动c行，一次周期要动r-1行 
+    char ** mat = (char **)malloc(sizeof(char *) * r);//r为列，c为行 
+    for (int i = 0; i < r; i++) {
+        mat[i] = (char *)malloc(sizeof(char) * c); 
+        memset(mat[i], 0, sizeof(char) * c);//memset的作用，将一些数以无符号字符的形式放到前面                   
+    }
+    for (int i = 0, x = 0, y = 0; i < n; ++i) {
+        mat[x][y] = s[i];
+        if (i % t < r - 1) {//判断输入字符是否在这一列之中 
+            ++x; // 向下移动
+        } else {
+            --x;
+            ++y; // 向右上移动
+        }
+    }
+    int pos = 0;
+    for (int i = 0; i < r; i++) {
+        for (int j = 0; j < c; j++) {
+            if(mat[i][j]) {
+                s[pos++] = mat[i][j];//将结果导入s 
+            }
+        }
+        free(mat[i]);
+    }
+    free(mat);
+    return s;
+}
